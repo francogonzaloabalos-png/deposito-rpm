@@ -508,24 +508,30 @@ function normalizeText(str) {
 
 function matchesSearch(item, query, fields) {
   if (!query) return true;
-  const normalizedQuery = normalizeText(query);
-  const words = normalizedQuery.split(/\s+/).filter(Boolean);
-  if (words.length === 0) return true;
+  const rawQuery = normalizeText(query).trim();
+  if (!rawQuery) return true;
 
   const textFields = fields.map(f => item[f] || '').filter(Boolean);
   const combinedText = textFields.join(' ');
-  const normalizedTarget = normalizeText(combinedText);
+  const targetNorm = normalizeText(combinedText);
+  const targetStripped = targetNorm.replace(/\s+/g, '');
 
-  // Estrategia A: Todas las palabras de la búsqueda deben estar presentes en el texto del elemento (sin importar orden ni mayúsculas/minúsculas/acentos)
-  const allWordsMatched = words.every(word => normalizedTarget.includes(word));
-  if (allWordsMatched) return true;
+  // 1. Coincidencia completa ignorando espacios (ej: busca "90 W" y encuentra "90W" o viceversa)
+  const queryStripped = rawQuery.replace(/\s+/g, '');
+  if (queryStripped && targetStripped.includes(queryStripped)) return true;
 
-  // Estrategia B: Emparejamiento ignorando por completo los espacios (ej: busca "90W" y encuentra "90 W")
-  const strippedTarget = normalizedTarget.replace(/\s+/g, '');
-  const strippedQuery = normalizedQuery.replace(/\s+/g, '');
-  if (strippedQuery && strippedTarget.includes(strippedQuery)) return true;
+  // 2. Coincidencia por términos/palabras desordenadas (ej: "termica 30A" encuentra "Térmica | Curva C | 30A")
+  const words = rawQuery.split(/\s+/).filter(Boolean);
+  const allWordsMatched = words.every(word => {
+    // Coincidencia directa del término
+    if (targetNorm.includes(word)) return true;
+    // Coincidencia del término sin espacios (ej: término "30A" en objetivo "30 A")
+    const strippedWord = word.replace(/\s+/g, '');
+    if (strippedWord && targetStripped.includes(strippedWord)) return true;
+    return false;
+  });
 
-  return false;
+  return allWordsMatched;
 }
 
 function zonaFiltrado(list){
