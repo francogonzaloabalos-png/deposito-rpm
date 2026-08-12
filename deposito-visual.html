@@ -102,7 +102,23 @@
     font-family:inherit;font-size:13px;padding:9px 12px 9px 32px;outline:none;transition:.15s border-color;
   }
   .search-box input:focus{border-color:var(--accent);}
-  .search-box::before{content:'⌕';position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--txt-faint);font-size:15px;}
+  .search-box::before{
+    content:"";
+    position:absolute;
+    left:11px;
+    top:50%;
+    transform:translateY(-50%);
+    width:14px;
+    height:14px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235a6786' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+    background-size:contain;
+    background-repeat:no-repeat;
+    pointer-events:none;
+    transition:.15s all;
+  }
+  .search-box:focus-within::before{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+  }
   select.filter-select{
     background:var(--bg-card);border:1px solid var(--line);color:var(--txt);font-family:inherit;
     font-size:12.5px;font-weight:600;padding:8px 10px;border-radius:8px;outline:none;cursor:pointer;
@@ -483,6 +499,35 @@ function populateFamiliaFilter(){
 // ============================================================
 // FILTER / SORT HELPERS
 // ============================================================
+function normalizeText(str) {
+  if (!str) return '';
+  return str.normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+}
+
+function matchesSearch(item, query, fields) {
+  if (!query) return true;
+  const normalizedQuery = normalizeText(query);
+  const words = normalizedQuery.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return true;
+
+  const textFields = fields.map(f => item[f] || '').filter(Boolean);
+  const combinedText = textFields.join(' ');
+  const normalizedTarget = normalizeText(combinedText);
+
+  // Estrategia A: Todas las palabras de la búsqueda deben estar presentes en el texto del elemento (sin importar orden ni mayúsculas/minúsculas/acentos)
+  const allWordsMatched = words.every(word => normalizedTarget.includes(word));
+  if (allWordsMatched) return true;
+
+  // Estrategia B: Emparejamiento ignorando por completo los espacios (ej: busca "90W" y encuentra "90 W")
+  const strippedTarget = normalizedTarget.replace(/\s+/g, '');
+  const strippedQuery = normalizedQuery.replace(/\s+/g, '');
+  if (strippedQuery && strippedTarget.includes(strippedQuery)) return true;
+
+  return false;
+}
+
 function zonaFiltrado(list){
   return state.zona ? list.filter(x => x.zona === state.zona) : list;
 }
@@ -493,13 +538,7 @@ function stockFiltrado(){
   if (ui.familia) list = list.filter(p => p.familia === ui.familia);
   if (ui.estado) list = list.filter(p => p.estado === ui.estado);
   if (ui.search){
-    const q = ui.search.toLowerCase();
-    list = list.filter(p =>
-      (p.descripcion||'').toLowerCase().includes(q) ||
-      (p.marca||'').toLowerCase().includes(q) ||
-      (p.familia||'').toLowerCase().includes(q) ||
-      (p.id||'').toLowerCase().includes(q)
-    );
+    list = list.filter(p => matchesSearch(p, ui.search, ['descripcion', 'marca', 'familia', 'id']));
   }
   list = list.slice().sort((a,b) => {
     let va = a[ui.sortKey], vb = b[ui.sortKey];
@@ -515,12 +554,7 @@ function movFiltrado(){
   let list = zonaFiltrado(state.mov);
   if (ui.tipo) list = list.filter(m => m.tipo === ui.tipo);
   if (ui.search){
-    const q = ui.search.toLowerCase();
-    list = list.filter(m =>
-      (m.descripcion||'').toLowerCase().includes(q) ||
-      (m.responsable||'').toLowerCase().includes(q) ||
-      (m.obra||'').toLowerCase().includes(q)
-    );
+    list = list.filter(m => matchesSearch(m, ui.search, ['descripcion', 'responsable', 'obra']));
   }
   list = list.slice().sort((a,b) => {
     let va = a[ui.sortKey], vb = b[ui.sortKey];
