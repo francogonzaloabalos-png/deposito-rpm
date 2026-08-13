@@ -826,7 +826,7 @@
             </div>
             <div class="header-actions">
                 <button class="btn ghost small" id="btnRefresh">↻ Actualizar</button>
-                <button class="btn small" id="btnExport">⬇ Exportar CSV</button>
+                <button class="btn small" id="btnExport">📊 Exportar a Excel</button>
             </div>
         </div>
 
@@ -1409,19 +1409,95 @@
             toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        function exportCSV() {
+        function exportExcel() {
             const list = stockFiltrado();
-            const cols = ['id', 'zona', 'familia', 'marca', 'descripcion', 'unidad', 'stock_minimo', 'stock_actual', 'estado', 'ult_mov', 'ult_fecha', 'ult_hora'];
-            const header = cols.join(';');
-            const rows = list.map(p => cols.map(c => `"${String(p[c] ?? '').replace(/"/g, '""')}"`).join(';'));
-            const csv = [header, ...rows].join('\n');
-            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const zonaNombre = state.zona || 'Todos los depósitos';
+            const fechaHoy = new Date().toLocaleDateString('es-AR') + ' ' + new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+            const headers = [
+                { key: 'id', label: 'ID Producto' },
+                { key: 'zona', label: 'Depósito / Zona' },
+                { key: 'familia', label: 'Familia' },
+                { key: 'marca', label: 'Marca' },
+                { key: 'descripcion', label: 'Descripción' },
+                { key: 'ubicacion', label: 'Ubicación' },
+                { key: 'unidad', label: 'Unidad' },
+                { key: 'stock_minimo', label: 'Stock Mínimo' },
+                { key: 'stock_actual', label: 'Stock Actual' },
+                { key: 'estado', label: 'Estado' },
+                { key: 'ult_mov', label: 'Últ. Movimiento' },
+                { key: 'ult_fecha', label: 'Fecha Últ. Mov.' }
+            ];
+
+            const tableHeaderHtml = headers.map(h =>
+                `<th style="background-color: #1e293b; color: #ffffff; font-weight: bold; border: 1px solid #334155; padding: 8px 12px; text-align: left; font-family: Calibri, Arial, sans-serif;">${h.label}</th>`
+            ).join('');
+
+            const tableRowsHtml = list.map((p, idx) => {
+                const loc = ubicacionStr(p) || '—';
+                const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+                const isReponer = p.estado === 'REPONER';
+                const estadoBg = isReponer ? '#fee2e2' : '#dcfce7';
+                const estadoColor = isReponer ? '#991b1b' : '#166534';
+
+                return `<tr style="background-color: ${rowBg};">
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Consolas, monospace; font-weight: bold; color: #334155;">${escapeHtml(p.id)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.zona)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif; font-weight: bold; color: #1e40af;">${escapeHtml(p.familia)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.marca || '—')}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif; font-weight: 600;">${escapeHtml(p.descripcion)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(loc)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.unidad || 'un')}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: right; font-family: Calibri, Arial, sans-serif;">${p.stock_minimo || 0}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: right; font-family: Calibri, Arial, sans-serif; font-weight: bold; font-size: 14px;">${p.stock_actual || 0}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: center; font-family: Calibri, Arial, sans-serif; font-weight: bold; background-color: ${estadoBg}; color: ${estadoColor};">${escapeHtml(p.estado)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.ult_mov || '—')}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml((p.ult_fecha || '') + ' ' + (p.ult_hora || ''))}</td>
+                </tr>`;
+            }).join('');
+
+            const excelHtml = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="utf-8">
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>Stock Depósito</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayGridlines/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                </head>
+                <body style="font-family: Calibri, Arial, sans-serif;">
+                    <h2 style="color: #0f172a; margin-bottom: 4px;">RPM Construcciones — Reporte de Stock</h2>
+                    <p style="color: #64748b; font-size: 12px; margin-top: 0; margin-bottom: 12px;">Filtro / Depósito: <strong>${escapeHtml(zonaNombre)}</strong> | Generado: ${fechaHoy} | Total productos: <strong>${list.length}</strong></p>
+                    <table border="1" style="border-collapse: collapse;">
+                        <thead>
+                            <tr>${tableHeaderHtml}</tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob(['\uFEFF' + excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `stock_${(state.zona || 'todos').replace(/\s+/g, '_')}_${Date.now()}.csv`;
+            a.download = `stock_${(state.zona || 'todos').replace(/\s+/g, '_')}_${Date.now()}.xls`;
             a.click();
             URL.revokeObjectURL(url);
+            showToast('Excel generado correctamente ✓');
         }
 
         function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -1453,7 +1529,7 @@
         wireSortHeaders('movTable', state.movUi, renderMov);
 
         document.getElementById('btnRefresh').addEventListener('click', () => cargarTodo(false));
-        document.getElementById('btnExport').addEventListener('click', exportCSV);
+        document.getElementById('btnExport').addEventListener('click', exportExcel);
 
         document.querySelectorAll('#tipoSeg button').forEach(b => b.addEventListener('click', () => selectTipo(b.dataset.tipo)));
         document.getElementById('adjustCancel').addEventListener('click', closeAdjustModal);
