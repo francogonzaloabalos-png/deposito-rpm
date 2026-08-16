@@ -1,0 +1,2985 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>ROPA y EPP — RPM</title>
+<style>
+/* ============================================================
+   1.1 RESET Y VARIABLES BASE
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0f172a;
+}
+button, .sc-icon-btn, .btn-mov { outline: none; }
+
+/* ============================================================
+   1.2 LAYOUT GENERAL (.screen, .topbar)
+   ============================================================ */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.screen.active { display: flex; }
+
+.topbar {
+  flex-shrink: 0; display: flex; align-items: center;
+  gap: 10px; padding: 0 16px; height: 54px; z-index: 10;
+}
+.topbar-back {
+  background: none; border: none; color: #3b82f6;
+  font-size: 26px; cursor: pointer; line-height: 1; padding: 0 4px 0 0; flex-shrink: 0;
+}
+.topbar-title { font-size: 15px; font-weight: 700; color: #f1f5f9; flex: 1; }
+.topbar-badge {
+  font-size: 11px; font-weight: 600; color: #475569;
+  background: #1e293b; padding: 3px 9px; border-radius: 20px; flex-shrink: 0;
+}
+
+/* ============================================================
+   1.3 PANTALLA HOME
+   ============================================================ */
+#screen-home {
+  background: #0f172a;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  gap: 0;
+}
+.home-eyebrow {
+  font-size: 11px; font-weight: 700; color: #334155;
+  letter-spacing: 3px; text-transform: uppercase;
+  margin-bottom: 12px; text-align: center;
+}
+.home-zone {
+  font-size: 28px; font-weight: 800; color: #f1f5f9;
+  text-align: center; line-height: 1.15;
+  margin-bottom: 6px; letter-spacing: -0.5px;
+}
+.home-zone span { color: #3b82f6; }
+.home-sub { font-size: 13px; color: #475569; text-align: center; margin-bottom: 52px; }
+
+.home-btn {
+  width: 100%; max-width: 340px; border: none; border-radius: 18px;
+  cursor: pointer; display: flex; align-items: center; gap: 18px;
+  padding: 22px 20px; margin-bottom: 12px;
+  transition: transform 0.12s, opacity 0.12s;
+  text-align: left; position: relative; overflow: hidden;
+}
+.home-btn:active { transform: scale(0.97); opacity: 0.9; }
+.home-btn-stock { background: #0f2044; border: 1.5px solid #1d4ed8; }
+.home-btn-form  { background: #052e16; border: 1.5px solid #15803d; }
+
+.home-btn-icon {
+  font-size: 28px; flex-shrink: 0; width: 52px; height: 52px;
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+}
+.home-btn-stock .home-btn-icon { background: #1e3a5f; }
+.home-btn-form  .home-btn-icon { background: #14532d; }
+
+.home-btn-text { flex: 1; }
+.home-btn-title { font-size: 17px; font-weight: 700; color: #f1f5f9; margin-bottom: 3px; letter-spacing: -0.2px; }
+.home-btn-desc  { font-size: 12px; color: #64748b; line-height: 1.4; }
+.home-btn-arrow { font-size: 22px; color: #334155; }
+
+.home-btn-back {
+  width: 100%; max-width: 340px; border: 1.5px solid #334155; border-radius: 14px;
+  cursor: pointer; display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; margin-top: 10px;
+  background: #1e293b; text-decoration: none;
+  transition: transform 0.12s, opacity 0.12s;
+}
+.home-btn-back:active { transform: scale(0.97); opacity: 0.9; }
+.home-btn-back-icon {
+  font-size: 16px; flex-shrink: 0; width: 34px; height: 34px;
+  border-radius: 9px; background: #0f172a;
+  display: flex; align-items: center; justify-content: center;
+}
+.home-btn-back-text { flex: 1; font-size: 13px; font-weight: 700; color: #cbd5e1; }
+.home-btn-back-arrow { font-size: 15px; color: #334155; }
+
+/* ============================================================
+   1.4 PANTALLA STOCK (búsqueda, filtros, tarjetas, detalle)
+   ============================================================ */
+#screen-stock { background: #0f172a; }
+#screen-stock .topbar { background: #0f172a; border-bottom: 1px solid #1e293b; }
+
+.stock-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; overflow-anchor: none; }
+
+.stock-loading {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 16px; padding: 80px 24px;
+  color: #475569; font-size: 13px;
+}
+.spinner {
+  width: 32px; height: 32px; border: 3px solid #1e293b;
+  border-top-color: #3b82f6; border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.stock-error {
+  display: none; background: #1e293b; border-radius: 16px;
+  padding: 32px 24px; text-align: center; margin: 24px 0;
+}
+.stock-error.show { display: block; }
+.stock-error-icon  { font-size: 36px; margin-bottom: 10px; }
+.stock-error-title { font-size: 16px; font-weight: 700; color: #f87171; margin-bottom: 8px; }
+.stock-error-msg   { font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 16px; }
+.btn-retry {
+  background: #1d4ed8; color: white; border: none;
+  border-radius: 10px; padding: 10px 24px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+
+.stock-content { display: none; }
+.stock-content.show { display: block; }
+
+.stock-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.sum-box { background: #1e293b; border-radius: 14px; padding: 16px 12px; text-align: center; }
+.sum-num   { font-size: 32px; font-weight: 800; line-height: 1; }
+.sum-label { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+.sum-box.ok  .sum-num { color: #4ade80; }
+.sum-box.low .sum-num { color: #f87171; }
+
+.stock-search {
+  display: flex; align-items: center; gap: 10px;
+  background: #1e293b; border-radius: 12px; padding: 0 14px;
+  margin-bottom: 10px; border: 1.5px solid transparent; transition: border-color 0.15s;
+}
+.stock-search:focus-within { border-color: #3b82f6; }
+.stock-search-icon { font-size: 16px; color: #475569; flex-shrink: 0; }
+.stock-search input {
+  flex: 1; border: none; outline: none;
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+  caret-color: #3b82f6;
+  font-size: 14px; padding: 11px 0; font-family: inherit;
+  color-scheme: dark;
+}
+.stock-search input::placeholder { color: #475569; }
+
+.stock-search input:-webkit-autofill,
+.stock-search input:-webkit-autofill:hover,
+.stock-search input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f1f5f9 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #1e293b inset !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.filter-panel { background: #1e293b; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.filter-panel-title {
+  font-size: 10px; font-weight: 700; color: #475569;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+}
+.filter-row { display: flex; flex-direction: column; gap: 8px; }
+
+.filter-select {
+  width: 100%; background: #0f172a; border: 1.5px solid #334155;
+  border-radius: 9px; color: #f1f5f9; font-size: 13px;
+  padding: 9px 12px; appearance: none; -webkit-appearance: none;
+  font-family: inherit; cursor: pointer; transition: border-color 0.15s;
+}
+.filter-select:focus { outline: none; border-color: #3b82f6; background-color: #0f172a; color: #f1f5f9; }
+.filter-select option { background: #1e293b; color: #f1f5f9; }
+
+.filter-chips { display: none; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.filter-chips.show { display: flex; }
+
+.filter-chip {
+  background: #0f172a; border: 1.5px solid #334155; border-radius: 20px;
+  color: #94a3b8; font-size: 12px; font-weight: 600; padding: 5px 12px;
+  cursor: pointer; transition: all 0.12s; font-family: inherit;
+}
+.filter-chip.active { background: #1d4ed8; border-color: #3b82f6; color: white; }
+
+.filter-chip-label {
+  width: 100%; font-size: 10px; font-weight: 700; color: #475569;
+  text-transform: uppercase; letter-spacing: .8px; margin: 8px 0 4px;
+}
+
+.filter-clear {
+  display: none; background: none; border: none; color: #f87171;
+  font-size: 11px; font-weight: 700; cursor: pointer; padding: 4px 0;
+  font-family: inherit; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px;
+}
+.filter-clear.show { display: block; }
+
+.filtro-ubic-toggle {
+  font-size: 12px; font-weight: 700; color: #60a5fa; cursor: pointer;
+  margin-top: 10px; user-select: none; display: flex; align-items: center; gap: 4px;
+}
+.filtro-ubic-flecha { display: inline-block; transition: transform 0.2s; font-size: 11px; }
+.filtro-ubic-panel { display: none; margin-top: 10px; background: #0f172a; border-radius: 10px; padding: 10px; }
+.filtro-ubic-panel.show { display: block; }
+.filtro-ubic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.filtro-ubic-grid label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; display: block; }
+.filtro-ubic-limpiar {
+  width: 100%; margin-top: 8px; padding: 8px; background: #1e293b; border: 1px solid #334155;
+  border-radius: 8px; font-size: 11px; font-weight: 700; color: #94a3b8; cursor: pointer; font-family: inherit;
+}
+
+.stock-list { display: flex; flex-direction: column; gap: 8px; }
+.fam-header {
+  font-size: 14px; font-weight: 700; color: #f8fafc;
+  text-align: center; text-transform: uppercase; letter-spacing: 1px;
+  padding: 20px 4px 10px; border-bottom: 1px solid #334155; margin-bottom: 12px;
+}
+
+.stock-card { background: #1e293b; border-radius: 14px; padding: 14px 16px; cursor: pointer; transition: background 0.12s; }
+.stock-card:active { background: #263147; }
+
+.sc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 8px; }
+.sc-family { font-size: 12px; font-weight: 700; color: #FCD34D; text-transform: uppercase; letter-spacing: 0.8px; flex: 1; }
+.sc-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
+.sc-status.ok      { background: #052e16; color: #4ade80; }
+.sc-status.reponer { background: #2d0b0b; color: #f87171; }
+
+.sc-icon-btn {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  background: #0f172a; color: #93c5fd; border: 1px solid #334155;
+  font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  line-height: 1; padding: 0; touch-action: manipulation;
+}
+.sc-icon-btn:disabled { opacity: 0.6; cursor: wait; }
+.sc-icon-btn.loc-btn { color: #fbbf24; }
+
+.sc-desc  { font-size: 14px; font-weight: 600; color: #f8fafc; line-height: 1.3; margin-bottom: 2px; }
+
+.sc-info-line { font-size: 12px; color: #94a3b8; margin-bottom: 4px; line-height: 1.4; }
+.sc-info-line strong { color: #cbd5e1; font-weight: 700; }
+
+.sc-bottom { display: flex; justify-content: space-between; align-items: center; }
+.sc-id  { font-size: 11px; color: #334155; }
+.sc-qty { font-size: 20px; font-weight: 800; }
+.sc-qty.ok      { color: #4ade80; }
+.sc-qty.reponer { color: #f87171; }
+.sc-qty.zero    { color: #dc2626; }
+
+.stock-empty { display: none; text-align: center; padding: 40px 24px; color: #475569; font-size: 13px; }
+.stock-empty.show { display: block; }
+.stock-empty-icon { font-size: 32px; margin-bottom: 8px; }
+
+.stock-footer { text-align: center; font-size: 11px; color: #334155; margin-top: 24px; padding-bottom: 24px; }
+
+.detail-overlay {
+  position: absolute; inset: 0; background: #0f172a;
+  display: none; flex-direction: column; z-index: 20;
+}
+.detail-overlay.show { display: flex; }
+.detail-topbar {
+  flex-shrink: 0; display: flex; align-items: center; gap: 10px;
+  padding: 0 16px; height: 54px; border-bottom: 1px solid #1e293b;
+}
+.detail-topbar-back { background: none; border: none; color: #3b82f6; font-size: 26px; cursor: pointer; line-height: 1; padding: 0 4px 0 0; }
+.detail-topbar-title { font-size: 14px; font-weight: 600; color: #64748b; }
+.detail-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+
+.detail-card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 10px; }
+.detail-family { font-size: 13px; font-weight: 700; color: #FCD34D; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.detail-desc   { font-size: 18px; font-weight: 700; color: #f8fafc; line-height: 1.3; margin-bottom: 4px; }
+.detail-zone   { display: inline-block; margin-top: 10px; background: #0f172a; color: #7dd3fc; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+.detail-ubic   { display: inline-block; margin-top: 10px; margin-left: 6px; background: #0f172a; color: #fbbf24; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+.detail-stock-card { background: #1e293b; border-radius: 16px; padding: 24px 20px; margin-bottom: 10px; text-align: center; }
+.detail-stock-label { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.detail-stock-num   { font-size: 72px; font-weight: 800; line-height: 1; }
+.detail-stock-unit  { font-size: 13px; color: #475569; margin-top: 4px; }
+.detail-state-badge { display: inline-block; margin-top: 16px; font-size: 13px; font-weight: 800; padding: 6px 22px; border-radius: 30px; letter-spacing: 1px; text-transform: uppercase; }
+.detail-min { margin-top: 10px; font-size: 12px; color: #334155; }
+
+.detail-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.detail-stat { background: #1e293b; border-radius: 12px; padding: 14px 8px; text-align: center; }
+.detail-stat-num   { font-size: 24px; font-weight: 700; }
+.detail-stat-label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+.detail-stat.ent .detail-stat-num { color: #4ade80; }
+.detail-stat.sal .detail-stat-num { color: #f87171; }
+.detail-stat.dev .detail-stat-num { color: #60a5fa; }
+
+.detail-last { background: #1e293b; border-radius: 12px; padding: 14px 16px; font-size: 13px; color: #64748b; line-height: 1.8; margin-bottom: 10px; }
+.detail-last strong { color: #f1f5f9; }
+
+.detail-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+.detail-actions button {
+  flex: 1; padding: 12px; border-radius: 12px; border: none; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.detail-actions .btn-foto-detail { background: #1e3a5f; color: #93c5fd; }
+.detail-actions .btn-loc-detail  { background: #3f2d0f; color: #fbbf24; }
+
+.detail-img-preview { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; }
+.detail-img-preview img { flex: 1; max-width: 48%; border-radius: 10px; cursor: zoom-in; border: 1px solid #334155; }
+
+/* ============================================================
+   1.5 PANTALLA FORMULARIO (acordeones, campos, ubicación, fotos)
+   ============================================================ */
+#screen-form { background: #f0f2f5; }
+#screen-form .topbar { background: #1a1a2e; border-bottom: 1px solid #0f0f1e; }
+#screen-form .topbar-back  { color: #94a3b8; }
+#screen-form .topbar-title { color: #f1f5f9; }
+
+.form-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+
+.f-card { background: white; border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+.f-section-title { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.f-help { font-size: 12px; color: #9ca3af; margin-bottom: 14px; }
+.borrador-estado { font-size: 12px; color: #64748b; margin-bottom: 10px; }
+
+label { display: block; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+label .req { color: #dc2626; margin-left: 2px; }
+label .opc { color: #9ca3af; font-weight: 400; text-transform: none; margin-left: 4px; }
+
+select,
+input[type="text"],
+input[type="number"],
+input[type="file"],
+textarea {
+  width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb;
+  border-radius: 9px; font-size: 15px; color: #1f2937; background: #f9fafb;
+  margin-bottom: 14px; appearance: none; -webkit-appearance: none; font-family: inherit;
+}
+option { color: #1f2937; background: #ffffff; }
+select:focus, input:focus, textarea:focus { outline: none; border-color: #3b82f6; background: white; }
+select.err, input.err { border-color: #dc2626; background: #fff5f5; margin-bottom: 4px; }
+
+.f-err-msg {
+  display: none; font-size: 11px; color: #dc2626; font-weight: 700;
+  background: #fee2e2; border-left: 3px solid #dc2626; border-radius: 5px;
+  padding: 4px 8px; margin-bottom: 10px;
+}
+.f-err-msg.show { display: block; }
+
+.campo-otro { display: none; margin-top: -10px; }
+.campo-otro-item { display: none; margin-top: -10px; margin-bottom: 14px; }
+.campo-otro-item.err { border-color: #dc2626; background: #fff5f5; }
+
+.acordeon-btn {
+  width: 100%; background: #1a1a2e; color: white; border: none;
+  border-radius: 10px; padding: 14px 16px; font-size: 14px; font-weight: 600;
+  cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 4px; transition: background 0.15s; font-family: inherit;
+}
+.acordeon-btn:hover   { background: #2d2d4e; }
+.acordeon-btn.open    { background: #2563eb; border-radius: 10px 10px 0 0; margin-bottom: 0; }
+.acordeon-btn.has-err { background: #dc2626 !important; }
+.acordeon-arrow { font-size: 16px; transition: transform 0.25s; }
+.acordeon-btn.open .acordeon-arrow { transform: rotate(180deg); }
+
+.acordeon-body {
+  display: none; background: white; border: 1.5px solid #2563eb;
+  border-top: none; border-radius: 0 0 10px 10px; padding: 14px; margin-bottom: 10px;
+}
+.acordeon-body.open { display: block; }
+
+.familia-separador { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin: 18px 0 6px 2px; padding-left: 8px; border-left: 3px solid #2563eb; }
+
+.item-block { background: #f8f9ff; border: 1px solid #e0e4f0; border-radius: 9px; padding: 12px; margin-bottom: 10px; }
+.item-block-title { font-size: 11px; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+
+.btn-add {
+  width: 100%; padding: 10px; background: #f0f4ff;
+  border: 1.5px dashed #2563eb; border-radius: 8px;
+  color: #2563eb; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s; font-family: inherit;
+}
+.btn-add:hover { background: #dbeafe; }
+.btn-del { float: right; background: none; border: none; color: #dc2626; font-size: 17px; cursor: pointer; line-height: 1; padding: 0 0 6px 8px; }
+
+.qty-unit { display: flex; gap: 8px; margin-bottom: 14px; }
+.qty-unit input[type="number"] { flex: 1; margin-bottom: 0; }
+.qty-unit select { flex: 0 0 86px; margin-bottom: 0; font-size: 13px; }
+
+.badge-new { display: inline-block; background: #fef3c7; color: #92400e; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .3px; }
+
+.f-err-banner { display: none; background: #fee2e2; border: 1.5px solid #dc2626; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+.f-err-banner.show { display: block; }
+.f-err-banner-title { font-size: 12px; font-weight: 700; color: #dc2626; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .4px; }
+.f-err-banner ul { list-style: none; padding: 0; }
+.f-err-banner ul li { font-size: 12px; color: #7f1d1d; padding: 2px 0 2px 14px; position: relative; }
+.f-err-banner ul li::before { content: "⚠"; position: absolute; left: 0; color: #dc2626; }
+
+.btn-submit {
+  width: 100%; padding: 16px; background: #16a34a; color: white;
+  border: none; border-radius: 13px; font-size: 16px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: background 0.15s;
+  font-family: inherit; letter-spacing: 0.3px;
+}
+.btn-submit:hover    { background: #15803d; }
+.btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
+
+/* ── Ubicación por ítem (formulario) ── */
+.ubic-bloque { display: none; margin-top: 4px; background: #f0f7ff; border: 1px solid #dbeafe; border-radius: 9px; padding: 12px; margin-bottom: 4px; }
+.ubic-bloque.activa { display: block; }
+.ubic-bloque .f-section-title { color: #2563eb; margin-bottom: 8px; }
+.ubic-bloque-help { font-size: 11px; color: #64748b; margin-bottom: 8px; }
+.ubic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ubic-grid label { font-size: 10px; margin-bottom: 4px; }
+.ubic-grid select { margin-bottom: 0; font-size: 13px; padding: 8px 10px; }
+.info-ubicacion { display: none; font-size: 12px; margin-top: 8px; padding: 6px 8px; border-radius: 6px; background: #fef3c7; color: #92400e; }
+.info-ubicacion.ok  { background: #dcfce7; color: #166534; }
+.info-ubicacion.err { background: #fee2e2; color: #991b1b; }
+
+/* ── Foto por ítem (formulario) ── */
+.foto-bloque { margin-top: 4px; }
+
+/* ============================================================
+   1.6 CARRITO RÁPIDO / BARRA FLOTANTE (y acciones rápidas de stock)
+   ============================================================ */
+.btn-mov{width:100%;height:36px;padding:0 14px;border-radius:10px;color:white;border:none;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;background:#2563eb;white-space:nowrap;margin-top:10px}
+.btn-mov:hover{background:#1d4ed8}
+.mini-confirm{margin-top:8px;padding:10px;background:#0f172a;border:1.5px solid #334155;border-radius:8px}
+.mini-confirm-titulo{font-size:12px;font-weight:700;color:#cbd5e1;margin-bottom:8px}
+.mini-confirm-stepper{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.mini-confirm-stepper button{width:32px;height:32px;border-radius:6px;border:1.5px solid #334155;background:#1e293b;color:#f8fafc;font-size:16px;font-weight:700;cursor:pointer}
+.mini-confirm-stepper span{font-size:16px;font-weight:700;min-width:24px;text-align:center;color:#f8fafc}
+.mini-confirm-input{width:56px;height:32px;text-align:center;border-radius:6px;border:1.5px solid #334155;background:#1e293b;color:#f8fafc;font-size:16px;font-weight:700;-moz-appearance:textfield;}
+.mini-confirm-input::-webkit-outer-spin-button,.mini-confirm-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.mini-confirm-unidad{font-size:12px;color:#94a3b8;font-weight:600;margin-left:2px;}
+.mini-confirm-tipo{display:flex;gap:8px;margin-bottom:10px}
+.mini-confirm-tipo button{flex:1;padding:8px;border-radius:6px;border:1.5px solid #334155;background:#1e293b;color:#f8fafc;font-size:12px;font-weight:600;cursor:pointer}
+.mini-confirm-tipo button[data-tipo="ENTRADA"]:hover{border-color:#16a34a;color:#4ade80}
+.mini-confirm-tipo button[data-tipo="SALIDA"]:hover{border-color:#dc2626;color:#fca5a5}
+.mini-confirm-tipo button[data-tipo="DEVOLUCION"]:hover{border-color:#2563eb;color:#93c5fd}
+.mini-confirm-acciones{display:flex;gap:8px}
+.mini-confirm-acciones button{flex:1;padding:8px;border-radius:6px;border:none;font-size:13px;font-weight:700;cursor:pointer}
+.mini-confirm-acciones .btn-mini-ok{background:#2563eb;color:white}
+.mini-confirm-acciones .btn-mini-cancel{background:#334155;color:#cbd5e1}
+
+.barra-carrito{display:none;flex-shrink:0;width:100%;background:#020617;color:white;padding:12px 16px;align-items:center;justify-content:space-between;box-shadow:0 4px 12px rgba(0,0,0,.4);position:relative;z-index:5}.barra-carrito.visible{display:flex}
+.barra-carrito.tipo-salida{background:#7f1d1d}
+.barra-carrito-texto{font-size:14px;font-weight:700}
+.barra-carrito-btns{display:flex;gap:8px}
+.barra-carrito-btns button{padding:8px 14px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer}
+.btn-carrito-confirmar{background:#16a34a;color:white}
+.btn-carrito-vaciar{background:rgba(255,255,255,.15);color:white}
+.badge-carrito{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;vertical-align:middle}
+.badge-carrito-entrada{background:#052e16;color:#4ade80}
+.badge-carrito-salida{background:#3b1414;color:#fca5a5}
+.badge-foto{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;vertical-align:middle;background:#1e3a5f;color:#93c5fd}
+.link-editar-obs{font-size:11px;font-weight:700;color:#60a5fa;cursor:pointer;margin-left:8px;text-decoration:underline}
+.stock-card.en-carrito-entrada{border-left:4px solid #16a34a}
+.stock-card.en-carrito-salida{border-left:4px solid #dc2626}
+
+/* ============================================================
+   1.7 OVERLAYS Y MODALES (zoom, confirmación, toasts)
+   ============================================================ */
+.form-overlay {
+  display: none; position: fixed; inset: 0; z-index: 999;
+  flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px; text-align: center;
+}
+.form-overlay.show   { display: flex; }
+.form-overlay-ok  { background: #f0fdf4; }
+.form-overlay-err { background: #fff5f5; }
+.ov-icon { font-size: 70px; margin-bottom: 16px; animation: pop 0.45s ease; }
+@keyframes pop { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+.ov-title-ok  { font-size: 24px; font-weight: 800; color: #15803d; margin-bottom: 8px; }
+.ov-title-err { font-size: 24px; font-weight: 800; color: #dc2626; margin-bottom: 8px; }
+.ov-sub       { font-size: 15px; color: #555; margin-bottom: 20px; line-height: 1.5; }
+.ov-err-list { list-style: none; padding: 0; margin-bottom: 24px; width: 100%; max-width: 340px; text-align: left; }
+.ov-err-list li { font-size: 13px; font-weight: 600; color: #7f1d1d; background: #fee2e2; border-left: 4px solid #dc2626; border-radius: 6px; padding: 7px 12px; margin-bottom: 8px; }
+.ov-btn { padding: 14px 28px; border: none; border-radius: 13px; font-size: 16px; font-weight: 700; cursor: pointer; color: white; transition: background 0.15s; font-family: inherit; }
+.ov-btn-ok  { background: #2563eb; }
+.ov-btn-ok:hover  { background: #1d4ed8; }
+.ov-btn-err { background: #dc2626; }
+.ov-btn-err:hover { background: #b91c1c; }
+
+.toast-dep { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); color: white; padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 1002; max-width: 90%; text-align: center; transition: top 0.3s ease; }
+.zoom-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; cursor: zoom-out; padding: 24px; }
+.zoom-overlay img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1001; padding: 24px; }
+.modal-box { background: #1e293b; border-radius: 14px; padding: 20px; max-width: 340px; width: 100%; text-align: center; }
+.modal-box p { font-size: 14px; color: #e2e8f0; margin-bottom: 16px; font-weight: 600; }
+.modal-imgs { display: flex; gap: 10px; justify-content: center; margin-bottom: 14px; }
+.modal-imgs img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #334155; cursor: pointer; }
+.modal-btn { display: block; width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.modal-btn.primary { background: #2563eb; color: white; }
+.modal-btn.secondary { background: #0f172a; color: #93c5fd; }
+.modal-btn.cancel { background: transparent; color: #94a3b8; }
+.modal-ubic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; text-align: left; }
+.modal-ubic-grid label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; display: block; }
+.modal-ubic-grid select {
+  width: 100%; background: #0f172a; border: 1.5px solid #334155; border-radius: 8px;
+  color: #f1f5f9; font-size: 13px; padding: 8px 10px; margin-bottom: 0; font-family: inherit;
+}
+
+.modal-imgs-gestion { flex-wrap: wrap; }
+.foto-slot { position: relative; width: 80px; }
+.foto-slot img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #334155; cursor: zoom-in; }
+.foto-slot-del {
+  position: absolute; top: -6px; right: -6px; width: 26px; height: 26px;
+  border-radius: 50%; background: #dc2626; color: white; border: 2px solid #1e293b;
+  font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; touch-action: manipulation;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     2.1 PANTALLA HOME
+     ============================================================ -->
+<div id="screen-home" class="screen active">
+  <div class="home-eyebrow">RPM Construcciones</div>
+  <div class="home-zone">🦺 ROPA<span> y EPP</span></div>
+  <div class="home-sub">¿Qué querés hacer?</div>
+
+  <button class="home-btn home-btn-stock" onclick="goStock()">
+    <div class="home-btn-icon">📋</div>
+    <div class="home-btn-text">
+      <div class="home-btn-title">Ver stock</div>
+      <div class="home-btn-desc">Inventario actual de esta zona</div>
+    </div>
+    <span class="home-btn-arrow">›</span>
+  </button>
+
+  <button class="home-btn home-btn-form" onclick="goForm()">
+    <div class="home-btn-icon">✏️</div>
+    <div class="home-btn-text">
+      <div class="home-btn-title">Cargar movimiento</div>
+      <div class="home-btn-desc">Entrada, salida o devolución</div>
+    </div>
+    <span class="home-btn-arrow">›</span>
+  </button>
+
+  <a href="https://sites.google.com/view/depositomaestro/inicio" target="_blank" class="home-btn-back">
+    <div class="home-btn-back-icon">🔍</div>
+    <div class="home-btn-back-text">Volver al buscador general</div>
+    <span class="home-btn-back-arrow">›</span>
+  </a>
+</div>
+
+<!-- ============================================================
+     2.2 PANTALLA STOCK
+     ============================================================ -->
+<div id="screen-stock" class="screen" style="position:fixed;">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goHome()">‹</button>
+    <span class="topbar-title">Stock actual</span>
+    <span class="topbar-badge">🦺 Ropa y EPP</span>
+  </div>
+
+  <div class="barra-carrito" id="barra_carrito">
+    <div class="barra-carrito-texto" id="barra_carrito_texto"></div>
+    <div class="barra-carrito-btns">
+      <button class="btn-carrito-vaciar" onclick="vaciarCarritoRapido()">Vaciar</button>
+      <button class="btn-carrito-confirmar" onclick="abrirModalConfirmarCarrito()">Confirmar</button>
+    </div>
+  </div>
+
+  <div class="stock-scroll">
+    <div id="stock-loading" class="stock-loading">
+      <div class="spinner"></div>
+      <span>Cargando inventario...</span>
+    </div>
+
+    <div id="stock-error" class="stock-error">
+      <div class="stock-error-icon">⚠️</div>
+      <div class="stock-error-title">No se pudo cargar</div>
+      <div class="stock-error-msg" id="stock-error-msg">Verificá tu conexión e intentá de nuevo.</div>
+      <button class="btn-retry" onclick="loadStock()">Reintentar</button>
+    </div>
+
+    <div id="stock-content" class="stock-content">
+      <div class="stock-summary">
+        <div class="sum-box ok">
+          <div class="sum-num" id="sum-ok">—</div>
+          <div class="sum-label">OK</div>
+        </div>
+        <div class="sum-box low">
+          <div class="sum-num" id="sum-low">—</div>
+          <div class="sum-label">Reponer</div>
+        </div>
+      </div>
+      <div class="stock-search">
+        <span class="stock-search-icon">🔍</span>
+        <input type="search" id="search-input" placeholder="Buscar producto, marca, talle..."
+          oninput="applyFilters()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          name="busqueda_stock_ropa_epp">
+      </div>
+
+      <div class="filter-panel">
+        <div class="filter-panel-title">Filtrar</div>
+        <div class="filter-row">
+          <select class="filter-select" id="filter-familia" onchange="onFamiliaChange()">
+            <option value="">— Todas las familias —</option>
+          </select>
+          <div class="filter-chips" id="filter-chips"></div>
+        </div>
+        <button class="filter-clear" id="filter-clear" onclick="clearFilters()">✕ Limpiar filtros</button>
+
+        <div class="filtro-ubic-toggle" onclick="toggleFiltroUbicacion()">
+          📍 Filtrar por ubicación <span class="filtro-ubic-flecha" id="filtro-ubic-flecha">▾</span>
+        </div>
+        <div class="filtro-ubic-panel" id="filtro-ubic-panel">
+          <div class="filtro-ubic-grid">
+            <div>
+              <label>Depósito</label>
+              <select class="filter-select" id="filtro-ubic-deposito" onchange="applyFilters()"><option value="">— Todos —</option></select>
+            </div>
+            <div>
+              <label>Estante</label>
+              <select class="filter-select" id="filtro-ubic-estante" onchange="applyFilters()"><option value="">— Todos —</option></select>
+            </div>
+            <div>
+              <label>Columna</label>
+              <select class="filter-select" id="filtro-ubic-columna" onchange="applyFilters()"><option value="">— Todos —</option></select>
+            </div>
+            <div>
+              <label>Fila</label>
+              <select class="filter-select" id="filtro-ubic-fila" onchange="applyFilters()"><option value="">— Todos —</option></select>
+            </div>
+          </div>
+          <button class="filtro-ubic-limpiar" onclick="limpiarFiltroUbicacion()">Limpiar filtro de ubicación</button>
+        </div>
+      </div>
+
+      <div class="stock-list" id="stock-list"></div>
+      <div class="stock-empty" id="stock-empty">
+        <div class="stock-empty-icon">🔎</div>
+        Sin resultados para esa búsqueda
+      </div>
+      <div class="stock-footer" id="stock-footer"></div>
+    </div>
+  </div>
+
+  <div class="detail-overlay" id="detail-overlay">
+    <div class="detail-topbar">
+      <button class="detail-topbar-back" onclick="closeDetail()">‹</button>
+      <span class="detail-topbar-title">Detalle de producto</span>
+    </div>
+    <div class="detail-scroll" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     2.3 PANTALLA FORMULARIO
+     ============================================================ -->
+<div id="screen-form" class="screen">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goHome()">‹</button>
+    <span class="topbar-title">Registrar movimiento</span>
+    <span class="topbar-badge">🦺 Ropa y EPP</span>
+  </div>
+
+  <div class="form-scroll">
+    <div class="f-card">
+      <div class="f-section-title">Datos generales</div>
+      <p class="f-help">Los campos con <span style="color:#dc2626">*</span> son obligatorios.</p>
+
+      <label>Tipo de movimiento <span class="req">*</span></label>
+      <select id="tipo_movimiento">
+        <option value="">— Seleccioná —</option>
+        <option>ENTRADA</option>
+        <option>SALIDA</option>
+        <option>DEVOLUCIÓN</option>
+      </select>
+
+      <label>Responsable <span class="req">*</span></label>
+      <select id="responsable" onchange="showOther(this,'responsable_otro')">
+        <option value="">— Seleccioná —</option>
+      </select>
+      <input type="text" id="responsable_otro" class="campo-otro" placeholder="Escribí el nombre">
+
+      <label>Obra o destino <span class="req">*</span></label>
+      <select id="obra" onchange="showOther(this,'obra_otro')">
+        <option value="">— Seleccioná —</option>
+      </select>
+      <input type="text" id="obra_otro" class="campo-otro" placeholder="Escribí el nombre de la obra">
+    </div>
+
+    <div class="f-card">
+      <div class="f-section-title">Productos a registrar</div>
+      <p style="font-size:12px;color:#9ca3af;margin-bottom:8px;">Tocá la familia para desplegar. Podés cargar varias en un mismo envío. La ubicación se pide en ENTRADA y DEVOLUCIÓN; en SALIDA no hace falta.</p>
+      <div id="borrador_estado" class="borrador-estado">Borrador guardado automáticamente en este navegador.</div>
+
+      <div class="familia-separador">EPP — Protección personal</div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_guantes')">
+        🧤 Guantes <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_guantes" class="acordeon-body">
+        <div id="items_guantes"></div>
+        <button class="btn-add" onclick="addItem('guantes')">+ Agregar guantes</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_anteojos')" style="margin-top:8px">
+        🥽 Anteojos / Antiparras <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_anteojos" class="acordeon-body">
+        <div id="items_anteojos"></div>
+        <button class="btn-add" onclick="addItem('anteojos')">+ Agregar anteojos</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_protectores')" style="margin-top:8px">
+        😷 Protectores Faciales y Auditivos <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_protectores" class="acordeon-body">
+        <div id="items_protectores"></div>
+        <button class="btn-add" onclick="addItem('protectores')">+ Agregar protector</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_cascos')" style="margin-top:8px">
+        ⛑️ Cascos <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_cascos" class="acordeon-body">
+        <div id="items_cascos"></div>
+        <button class="btn-add" onclick="addItem('cascos')">+ Agregar casco</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_bolsos')" style="margin-top:8px">
+        🎒 Bolsos y Porta Herramientas <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_bolsos" class="acordeon-body">
+        <div id="items_bolsos"></div>
+        <button class="btn-add" onclick="addItem('bolsos')">+ Agregar bolso</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_arneses')" style="margin-top:8px">
+        🧗 Arneses y Cabos de Vida <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_arneses" class="acordeon-body">
+        <div id="items_arneses"></div>
+        <button class="btn-add" onclick="addItem('arneses')">+ Agregar arnés / cabo</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_eslingas')" style="margin-top:8px">
+        🏗️ Eslingas de Faja <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_eslingas" class="acordeon-body">
+        <div id="items_eslingas"></div>
+        <button class="btn-add" onclick="addItem('eslingas')">+ Agregar eslinga</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_criquets')" style="margin-top:8px">
+        🔧 Criquets Tensores <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_criquets" class="acordeon-body">
+        <div id="items_criquets"></div>
+        <button class="btn-add" onclick="addItem('criquets')">+ Agregar criquet</button>
+      </div>
+
+      <div class="familia-separador">Calzado de seguridad</div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_botas')">
+        🥾 Botas de Goma <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_botas" class="acordeon-body">
+        <div id="items_botas"></div>
+        <button class="btn-add" onclick="addItem('botas')">+ Agregar botas</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_botines')" style="margin-top:8px">
+        👟 Botines Terra con Puntera (Unisex/Hombre) <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_botines" class="acordeon-body">
+        <div id="items_botines"></div>
+        <button class="btn-add" onclick="addItem('botines')">+ Agregar botines</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_botines_mujer')" style="margin-top:8px">
+        👢 Botín Capri Gray PU (Mujer) <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_botines_mujer" class="acordeon-body">
+        <div id="items_botines_mujer"></div>
+        <button class="btn-add" onclick="addItem('botines_mujer')">+ Agregar botín mujer</button>
+      </div>
+
+      <div class="familia-separador">Indumentaria de trabajo</div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_camisas')">
+        👔 Camisas <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_camisas" class="acordeon-body">
+        <div id="items_camisas"></div>
+        <button class="btn-add" onclick="addItem('camisas')">+ Agregar camisa</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_pantalones')" style="margin-top:8px">
+        👖 Pantalones <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_pantalones" class="acordeon-body">
+        <div id="items_pantalones"></div>
+        <button class="btn-add" onclick="addItem('pantalones')">+ Agregar pantalón</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_camperas')" style="margin-top:8px">
+        🧥 Camperas <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_camperas" class="acordeon-body">
+        <div id="items_camperas"></div>
+        <button class="btn-add" onclick="addItem('camperas')">+ Agregar campera</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_mamelucos')" style="margin-top:8px">
+        🥼 Mamelucos <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_mamelucos" class="acordeon-body">
+        <div id="items_mamelucos"></div>
+        <button class="btn-add" onclick="addItem('mamelucos')">+ Agregar mameluco</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_chalecos')" style="margin-top:8px">
+        🟡 Chalecos Fluorescentes <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_chalecos" class="acordeon-body">
+        <div id="items_chalecos"></div>
+        <button class="btn-add" onclick="addItem('chalecos')">+ Agregar chaleco</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_delantales')" style="margin-top:8px">
+        🧥 Delantales y Sacos Soldador <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_delantales" class="acordeon-body">
+        <div id="items_delantales"></div>
+        <button class="btn-add" onclick="addItem('delantales')">+ Agregar delantal / saco</button>
+      </div>
+
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_capas')" style="margin-top:8px">
+        🌧️ Capas de Lluvia <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_capas" class="acordeon-body">
+        <div id="items_capas"></div>
+        <button class="btn-add" onclick="addItem('capas')">+ Agregar capa</button>
+      </div>
+
+      <!-- PRODUCTO NO LISTADO -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_nuevo')" style="margin-top:8px">
+        ➕ Producto no listado <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_nuevo" class="acordeon-body">
+        <div class="badge-new">⚠ Temporal — agregar luego a la lista fija</div>
+        <label>Descripción <span class="req">*</span></label>
+        <input type="text" id="nuevo_descripcion" placeholder="Ej: Arnés de seguridad doble gancho">
+        <label>Cantidad <span class="req">*</span></label>
+        <div class="qty-unit">
+          <input type="number" id="nuevo_cantidad" min="1" placeholder="0">
+          <select id="nuevo_unidad">
+            <option value="un">un</option><option value="par">par</option>
+            <option value="caja">caja</option><option value="kit">kit</option>
+          </select>
+        </div>
+        <label>Observación <span class="opc">(opcional)</span></label>
+        <input type="text" id="nuevo_observacion" placeholder="Aclaraciones sobre el ítem">
+
+        <div id="ubicacion_bloque_nuevo" class="ubic-bloque">
+          <div class="f-section-title">Ubicación</div>
+          <div class="ubic-bloque-help">Se completa sola en devolución; en entrada la cargás manualmente.</div>
+          <div class="ubic-grid">
+            <div>
+              <label>Depósito</label>
+              <select id="nuevo_deposito"><option value="">— Seleccioná —</option><option value="EPP">EPP</option></select>
+            </div>
+            <div>
+              <label>Estante</label>
+              <select id="nuevo_estante"><option value="">— Seleccioná —</option></select>
+            </div>
+            <div>
+              <label>Columna</label>
+              <select id="nuevo_columna"><option value="">— Seleccioná —</option></select>
+            </div>
+            <div>
+              <label>Fila</label>
+              <select id="nuevo_fila"><option value="">— Seleccioná —</option></select>
+            </div>
+          </div>
+          <div id="info_ubic_nuevo" class="info-ubicacion"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="f-card">
+      <label>Observaciones generales</label>
+      <textarea id="observaciones" rows="3" placeholder="Cualquier aclaración sobre este movimiento..."></textarea>
+    </div>
+
+    <div class="f-err-banner" id="f-err-banner">
+      <div class="f-err-banner-title">⚠ Hay campos incompletos</div>
+      <ul id="f-err-list"></ul>
+    </div>
+
+    <button class="btn-submit" id="btn-submit" onclick="submitForm()">Registrar movimiento</button>
+  </div>
+</div>
+
+<!-- Overlays formulario -->
+<div class="form-overlay form-overlay-ok" id="ov-ok">
+  <div class="ov-icon">✅</div>
+  <div class="ov-title-ok">¡Movimiento registrado!</div>
+  <div class="ov-sub" id="ov-ok-detail">Los datos fueron guardados correctamente.</div>
+  <button class="ov-btn ov-btn-ok" onclick="resetForm()">+ Registrar otro</button>
+</div>
+<div class="form-overlay form-overlay-err" id="ov-err">
+  <div class="ov-icon">❌</div>
+  <div class="ov-title-err">Faltan completar campos</div>
+  <div class="ov-sub">Revisá los siguientes antes de enviar:</div>
+  <ul class="ov-err-list" id="ov-err-list"></ul>
+  <button class="ov-btn ov-btn-err" onclick="closeErrOverlay()">← Volver y corregir</button>
+</div>
+
+<script>
+// ============================================================
+// 3.1 CONFIG — único lugar a tocar para adaptar este formulario
+// a otro depósito. El resto del script es genérico.
+// ============================================================
+const CONFIG = {
+  zona: "Ropa y EPP",
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzQVmgnoPG86r8LKnkdMn0yP17FGvoLj02LSNz8BC_mhZzEmJZgV_jgpLFArInlgUOx/exec",
+  storageKey: "rpm_borrador_ropa_epp",
+  pollingIntervalMs: 25000,
+  ubicacion: {
+    depositos: ['5B'],
+    estantes:  ['1','2','3','4','5','6','7','8'],
+    columnas:  Array.from({length:20}, (_,i)=>String(i+1)),
+    filas:     ['A','B','C','D','E','F','G','H'],
+  },
+  responsables: ['Fernando','Pamela'],
+  obras:        ['Depósito','Obra 1','Obra 2'],
+};
+
+const APPS_SCRIPT_URL    = CONFIG.appsScriptUrl;
+const ZONA_FIJA          = CONFIG.zona;
+const UBIC_DEPOSITO_OPTS = CONFIG.ubicacion.depositos;
+const UBIC_ESTANTE_OPTS  = CONFIG.ubicacion.estantes;
+const UBIC_COLUMNA_OPTS  = CONFIG.ubicacion.columnas;
+const UBIC_FILA_OPTS     = CONFIG.ubicacion.filas;
+
+// ============================================================
+// 3.2 NAVEGACIÓN
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function goHome()  { detenerPollingStock(); showScreen('screen-home'); }
+function goForm()  { detenerPollingStock(); showScreen('screen-form'); }
+function goStock() {
+  showScreen('screen-stock');
+  if (!stockLoaded) loadStock();
+  iniciarPollingStock();
+}
+
+// ============================================================
+// 3.3 UTILIDADES COMUNES
+// ============================================================
+function normalizarTipoMovimiento(tipo) {
+  const texto = String(tipo || '').trim().toUpperCase();
+  if (texto === 'DEVOLUCION' || texto === 'DEVOLUCIÓN') return 'DEVOLUCION';
+  return texto;
+}
+function esMovimientoDevolucion(tipo) { return normalizarTipoMovimiento(tipo) === 'DEVOLUCION'; }
+function esMovimientoConUbicacion(tipo) {
+  const t = normalizarTipoMovimiento(tipo);
+  return t === 'ENTRADA' || t === 'DEVOLUCION';
+}
+
+function forzarMayusculas(input) {
+  if (!input || input._mayusculas) return;
+  input._mayusculas = true;
+  input.addEventListener('input', function() {
+    const pos = this.selectionStart;
+    this.value = this.value.toUpperCase();
+    if (this.setSelectionRange) this.setSelectionRange(pos, pos);
+  });
+}
+
+function toastDep(mensaje, tipo = 'info') {
+  const existente = document.getElementById('toast_dep');
+  if (existente) existente.remove();
+  const toast = document.createElement('div');
+  toast.id = 'toast_dep';
+  toast.className = 'toast-dep';
+  toast.style.background = tipo === 'error' ? '#dc2626' : (tipo === 'ok' ? '#16a34a' : '#1a1a2e');
+  toast.textContent = mensaje;
+
+  const barra = document.getElementById('barra_carrito');
+  const barraVisible = barra && barra.classList.contains('visible');
+  toast.style.top = barraVisible ? '115px' : '65px';
+
+  document.body.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3200);
+}
+
+function abrirZoomImagen(src) {
+  const overlay = document.createElement('div');
+  overlay.className = 'zoom-overlay';
+  overlay.innerHTML = `<img src="${src}" alt="Imagen ampliada">`;
+  overlay.onclick = () => overlay.remove();
+  document.body.appendChild(overlay);
+}
+function extraerIdDrive(url) {
+  if (!url) return null;
+  const patrones = [/\/file\/d\/([a-zA-Z0-9_-]+)/, /[?&]id=([a-zA-Z0-9_-]+)/];
+  for (const patron of patrones) {
+    const match = url.match(patron);
+    if (match) return match[1];
+  }
+  return null;
+}
+function urlImagenEmbebible(url) {
+  const id = extraerIdDrive(url);
+  if (!id) return url;
+  return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+}
+function parsearImagenes(campo) {
+  if (!campo) return [];
+  return campo.split('||').map(s => s.trim()).filter(Boolean);
+}
+
+// ============================================================
+// 3.4 MÓDULO: STOCK (carga, filtros, render, detalle, fotos, ubicación)
+// ============================================================
+let stockLoaded   = false;
+let stockData     = [];
+let activeFamilia = '';
+let activeChips   = {};
+let carritoRapido = { tipo: null, items: [] };
+let tipoMovimientoStockGlobal = null;
+let stockPollingTimer = null;
+
+function iniciarPollingStock() {
+  detenerPollingStock();
+  stockPollingTimer = setInterval(() => loadStock(true), CONFIG.pollingIntervalMs);
+}
+function detenerPollingStock() {
+  if (stockPollingTimer) { clearInterval(stockPollingTimer); stockPollingTimer = null; }
+}
+
+async function loadStock(silencioso = false) {
+  if (!silencioso) {
+    stockLoaded = false;
+    document.getElementById('stock-loading').style.display = 'flex';
+    document.getElementById('stock-error').classList.remove('show');
+    document.getElementById('stock-content').classList.remove('show');
+  }
+
+  try {
+    const url  = `${APPS_SCRIPT_URL}?action=json&zona=${encodeURIComponent(ZONA_FIJA)}`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Error del servidor');
+
+    const nuevos = data.productos || [];
+    const huboCambios = JSON.stringify(nuevos) !== JSON.stringify(stockData);
+    if (silencioso && !huboCambios) return;
+
+    stockData   = nuevos;
+    stockLoaded = true;
+    buildFamiliaSelect();
+    poblarFiltroUbicacion();
+    applyFilters();
+
+    if (silencioso && huboCambios) toastDep('🔄 Se detectaron cambios en el stock', 'info');
+
+  } catch (err) {
+    if (!silencioso) {
+      document.getElementById('stock-loading').style.display = 'none';
+      document.getElementById('stock-error-msg').textContent = err.message || 'Error al cargar.';
+      document.getElementById('stock-error').classList.add('show');
+    }
+  }
+}
+
+function buildFamiliaSelect() {
+  const familias = [...new Set(stockData.map(p => p.familia))].sort();
+  const sel = document.getElementById('filter-familia');
+  const valorActual = sel.value;
+  sel.innerHTML = '<option value="">— Todas las familias —</option>';
+  familias.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f; opt.textContent = f;
+    sel.appendChild(opt);
+  });
+  if (familias.includes(valorActual)) sel.value = valorActual;
+}
+
+function toggleFiltroUbicacion() {
+  const panel  = document.getElementById('filtro-ubic-panel');
+  const flecha = document.getElementById('filtro-ubic-flecha');
+  const abierto = panel.classList.contains('show');
+  panel.classList.toggle('show', !abierto);
+  flecha.style.transform = abierto ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+function poblarFiltroUbicacion() {
+  const campos = [
+    { id: 'filtro-ubic-deposito', clave: 'ubicacion_deposito' },
+    { id: 'filtro-ubic-estante',  clave: 'ubicacion_estante'  },
+    { id: 'filtro-ubic-columna',  clave: 'ubicacion_columna'  },
+    { id: 'filtro-ubic-fila',     clave: 'ubicacion_fila'     },
+  ];
+  campos.forEach(({ id, clave }) => {
+    const select = document.getElementById(id);
+    const valorActual = select.value;
+    const valores = [...new Set(stockData.map(p => String(p[clave] || '').trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    select.innerHTML = '<option value="">— Todos —</option>' + valores.map(v => `<option value="${v}">${v}</option>`).join('');
+    if (valores.includes(valorActual)) select.value = valorActual;
+  });
+}
+
+function limpiarFiltroUbicacion() {
+  ['filtro-ubic-deposito','filtro-ubic-estante','filtro-ubic-columna','filtro-ubic-fila'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  applyFilters();
+}
+
+const CHIPS_CONFIG = {
+  'Camisa Grafa 70 Azulino': { 'Talle': ['40','42','44','46','48','50','54'], 'Color': ['Azulino'] },
+  'Pantalón Grafa 70 Azulino': { 'Talle': ['40','42','44','46','48','54'], 'Color': ['Azulino'] },
+  'Camisas': { 'Talle': ['40','42','44','46','48','50','54'], 'Color': ['Azulino', 'Beige', 'Azul claro', 'Azul oscuro', 'Azul jean'] },
+  'Camisa': { 'Talle': ['40','42','44','46','48','50','54'], 'Color': ['Azulino', 'Beige', 'Azul claro', 'Azul oscuro', 'Azul jean'] },
+  'Pantalones': { 'Talle': ['40','42','44','46','48','54'], 'Color': ['Azulino', 'Beige', 'Azul claro', 'Azul oscuro', 'Azul jean'] },
+  'Pantalón': { 'Talle': ['40','42','44','46','48','54'], 'Color': ['Azulino', 'Beige', 'Azul claro', 'Azul oscuro', 'Azul jean'] },
+  'Camperas': { 'Talle': ['S','M','L','XL','XXL','XXXL','40','42','44','46','48','50','52','54'], 'Color': ['Azulino', 'Azul', 'Negro'] },
+  'Campera': { 'Talle': ['S','M','L','XL','XXL','XXXL','40','42','44','46','48','50','52','54'], 'Color': ['Azulino', 'Azul', 'Negro'] },
+  'Botines Terra con Puntera': { 'Talle': ['39','40','41','42','43'] },
+  'Botín Capri Gray PU Mujer': { 'Talle': ['35','36','38','39'] },
+};
+
+function onFamiliaChange() {
+  activeFamilia = document.getElementById('filter-familia').value;
+  activeChips   = {};
+  renderChips();
+  applyFilters();
+}
+
+function renderChips() {
+  const container = document.getElementById('filter-chips');
+  container.innerHTML = '';
+  if (!activeFamilia) { container.classList.remove('show'); return; }
+
+  const productosFamilia = stockData.filter(p => p.familia === activeFamilia);
+  const marcasReales = [...new Set(
+    productosFamilia.map(p => p.marca).filter(m => m && m.trim() !== '' && m !== 'No especificado')
+  )].sort();
+
+  const chipsEstaticos = CHIPS_CONFIG[activeFamilia] || {};
+  let html = '';
+
+  if (marcasReales.length > 0) {
+    html += `<div class="filter-chip-label">Marca</div>`;
+    marcasReales.forEach(m => {
+      const isActive = activeChips['Marca'] === m;
+      const mEsc = m.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      html += `<button class="filter-chip ${isActive ? 'active' : ''}" onclick="toggleChip('Marca','${mEsc}')">${m}</button>`;
+    });
+  }
+
+  for (const [campo, valores] of Object.entries(chipsEstaticos)) {
+    html += `<div class="filter-chip-label">${campo}</div>`;
+    valores.forEach(v => {
+      const isActive = activeChips[campo] === v;
+      const vEsc = v.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      html += `<button class="filter-chip ${isActive ? 'active' : ''}" onclick="toggleChip('${campo}','${vEsc}')">${v}</button>`;
+    });
+  }
+
+  container.innerHTML = html;
+  container.classList.add('show');
+}
+
+function toggleChip(campo, valor) {
+  if (activeChips[campo] === valor) { delete activeChips[campo]; } else { activeChips[campo] = valor; }
+  renderChips();
+  applyFilters();
+}
+
+function clearFilters() {
+  activeFamilia = ''; activeChips = {};
+  document.getElementById('filter-familia').value = '';
+  document.getElementById('search-input').value   = '';
+  document.getElementById('filter-chips').innerHTML = '';
+  document.getElementById('filter-chips').classList.remove('show');
+  limpiarFiltroUbicacion();
+}
+
+function applyFilters() {
+  const query = document.getElementById('search-input').value.toLowerCase().trim();
+  const fDeposito = document.getElementById('filtro-ubic-deposito').value;
+  const fEstante  = document.getElementById('filtro-ubic-estante').value;
+  const fColumna  = document.getElementById('filtro-ubic-columna').value;
+  const fFila     = document.getElementById('filtro-ubic-fila').value;
+  const hasFilters = activeFamilia || Object.keys(activeChips).length > 0 || query || fDeposito || fEstante || fColumna || fFila;
+  document.getElementById('filter-clear').classList.toggle('show', !!hasFilters);
+
+  let filtered = stockData;
+  if (activeFamilia) filtered = filtered.filter(p => p.familia === activeFamilia);
+  for (const [campo, valor] of Object.entries(activeChips)) {
+    if (campo === 'Marca') { filtered = filtered.filter(p => p.marca === valor); }
+    else { filtered = filtered.filter(p => p.descripcion.toLowerCase().includes(valor.toLowerCase())); }
+  }
+  if (query) {
+    filtered = filtered.filter(p =>
+      (p.descripcion + ' ' + p.marca + ' ' + p.familia + ' ' + p.id).toLowerCase().includes(query)
+    );
+  }
+  if (fDeposito) filtered = filtered.filter(p => String(p.ubicacion_deposito || '') === fDeposito);
+  if (fEstante)  filtered = filtered.filter(p => String(p.ubicacion_estante  || '') === fEstante);
+  if (fColumna)  filtered = filtered.filter(p => String(p.ubicacion_columna  || '') === fColumna);
+  if (fFila)     filtered = filtered.filter(p => String(p.ubicacion_fila     || '') === fFila);
+
+  renderStock(filtered);
+}
+
+function renderStock(list) {
+  document.getElementById('stock-loading').style.display = 'none';
+  const ok  = stockData.filter(p => p.estado !== 'REPONER').length;
+  const low = stockData.length - ok;
+  document.getElementById('sum-ok').textContent  = ok;
+  document.getElementById('sum-low').textContent = low;
+
+  const isEmpty = list.length === 0;
+  document.getElementById('stock-empty').classList.toggle('show', isEmpty);
+  if (isEmpty) { document.getElementById('stock-list').innerHTML = ''; document.getElementById('stock-content').classList.add('show'); return; }
+
+  const grupos = {};
+  list.forEach(p => {
+    const fam = p.familia || 'Sin familia';
+    if (!grupos[fam]) grupos[fam] = [];
+    grupos[fam].push({ ...p, _idx: stockData.indexOf(p) });
+  });
+
+  let html = '';
+  for (const [familia, productos] of Object.entries(grupos)) {
+    html += `<div class="fam-header">${familia} <span style="color:#475569;font-weight:400">(${productos.length})</span></div>`;
+    html += productos.map(p => {
+      const isLow    = p.estado === 'REPONER';
+      const isZero   = p.stock_actual <= 0;
+      const qtyClass = isZero ? 'zero' : (isLow ? 'reponer' : 'ok');
+      const stClass  = isLow ? 'reponer' : 'ok';
+      const ubicTxt  = [p.ubicacion_deposito, p.ubicacion_estante, p.ubicacion_columna, p.ubicacion_fila].filter(Boolean).join(' / ') || 'Sin ubicación';
+      const numFotos = parsearImagenes(p.imagen).length;
+      return `<div class="stock-card ${claseCarritoItem(p.id)}" onclick="openDetail(${p._idx})">
+        <div class="sc-top">
+          <span class="sc-family">${p.familia}</span>
+          <button class="sc-icon-btn" id="btn_foto_${p.id}" title="Foto" onclick="event.stopPropagation(); abrirModalFotos('${p.id}')">📷</button>
+          <button class="sc-icon-btn loc-btn" id="btn_loc_${p.id}" title="Ubicación" onclick="event.stopPropagation(); abrirModalUbicacion(${p._idx})">📍</button>
+          <span class="sc-status ${stClass}">${p.estado}</span>
+        </div>
+        <div class="sc-desc">${p.descripcion}${numFotos > 0 ? `<span class="badge-foto">📷 ${numFotos}</span>` : ''}${renderBadgeCarrito(p.id)}</div>
+        <div class="sc-info-line"><strong>Marca:</strong> ${p.marca}</div>
+        <div class="sc-info-line"><strong>Ubicación:</strong> ${ubicTxt}</div>
+        <div class="sc-info-line">
+          ${p.ult_obs?`📝 <strong>Observaciones:</strong> ${p.ult_obs}`:'<span style="color:#94a3b8;">Sin observación</span>'}
+          <span class="link-editar-obs" onclick="event.stopPropagation(); iniciarEditarObservacion('${p.id}')">(Editar)</span>
+        </div>
+        <div id="obs_edit_${p.id}" onclick="event.stopPropagation()"></div>
+        <div class="sc-bottom"><span class="sc-id">${p.id}</span><span class="sc-qty ${qtyClass}">${p.stock_actual} u.</span></div>
+        <button class="btn-mov" onclick="event.stopPropagation(); iniciarAjusteRapido('${p.id}')">↕ Movimiento</button>
+        <div id="mini_confirm_${p.id}" onclick="event.stopPropagation()"></div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('stock-list').innerHTML = html;
+  document.getElementById('stock-footer').textContent = `RPM Stock · ${list.length} de ${stockData.length} productos`;
+  document.getElementById('stock-content').classList.add('show');
+}
+
+function openDetail(idx) {
+  const p = stockData[idx];
+  if (!p) return;
+  const isLow    = p.estado === 'REPONER';
+  const isZero   = p.stock_actual <= 0;
+  const colNum   = isZero ? '#dc2626' : (isLow ? '#ea580c' : '#16a34a');
+  const colBadge = isLow ? '#dc2626' : '#16a34a';
+  const bgBadge  = isLow ? '#fee2e2' : '#dcfce7';
+  const ubicTxt  = [p.ubicacion_deposito, p.ubicacion_estante, p.ubicacion_columna, p.ubicacion_fila].filter(Boolean).join(' / ') || 'Sin ubicación';
+  const imgs     = parsearImagenes(p.imagen).map(urlImagenEmbebible);
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-card">
+      <div class="detail-family">${p.familia}</div>
+      <div class="detail-desc">${p.descripcion}${imgs.length > 0 ? `<span class="badge-foto">📷 ${imgs.length}</span>` : ''}</div>
+      <div class="sc-info-line"><strong>Marca:</strong> ${p.marca}</div>
+      <div class="sc-info-line" style="margin-top:6px;">
+        ${p.ult_obs ? `📝 <strong>Observaciones:</strong> ${p.ult_obs}` : '<span style="color:#94a3b8;">Sin observación</span>'}
+        <span class="link-editar-obs" onclick="iniciarEditarObservacion('${p.id}','obs_edit_detail_${p.id}')">(Editar)</span>
+      </div>
+      <div id="obs_edit_detail_${p.id}"></div>
+      <span class="detail-zone">📍 ${p.zona}</span>
+      <span class="detail-ubic">🗂️ ${ubicTxt}</span>
+    </div>
+    ${imgs.length > 0 ? `<div class="detail-img-preview">${imgs.map(src => `<img src="${src}" onclick="abrirZoomImagen('${src}')">`).join('')}</div>` : ''}
+    <div class="detail-actions">
+      <button class="btn-foto-detail" onclick="abrirModalFotos('${p.id}')">📷 Foto</button>
+      <button class="btn-loc-detail" onclick="abrirModalUbicacion(${idx})">📍 Ubicación</button>
+    </div>
+    <div class="detail-stock-card">
+      <div class="detail-stock-label">Stock actual</div>
+      <div class="detail-stock-num" style="color:${colNum}">${p.stock_actual}</div>
+      <div class="detail-stock-unit">unidades</div>
+      <div class="detail-state-badge" style="background:${bgBadge};color:${colBadge}">${p.estado}</div>
+      ${p.stock_minimo > 0 ? `<div class="detail-min">Mínimo: ${p.stock_minimo} u.</div>` : ''}
+    </div>
+    <div class="detail-stats">
+      <div class="detail-stat ent"><div class="detail-stat-num">${p.entradas}</div><div class="detail-stat-label">Entradas</div></div>
+      <div class="detail-stat sal"><div class="detail-stat-num">${p.salidas}</div><div class="detail-stat-label">Salidas</div></div>
+      <div class="detail-stat dev"><div class="detail-stat-num">${p.devoluciones}</div><div class="detail-stat-label">Devol.</div></div>
+    </div>
+    ${p.ult_mov ? `<div class="detail-last">
+      Último movimiento: <strong>${p.ult_mov}</strong><br>
+      Fecha: <strong>${p.ult_fecha}</strong> &nbsp;|&nbsp; Hora: <strong>${p.ult_hora}</strong>
+      ${p.ult_mov_obs
+        ? `<br>📝 <strong>Observación del envío:</strong> ${p.ult_mov_obs}`
+        : `<br><span style="color:#64748b;">Sin observación registrada para este envío</span>`}
+    </div>` : ''}
+  `;
+  document.getElementById('detail-overlay').classList.add('show');
+}
+
+function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); }
+
+// ── FOTOS DE PRODUCTOS EN STOCK ──
+function abrirModalFotos(idProducto) {
+  const producto = stockData.find(p => p.id === idProducto);
+  const links = parsearImagenes(producto ? producto.imagen : '');
+  const imgs  = links.map(l => urlImagenEmbebible(l));
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+
+  let miniaturas = '';
+  imgs.forEach((src, i) => {
+    miniaturas += `
+      <div class="foto-slot">
+        <img src="${src}" onclick="abrirZoomImagen('${src}')">
+        <button class="foto-slot-del" data-slot="${i + 1}" title="Eliminar esta foto">🗑️</button>
+      </div>`;
+  });
+
+  const puedeAgregar = imgs.length < 2;
+
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <p>📷 Fotos del producto</p>
+      <div class="modal-imgs modal-imgs-gestion">
+        ${miniaturas || '<span style="color:#64748b;font-size:13px;">Sin fotos cargadas</span>'}
+      </div>
+      ${puedeAgregar
+        ? `<button class="modal-btn primary" id="btn_agregar_foto">+ Agregar foto</button>`
+        : `<p style="font-size:11px;color:#64748b;margin-bottom:8px;">Ya tenés el máximo de 2 fotos. Eliminá una para agregar otra.</p>`
+      }
+      <button class="modal-btn cancel" id="btn_cerrar_gestion">Cerrar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  overlay.querySelectorAll('.foto-slot-del').forEach(btn => {
+    btn.onclick = () => {
+      const slot = btn.getAttribute('data-slot');
+      overlay.remove();
+      confirmarEliminarImagen(idProducto, slot);
+    };
+  });
+
+  const btnAgregar = overlay.querySelector('#btn_agregar_foto');
+  if (btnAgregar) {
+    btnAgregar.onclick = () => {
+      overlay.remove();
+      seleccionarYSubirFoto(idProducto, imgs.length === 0 ? 'reemplazar' : 'agregar');
+    };
+  }
+
+  overlay.querySelector('#btn_cerrar_gestion').onclick = () => overlay.remove();
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+}
+
+function confirmarEliminarImagen(idProducto, slot) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <p>¿Eliminar esta foto?<br>No se puede deshacer.</p>
+      <button class="modal-btn primary" style="background:#dc2626" id="btn_confirmar_del">Sí, eliminar</button>
+      <button class="modal-btn cancel" id="btn_cancelar_del">Cancelar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#btn_confirmar_del').onclick = () => { overlay.remove(); enviarEliminarImagen(idProducto, slot); };
+  overlay.querySelector('#btn_cancelar_del').onclick = () => overlay.remove();
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+}
+
+function seleccionarYSubirFoto(idProducto, modo) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.style.position = 'fixed';
+  input.style.top = '-9999px';
+  input.style.left = '-9999px';
+  document.body.appendChild(input);
+
+  input.onchange = () => {
+    const archivo = input.files[0];
+    input.remove();
+    if (!archivo) return;
+    comprimirImagenGenerica(archivo, base64 => {
+      enviarActualizarImagen(idProducto, base64, modo);
+    });
+  };
+  input.click();
+}
+
+function comprimirImagenGenerica(archivo, callback) {
+  const dibujarYComprimir = (fuente, ancho, alto) => {
+    const canvas = document.createElement('canvas');
+    const maxAncho = 800;
+    const escala = Math.min(1, maxAncho / ancho);
+    canvas.width = ancho * escala;
+    canvas.height = alto * escala;
+    canvas.getContext('2d').drawImage(fuente, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    callback(dataUrl.split(',')[1]);
+  };
+  if (window.createImageBitmap) {
+    createImageBitmap(archivo, { imageOrientation: 'from-image' })
+      .then(bitmap => dibujarYComprimir(bitmap, bitmap.width, bitmap.height))
+      .catch(() => comprimirImagenGenericaFallback(archivo, callback));
+  } else {
+    comprimirImagenGenericaFallback(archivo, callback);
+  }
+}
+
+function comprimirImagenGenericaFallback(archivo, callback) {
+  const img = new Image();
+  const lector = new FileReader();
+  lector.onload = e => { img.src = e.target.result; };
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const maxAncho = 800;
+    const escala = Math.min(1, maxAncho / img.width);
+    canvas.width = img.width * escala;
+    canvas.height = img.height * escala;
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    callback(dataUrl.split(',')[1]);
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function setEstadoBotonImagen(idProducto, estado) {
+  const btn = document.getElementById(`btn_foto_${idProducto}`);
+  if (!btn) return;
+  btn.disabled = estado === 'cargando';
+  btn.textContent = estado === 'cargando' ? '⏳' : '📷';
+}
+
+async function enviarActualizarImagen(idProducto, base64, modo) {
+  setEstadoBotonImagen(idProducto, 'cargando');
+  toastDep('📤 Subiendo imagen...');
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ accion: 'actualizar-imagen', id: idProducto, foto_base64: base64, modo })
+    });
+    const resultado = await resp.json();
+    if (!resultado.ok) {
+      toastDep(`❌ Error del servidor: ${resultado.error}`, 'error');
+      setEstadoBotonImagen(idProducto, 'normal');
+      return;
+    }
+    const producto = stockData.find(p => p.id === idProducto);
+    if (producto) producto.imagen = resultado.imagen || '';
+    applyFilters();
+    if (document.getElementById('detail-overlay').classList.contains('show')) {
+      const idx = stockData.findIndex(p => p.id === idProducto);
+      if (idx >= 0) openDetail(idx);
+    }
+    toastDep('✅ Imagen actualizada', 'ok');
+  } catch (e) {
+    toastDep(`❌ Fallo de conexión o permisos: ${e.message}`, 'error');
+    setEstadoBotonImagen(idProducto, 'normal');
+  }
+}
+
+async function enviarEliminarImagen(idProducto, slot) {
+  setEstadoBotonImagen(idProducto, 'cargando');
+  toastDep('🗑️ Eliminando foto...');
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ accion: 'eliminar-imagen', id: idProducto, slot })
+    });
+    const resultado = await resp.json();
+    if (!resultado.ok) {
+      toastDep(`❌ Error del servidor: ${resultado.error}`, 'error');
+      setEstadoBotonImagen(idProducto, 'normal');
+      return;
+    }
+    const producto = stockData.find(p => p.id === idProducto);
+    if (producto) producto.imagen = resultado.imagen || '';
+    applyFilters();
+    if (document.getElementById('detail-overlay').classList.contains('show')) {
+      const idx = stockData.findIndex(p => p.id === idProducto);
+      if (idx >= 0) openDetail(idx);
+    }
+    toastDep('✅ Foto eliminada', 'ok');
+    setEstadoBotonImagen(idProducto, 'normal');
+  } catch (e) {
+    toastDep(`❌ Fallo de conexión o permisos: ${e.message}`, 'error');
+    setEstadoBotonImagen(idProducto, 'normal');
+  }
+}
+
+// ── UBICACIÓN DE PRODUCTOS EN STOCK ──
+function abrirModalUbicacion(idx) {
+  const p = stockData[idx];
+  if (!p) return;
+
+  const optsDep = UBIC_DEPOSITO_OPTS.map(v => `<option value="${v}" ${String(p.ubicacion_deposito||'')===v?'selected':''}>${v}</option>`).join('');
+  const optsEst = UBIC_ESTANTE_OPTS.map(v => `<option value="${v}" ${String(p.ubicacion_estante||'')===v?'selected':''}>${v}</option>`).join('');
+  const optsCol = UBIC_COLUMNA_OPTS.map(v => `<option value="${v}" ${String(p.ubicacion_columna||'')===v?'selected':''}>${v}</option>`).join('');
+  const optsFil = UBIC_FILA_OPTS.map(v => `<option value="${v}" ${String(p.ubicacion_fila||'')===v?'selected':''}>${v}</option>`).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box" style="text-align:left;">
+      <p style="text-align:center;">📍 Ubicación de<br>${p.descripcion}</p>
+      <div class="modal-ubic-grid">
+        <div><label>Depósito</label><select id="modal_ubic_deposito"><option value="">— —</option>${optsDep}</select></div>
+        <div><label>Estante</label><select id="modal_ubic_estante"><option value="">— —</option>${optsEst}</select></div>
+        <div><label>Columna</label><select id="modal_ubic_columna"><option value="">— —</option>${optsCol}</select></div>
+        <div><label>Fila</label><select id="modal_ubic_fila"><option value="">— —</option>${optsFil}</select></div>
+      </div>
+      <button class="modal-btn primary" id="btn_guardar_ubic">Guardar ubicación</button>
+      <button class="modal-btn cancel" id="btn_cancelar_ubic">Cancelar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#btn_guardar_ubic').onclick = () => {
+    const nueva = {
+      deposito: document.getElementById('modal_ubic_deposito').value,
+      estante:  document.getElementById('modal_ubic_estante').value,
+      columna:  document.getElementById('modal_ubic_columna').value,
+      fila:     document.getElementById('modal_ubic_fila').value,
+    };
+    overlay.remove();
+    guardarUbicacionProducto(p.id, nueva);
+  };
+  overlay.querySelector('#btn_cancelar_ubic').onclick = () => overlay.remove();
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+}
+
+async function guardarUbicacionProducto(idProducto, ubicacion) {
+  toastDep('📤 Guardando ubicación...');
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ accion: 'actualizar-ubicacion', id: idProducto, ...ubicacion })
+    });
+    const resultado = await resp.json();
+    if (!resultado.ok) {
+      toastDep(`❌ Error del servidor: ${resultado.error}`, 'error');
+      return;
+    }
+    const producto = stockData.find(p => p.id === idProducto);
+    if (producto) {
+      producto.ubicacion_deposito = ubicacion.deposito || '';
+      producto.ubicacion_estante  = ubicacion.estante  || '';
+      producto.ubicacion_columna  = ubicacion.columna  || '';
+      producto.ubicacion_fila     = ubicacion.fila     || '';
+    }
+    poblarFiltroUbicacion();
+    applyFilters();
+    if (document.getElementById('detail-overlay').classList.contains('show')) {
+      const idx = stockData.findIndex(p => p.id === idProducto);
+      if (idx >= 0) openDetail(idx);
+    }
+    toastDep('✅ Ubicación actualizada', 'ok');
+  } catch (e) {
+    toastDep(`❌ Fallo de conexión o permisos: ${e.message}`, 'error');
+  }
+}
+
+// ============================================================
+// 3.5 MÓDULO: CARRITO RÁPIDO
+// ============================================================
+function obtenerItemCarrito(id){ return carritoRapido.items.find(it=>it.id===id); }
+function renderBadgeCarrito(id){
+  const item=obtenerItemCarrito(id);
+  if(!item)return"";
+  const clase=carritoRapido.tipo==="SALIDA"?"badge-carrito-salida":"badge-carrito-entrada";
+  return `<span class="badge-carrito ${clase}">🛒 ${item.cantidad} ${item.unidad}</span>`;
+}
+function claseCarritoItem(id){
+  const item=obtenerItemCarrito(id);
+  if(!item)return"";
+  return carritoRapido.tipo==="SALIDA"?"en-carrito-salida":"en-carrito-entrada";
+}
+function iniciarEditarObservacion(idProducto, containerId){
+  containerId = containerId || `obs_edit_${idProducto}`;
+  document.querySelectorAll('[id^="obs_edit_"]').forEach(el=>el.innerHTML="");
+  const producto=stockData.find(p=>p.id===idProducto);
+  const cont=document.getElementById(containerId);
+  if(!cont||!producto)return;
+  cont.innerHTML=`
+    <div class="mini-confirm">
+      <div class="mini-confirm-titulo">Editar observación del producto</div>
+      <textarea id="obs_texto_${idProducto}" rows="2" style="width:100%;padding:8px;border:1.5px solid #334155;border-radius:6px;margin-bottom:10px;font-size:13px;background:#0f172a;color:#f8fafc;">${producto.ult_obs||""}</textarea>
+      <div class="mini-confirm-acciones">
+        <button class="btn-mini-cancel" onclick="document.getElementById('${containerId}').innerHTML=''">Cancelar</button>
+        <button class="btn-mini-ok" onclick="guardarObservacion('${idProducto}','${containerId}')">Guardar</button>
+      </div>
+    </div>`;
+  const txt = document.getElementById(`obs_texto_${idProducto}`);
+  forzarMayusculas(txt);
+  txt.focus();
+}
+async function guardarObservacion(idProducto, containerId){
+  containerId = containerId || `obs_edit_${idProducto}`;
+  const texto=document.getElementById(`obs_texto_${idProducto}`).value.trim();
+  try{
+    const resp=await fetch(APPS_SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({accion:"actualizar-observacion",id:idProducto,observacion:texto})});
+    const resultado=await resp.json();
+    if(!resultado.ok){toastDep(`❌ Error: ${resultado.error}`,"error");return;}
+    const producto=stockData.find(p=>p.id===idProducto);
+    if(producto)producto.ult_obs=texto;
+    document.getElementById(containerId).innerHTML="";
+    applyFilters();
+    if (document.getElementById('detail-overlay').classList.contains('show')) {
+      const idx = stockData.findIndex(p => p.id === idProducto);
+      if (idx >= 0) openDetail(idx);
+    }
+    toastDep("✅ Observación actualizada","ok");
+  }catch(e){
+    toastDep(`❌ Fallo de conexión: ${e.message}`,"error");
+  }
+}
+function elegirTipoMovimientoStock(tipo){
+  tipoMovimientoStockGlobal=tipo;
+  carritoRapido.tipo=tipo;
+}
+function iniciarAjusteRapido(idProducto){
+  document.querySelectorAll('[id^="mini_confirm_"]').forEach(el=>el.innerHTML="");
+  const cont=document.getElementById(`mini_confirm_${idProducto}`);
+  if(!cont)return;
+  if(!tipoMovimientoStockGlobal){
+    cont.innerHTML=`
+      <div class="mini-confirm">
+        <div class="mini-confirm-titulo">¿Qué tipo de movimiento vas a registrar?</div>
+        <div class="mini-confirm-tipo">
+          <button type="button" data-tipo="ENTRADA" onclick="elegirTipoDesdeItem('${idProducto}','ENTRADA')">Entrada</button>
+          <button type="button" data-tipo="SALIDA" onclick="elegirTipoDesdeItem('${idProducto}','SALIDA')">Salida</button>
+          <button type="button" data-tipo="DEVOLUCION" onclick="elegirTipoDesdeItem('${idProducto}','DEVOLUCION')">Devolución</button>
+        </div>
+        <div class="mini-confirm-acciones">
+          <button class="btn-mini-cancel" onclick="cerrarMiniConfirm('${idProducto}')">Cancelar</button>
+        </div>
+      </div>`;
+    return;
+  }
+  mostrarStepperMovimiento(idProducto);
+}
+function elegirTipoDesdeItem(idProducto,tipo){
+  elegirTipoMovimientoStock(tipo);
+  mostrarStepperMovimiento(idProducto);
+}
+function mostrarStepperMovimiento(idProducto){
+  const cont=document.getElementById(`mini_confirm_${idProducto}`);
+  if(!cont)return;
+  const producto=stockData.find(p=>p.id===idProducto);
+  const unidad=producto?.unidad||'un';
+  cont.innerHTML=`
+    <div class="mini-confirm">
+      <div class="mini-confirm-titulo">Movimiento: ${tipoMovimientoStockGlobal}</div>
+      <div class="mini-confirm-stepper">
+        <button type="button" onclick="ajustarCantidadMini('${idProducto}',-1)">−</button>
+        <input type="number" inputmode="numeric" min="1" class="mini-confirm-input" id="mini_cant_${idProducto}" value="1" onchange="this.value=Math.max(1,parseInt(this.value,10)||1)">
+        <button type="button" onclick="ajustarCantidadMini('${idProducto}',1)">+</button>
+        <span class="mini-confirm-unidad">${unidad}</span>
+      </div>
+      <div class="mini-confirm-acciones">
+        <button class="btn-mini-cancel" onclick="volverATipoMovimiento('${idProducto}')">Cancelar</button>
+        <button class="btn-mini-ok" onclick="confirmarAgregarCarrito('${idProducto}')">Agregar</button>
+      </div>
+    </div>`;
+  cont.dataset.tipoActual=tipoMovimientoStockGlobal;
+}
+function ajustarCantidadMini(idProducto,delta){
+  const input=document.getElementById(`mini_cant_${idProducto}`);
+  let val=(parseInt(input.value,10)||1)+delta;
+  if(val<1)val=1;
+  input.value=val;
+}
+function cerrarMiniConfirm(idProducto){
+  const cont=document.getElementById(`mini_confirm_${idProducto}`);
+  if(cont)cont.innerHTML="";
+}
+function volverATipoMovimiento(idProducto){
+  if(carritoRapido.items.length > 0){
+    toastDep("⚠ Vaciá el carrito para cambiar el tipo de movimiento","error");
+    cerrarMiniConfirm(idProducto);
+    return;
+  }
+  tipoMovimientoStockGlobal = null;
+  carritoRapido.tipo = null;
+  iniciarAjusteRapido(idProducto);
+}
+function confirmarAgregarCarrito(idProducto){
+  const cont=document.getElementById(`mini_confirm_${idProducto}`);
+  const tipo=cont.dataset.tipoActual||tipoMovimientoStockGlobal;
+  const cantidad=parseInt(document.getElementById(`mini_cant_${idProducto}`).value,10)||1;
+  const producto=stockData.find(p=>p.id===idProducto);
+  if(!producto)return;
+  carritoRapido.tipo=tipo;
+  const existente=carritoRapido.items.find(it=>it.id===idProducto);
+  if(existente)existente.cantidad+=cantidad;
+  else carritoRapido.items.push({
+  id:idProducto,
+  familia:producto.familia,
+  marca:producto.marca,
+  descripcion:producto.descripcion,
+  unidad:producto.unidad||"un",
+  cantidad,
+  ubicacion:[producto.ubicacion_deposito,producto.ubicacion_estante,producto.ubicacion_columna,producto.ubicacion_fila].filter(Boolean).join(' / ')||'Sin ubicación'
+});
+  cerrarMiniConfirm(idProducto);
+  actualizarBarraCarrito();
+  applyFilters();
+  toastDep("✅ Agregado al carrito","ok");
+}
+function actualizarBarraCarrito(){
+  const barra=document.getElementById("barra_carrito");
+  const texto=document.getElementById("barra_carrito_texto");
+  if(carritoRapido.items.length===0){barra.classList.remove("visible");return;}
+  const totalItems=carritoRapido.items.length;
+  const emoji=carritoRapido.tipo==="SALIDA"?"🔴":"🟢";
+  texto.textContent=`${emoji} ${totalItems} producto${totalItems!==1?"s":""} para ${carritoRapido.tipo}`;
+  barra.classList.toggle("tipo-salida",carritoRapido.tipo==="SALIDA");
+  barra.classList.add("visible");
+}
+function vaciarCarritoRapido(){
+  carritoRapido={tipo:null,items:[]};
+  tipoMovimientoStockGlobal=null;
+  actualizarBarraCarrito();
+  applyFilters();
+}
+function abrirModalConfirmarCarrito(){
+  if(carritoRapido.items.length===0)return;
+  const overlay=document.createElement("div");
+  overlay.className="modal-overlay";
+  const listaHtml=carritoRapido.items.map(it=>
+  `<div style="text-align:left;font-size:13px;padding:6px 0;border-bottom:1px solid #334155;color:#f8fafc;">
+    <div style="font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.5px;">${it.familia}</div>
+    ${it.descripcion} ${it.marca && it.marca !== 'No especificado' ? `— <span style="color:#94a3b8;">${it.marca}</span>` : ''} — <strong>${it.cantidad} ${it.unidad}</strong>
+    <div style="font-size:11px;color:#64748b;margin-top:2px;">📍 ${it.ubicacion}</div>
+  </div>`
+).join("");
+  const optsResp = CONFIG.responsables.map(r=>`<option>${r}</option>`).join('') + `<option value="OTRO">Otro...</option>`;
+  const optsObra = CONFIG.obras.map(o=>`<option>${o}</option>`).join('') + `<option value="OTRO">Otra obra...</option>`;
+  overlay.innerHTML=`
+    <div class="modal-box" style="max-width:360px;">
+      <p>Confirmar ${carritoRapido.tipo} (${carritoRapido.items.length} producto${carritoRapido.items.length!==1?"s":""})</p>
+      <div style="max-height:160px;overflow-y:auto;margin-bottom:12px;">${listaHtml}</div>
+      <label style="display:block;text-align:left;font-size:11px;font-weight:700;color:#cbd5e1;margin-bottom:4px;">Responsable</label>
+      <select id="carrito_responsable" style="width:100%;padding:8px;border:1.5px solid #334155;border-radius:6px;margin-bottom:10px;background:#0f172a;color:#f8fafc;">
+        <option value="">— Seleccioná —</option>${optsResp}
+      </select>
+      <input type="text" id="carrito_responsable_otro" placeholder="Escribí el nombre" style="display:none;width:100%;padding:8px;border:1.5px solid #334155;border-radius:6px;margin-bottom:10px;background:#0f172a;color:#f8fafc;">
+      <label style="display:block;text-align:left;font-size:11px;font-weight:700;color:#cbd5e1;margin-bottom:4px;">Obra o destino</label>
+      <select id="carrito_obra" style="width:100%;padding:8px;border:1.5px solid #334155;border-radius:6px;margin-bottom:14px;background:#0f172a;color:#f8fafc;">
+        <option value="">— Seleccioná —</option>${optsObra}
+      </select>
+      <input type="text" id="carrito_obra_otro" placeholder="Escribí la obra" style="display:none;width:100%;padding:8px;border:1.5px solid #334155;border-radius:6px;margin-bottom:14px;background:#0f172a;color:#f8fafc;">
+      <label style="display:block;text-align:left;font-size:11px;font-weight:700;color:#cbd5e1;margin-bottom:4px;">Observaciones generales <span style="font-weight:400;color:#64748b;">(opcional)</span></label>
+      <input type="text" id="carrito_obs_general" placeholder="Aclaración sobre este envío" style="width:100%;padding:8px;border:1.5px solid #334155;border-radius:6px;margin-bottom:14px;background:#0f172a;color:#f8fafc;">
+      <button class="modal-btn primary" id="btn_confirmar_carrito">Registrar movimiento</button>
+      <button class="modal-btn cancel" id="btn_cancelar_carrito">Cancelar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector("#carrito_responsable").onchange=function(){document.getElementById("carrito_responsable_otro").style.display=this.value==="OTRO"?"block":"none";};
+  overlay.querySelector("#carrito_obra").onchange=function(){document.getElementById("carrito_obra_otro").style.display=this.value==="OTRO"?"block":"none";};
+  overlay.querySelector("#btn_cancelar_carrito").onclick=()=>overlay.remove();
+  overlay.querySelector("#btn_confirmar_carrito").onclick=()=>enviarCarritoRapido(overlay);
+  forzarMayusculas(document.getElementById('carrito_responsable_otro'));
+  forzarMayusculas(document.getElementById('carrito_obra_otro'));
+}
+async function enviarCarritoRapido(overlay){
+  let responsable=document.getElementById("carrito_responsable").value;
+  if(responsable==="OTRO")responsable=document.getElementById("carrito_responsable_otro").value.trim();
+  let obra=document.getElementById("carrito_obra").value;
+  if(obra==="OTRO")obra=document.getElementById("carrito_obra_otro").value.trim();
+  const obsGeneral=document.getElementById("carrito_obs_general").value.trim();
+  if(!responsable||!obra){toastDep("⚠ Completá Responsable y Obra","error");return;}
+  const btn=overlay.querySelector("#btn_confirmar_carrito");
+  btn.disabled=true;btn.textContent="Enviando...";
+  const payload={
+    accion:"ajuste-rapido",
+    zona:ZONA_FIJA,
+    tipo_movimiento:carritoRapido.tipo,
+    responsable,obra,
+    obs_general:obsGeneral,
+    fecha:new Date().toLocaleString("es-AR",{hour12:false}),
+    items:carritoRapido.items.map(it=>({id:it.id,familia:it.familia,marca:it.marca,descripcion:it.descripcion,cantidad:it.cantidad,unidad:it.unidad}))
+  };
+  try{
+    const resp=await fetch(APPS_SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const resultado=await resp.json();
+    overlay.remove();
+    if(!resultado.ok){toastDep(`❌ Error: ${resultado.error}`,"error");return;}
+    toastDep(`✅ ${carritoRapido.tipo} registrada correctamente`,"ok");
+    vaciarCarritoRapido();
+    loadStock();
+  }catch(e){
+    toastDep(`❌ Fallo de conexión: ${e.message}`,"error");
+    btn.disabled=false;btn.textContent="Registrar movimiento";
+  }
+}
+
+// ============================================================
+// 3.6 MÓDULO: FORMULARIO
+// ============================================================
+
+const counters = {
+  guantes:0, anteojos:0, protectores:0, cascos:0, bolsos:0, arneses:0, eslingas:0, criquets:0,
+  botas:0, botines:0, botines_mujer:0,
+  camisas:0, pantalones:0, camperas:0, mamelucos:0, chalecos:0, delantales:0, capas:0
+};
+const FAMILIES = Object.keys(counters);
+
+const REQUIRED = {
+  guantes:       [['tipo','Tipo / Material'],['marca','Marca'],['talle','Talle'],['estado','Estado'],['cantidad','Cantidad']],
+  anteojos:      [['tipo','Tipo'],['lente','Tipo de Lente'],['marca','Marca'],['estado','Estado'],['cantidad','Cantidad']],
+  protectores:   [['tipo','Tipo'],['marca','Marca'],['estado','Estado'],['cantidad','Cantidad']],
+  cascos:        [['color','Color'],['equipamiento','Equipamiento'],['marca','Marca'],['estado','Estado'],['cantidad','Cantidad']],
+  bolsos:        [['tipo','Tipo'],['marca','Marca'],['estado','Estado'],['cantidad','Cantidad']],
+  arneses:       [['tipo','Tipo de Equipo'],['marca','Marca'],['estado','Estado'],['cantidad','Cantidad']],
+  eslingas:      [['longitud','Longitud'],['color_faja','Color de Faja'],['ancho','Ancho de Faja'],['norma','Norma / Certificación'],['marca','Marca'],['estado','Estado'],['cantidad','Cantidad']],
+  criquets:      [['tipo','Tipo'],['capacidad','Capacidad de Carga'],['longitud','Longitud de Correa'],['marca','Marca'],['estado','Estado'],['cantidad','Cantidad']],
+  botas:         [['marca','Marca'],['talle','Talle'],['tipo','Tipo'],['estado','Estado'],['cantidad','Cantidad']],
+  botines:       [['tipo','Tipo'],['marca','Marca'],['talle','Talle'],['color','Color'],['estado','Estado'],['cantidad','Cantidad']],
+  botines_mujer: [['tipo','Tipo'],['marca','Marca'],['talle','Talle'],['color','Color'],['estado','Estado'],['cantidad','Cantidad']],
+  camisas:       [['marca','Marca'],['talle','Talle'],['color','Color'],['tipo','Tipo'],['estado','Estado'],['cantidad','Cantidad']],
+  pantalones:    [['marca','Marca'],['talle','Talle'],['color','Color'],['tipo','Tipo'],['estado','Estado'],['cantidad','Cantidad']],
+  camperas:      [['marca','Marca / Tejido'],['talle','Talle'],['color','Color'],['tipo','Tipo'],['estado','Estado'],['cantidad','Cantidad']],
+  mamelucos:     [['tipo','Tipo'],['marca','Marca'],['talle','Talle'],['estado','Estado'],['cantidad','Cantidad']],
+  chalecos:      [['color','Color'],['talle','Talle'],['estado','Estado'],['cantidad','Cantidad']],
+  delantales:    [['tipo','Tipo'],['marca','Marca'],['talle','Talle'],['color','Color'],['estado','Estado'],['cantidad','Cantidad']],
+  capas:         [['color','Color'],['tipo','Tipo'],['marca','Marca'],['talle','Talle'],['estado','Estado'],['cantidad','Cantidad']],
+};
+
+const UNITS = {
+  guantes:['par'], anteojos:['un'], protectores:['un'], cascos:['un'], bolsos:['un'],
+  arneses:['un'], eslingas:['un'], criquets:['un'],
+  botas:['par'], botines:['par'], botines_mujer:['par'],
+  camisas:['un'], pantalones:['un'], camperas:['un'], mamelucos:['un'], chalecos:['un'], delantales:['un'], capas:['un'],
+};
+
+const FAM_NAMES = {
+  guantes:       '🧤 Guantes',
+  anteojos:      '🥽 Anteojos',
+  protectores:   '😷 Protectores',
+  cascos:        '⛑️ Cascos',
+  bolsos:        '🎒 Bolsos',
+  arneses:       '🧗 Arneses y Cabos',
+  eslingas:      '🏗️ Eslingas',
+  criquets:      '🔧 Criquets',
+  botas:         '🥾 Botas de Goma',
+  botines:       '👟 Botines Terra con Puntera',
+  botines_mujer: '👢 Botín Capri Gray PU (Mujer)',
+  camisas:       '👔 Camisa',
+  pantalones:    '👖 Pantalón',
+  camperas:      '🧥 Camperas',
+  mamelucos:     '🥼 Mamelucos',
+  chalecos:      '🟡 Chalecos',
+  delantales:    '🧥 Delantales',
+  capas:         '🌧️ Capas',
+};
+
+function uOpts(fam) { return (UNITS[fam]||['un']).map(u=>`<option value="${u}">${u}</option>`).join(''); }
+function opts(arr)  { return arr.map(v=>`<option value="${v}">${v}</option>`).join(''); }
+
+function lbl(fam, campo, texto) {
+  const req = (REQUIRED[fam]||[]).some(([c])=>c===campo);
+  const ast = req ? ' <span class="req">*</span>' : '';
+  const err = req ? `<span class="f-err-msg" data-err="${fam}_${campo}">⚠ Obligatorio</span>` : '';
+  return `<label>${texto}${ast}</label>${err}`;
+}
+
+const fotosPendientes = {};
+
+function bloqueFotoItem(fam, n) {
+  return `
+    <div class="foto-bloque">
+      <label>Fotos de referencia <span class="opc">(opcional, máx. 2)</span></label>
+      <div id="${fam}_foto_preview_${n}" class="foto-preview-gestion"></div>
+      <input type="file" accept="image/*" id="${fam}_foto_input_${n}" style="display:none" onchange="manejarSeleccionFotoItem(this, '${fam}', ${n})">
+      <button type="button" class="btn-add" id="${fam}_foto_btn_${n}" onclick="document.getElementById('${fam}_foto_input_${n}').click()">+ Agregar foto</button>
+    </div>`;
+}
+
+function manejarSeleccionFotoItem(input, fam, n) {
+  const archivo = input.files[0];
+  input.value = '';
+  if (!archivo) return;
+  const key = `${fam}_${n}`;
+  if (!fotosPendientes[key]) fotosPendientes[key] = [];
+  if (fotosPendientes[key].length >= 2) {
+    toastDep('⚠ Máximo 2 fotos por producto', 'error');
+    return;
+  }
+  comprimirImagenGenerica(archivo, base64 => {
+    fotosPendientes[key].push(base64);
+    renderFotosItem(fam, n);
+  });
+}
+
+function eliminarFotoItem(fam, n, indice) {
+  const key = `${fam}_${n}`;
+  if (!fotosPendientes[key]) return;
+  fotosPendientes[key].splice(indice, 1);
+  renderFotosItem(fam, n);
+}
+
+function renderFotosItem(fam, n) {
+  const key = `${fam}_${n}`;
+  const fotos = fotosPendientes[key] || [];
+  const preview = document.getElementById(`${fam}_foto_preview_${n}`);
+  const btn = document.getElementById(`${fam}_foto_btn_${n}`);
+  if (!preview) return;
+  preview.innerHTML = fotos.map((b64, i) => `
+    <div class="foto-slot">
+      <img src="data:image/jpeg;base64,${b64}" onclick="abrirZoomImagen('data:image/jpeg;base64,${b64}')">
+      <button type="button" class="foto-slot-del" onclick="eliminarFotoItem('${fam}',${n},${i})" title="Eliminar">🗑️</button>
+    </div>`).join('');
+  if (btn) btn.style.display = fotos.length >= 2 ? 'none' : 'block';
+}
+
+function bloqueUbicacionItem(fam, n) {
+  const optsEst = UBIC_ESTANTE_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
+  const optsCol = UBIC_COLUMNA_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
+  const optsFil = UBIC_FILA_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
+  const optsDep = UBIC_DEPOSITO_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
+  return `
+    <div id="ubicacion_bloque_${fam}_${n}" class="ubic-bloque">
+      <div class="f-section-title">Ubicación</div>
+      <div class="ubic-bloque-help">Se completa sola en devolución (busca en el stock); en entrada la cargás manualmente.</div>
+      <div class="ubic-grid">
+        <div>
+          <label>Depósito</label>
+          <select name="${fam}_deposito_${n}" data-fam="${fam}" data-campo="deposito"><option value="">— —</option>${optsDep}</select>
+        </div>
+        <div>
+          <label>Estante</label>
+          <select name="${fam}_estante_${n}" data-fam="${fam}" data-campo="estante"><option value="">— —</option>${optsEst}</select>
+        </div>
+        <div>
+          <label>Columna</label>
+          <select name="${fam}_columna_${n}" data-fam="${fam}" data-campo="columna"><option value="">— —</option>${optsCol}</select>
+        </div>
+        <div>
+          <label>Fila</label>
+          <select name="${fam}_fila_${n}" data-fam="${fam}" data-campo="fila"><option value="">— —</option>${optsFil}</select>
+        </div>
+      </div>
+      <div id="info_ubic_${fam}_${n}" class="info-ubicacion"></div>
+    </div>`;
+}
+
+function agregarCamposOtro(bloque, fam) {
+  bloque.querySelectorAll(`select[data-fam="${fam}"][data-campo]`).forEach(select => {
+    const campo = select.dataset.campo;
+    const tieneOtro = Array.from(select.options).some(o => o.value && o.value.toUpperCase().includes('OTRO'));
+    if (!tieneOtro || select.dataset.otroListo) return;
+    select.dataset.otroListo = '1';
+
+    const otroInput = document.createElement('input');
+    otroInput.type = 'text';
+    otroInput.placeholder = 'Especificá cuál';
+    otroInput.className = 'campo-otro-item';
+    otroInput.dataset.fam = fam;
+    otroInput.dataset.campo = campo + '_otro';
+    select.insertAdjacentElement('afterend', otroInput);
+    forzarMayusculas(otroInput);
+
+    select.addEventListener('change', () => {
+      const esOtro = select.value && select.value.toUpperCase().includes('OTRO');
+      otroInput.style.display = esOtro ? 'block' : 'none';
+      if (!esOtro) { otroInput.value = ''; otroInput.classList.remove('err'); }
+    });
+  });
+}
+
+function normalizarCamposOtroAlEnviar() {
+  document.querySelectorAll('.campo-otro, .campo-otro-item').forEach(input => {
+    if (!input.value || !input.value.trim()) return;
+    input.value = input.value.trim();
+  });
+}
+
+function limpiarUbicacionItem(fam, n) {
+  const info = document.getElementById(`info_ubic_${fam}_${n}`);
+  if (info) { info.textContent = ''; info.style.display = 'none'; info.className = 'info-ubicacion'; }
+  const bloque = document.getElementById(`item_${fam}_${n}`);
+  if (!bloque) return;
+  ['deposito','estante','columna','fila'].forEach(campo => {
+    const el = bloque.querySelector(`[name="${fam}_${campo}_${n}"]`);
+    if (el) el.value = '';
+  });
+}
+
+function actualizarVisibilidadUbicacionItem(fam, n, tipoMov) {
+  const bloque = document.getElementById(`ubicacion_bloque_${fam}_${n}`);
+  if (!bloque) return;
+  if (!esMovimientoConUbicacion(tipoMov)) {
+    bloque.classList.remove('activa');
+    limpiarUbicacionItem(fam, n);
+    return;
+  }
+  bloque.classList.add('activa');
+  if (esMovimientoDevolucion(tipoMov)) buscarUbicacionSiCorresponde(fam, n);
+}
+
+function aplicarUbicacionItem(fam, n, ubicacion) {
+  const info = document.getElementById(`info_ubic_${fam}_${n}`);
+  const bloque = document.getElementById(`item_${fam}_${n}`);
+  if (!info || !bloque) return;
+  ['deposito','estante','columna','fila'].forEach(campo => {
+    const el = bloque.querySelector(`[name="${fam}_${campo}_${n}"]`);
+    if (el) el.value = String(ubicacion?.[campo] || '').trim();
+  });
+  const texto = [ubicacion?.deposito, ubicacion?.estante, ubicacion?.columna, ubicacion?.fila].filter(Boolean).join(' / ');
+  if (!texto) {
+    info.textContent = 'No se encontró ubicación registrada para este producto';
+    info.className = 'info-ubicacion err';
+  } else {
+    info.textContent = `Ubicación encontrada en stock: ${texto}`;
+    info.className = 'info-ubicacion ok';
+  }
+  info.style.display = 'block';
+}
+
+function armarDescripcionItemGenerico(fam, n) {
+  const bloque = document.getElementById(`item_${fam}_${n}`);
+  if (!bloque) return '';
+  const partes = [];
+  bloque.querySelectorAll('[data-fam][data-campo]').forEach(el => {
+    if (el.dataset.fam !== fam) return;
+    const campo = el.dataset.campo;
+    if (['cantidad','deposito','estante','columna','fila','estado'].includes(campo)) return;
+    if (el.value && el.value !== 'Otro' && el.value !== 'OTRO') partes.push(el.value.trim());
+  });
+  return partes.join('|');
+}
+
+async function buscarUbicacionSiCorresponde(fam, n) {
+  const tipoMov = document.getElementById('tipo_movimiento').value;
+  if (!esMovimientoDevolucion(tipoMov)) return;
+
+  const descripcion = armarDescripcionItemGenerico(fam, n);
+  if (!descripcion) { limpiarUbicacionItem(fam, n); return; }
+
+  const params = new URLSearchParams({ action: 'lookup-ubicacion', zona: ZONA_FIJA, marca: descripcion, descripcion });
+  try {
+    const resp = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, { method: 'GET', headers: { Accept: 'application/json' } });
+    const data = await resp.json();
+    if (data && data.ok && data.encontrada) {
+      aplicarUbicacionItem(fam, n, data.ubicacion || {});
+    } else {
+      limpiarUbicacionItem(fam, n);
+      const info = document.getElementById(`info_ubic_${fam}_${n}`);
+      if (info) { info.textContent = 'No se encontró ubicación registrada para este producto'; info.className = 'info-ubicacion err'; info.style.display = 'block'; }
+    }
+  } catch (e) {
+    limpiarUbicacionItem(fam, n);
+  }
+}
+
+async function buscarUbicacionSiCorrespondeNuevo() {
+  const tipoMov = document.getElementById('tipo_movimiento').value;
+  if (!esMovimientoDevolucion(tipoMov)) return;
+  const descripcion = document.getElementById('nuevo_descripcion').value.trim();
+  if (!descripcion) return;
+  const params = new URLSearchParams({ action: 'lookup-ubicacion', zona: ZONA_FIJA, marca: descripcion, descripcion });
+  try {
+    const resp = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, { method: 'GET', headers: { Accept: 'application/json' } });
+    const data = await resp.json();
+    const info = document.getElementById('info_ubic_nuevo');
+    if (data && data.ok && data.encontrada) {
+      ['deposito','estante','columna','fila'].forEach(campo => {
+        const el = document.getElementById(`nuevo_${campo}`);
+        if (el && data.ubicacion?.[campo]) el.value = String(data.ubicacion[campo]).trim();
+      });
+      const texto = [data.ubicacion?.deposito, data.ubicacion?.estante, data.ubicacion?.columna, data.ubicacion?.fila].filter(Boolean).join(' / ');
+      if (info) { info.textContent = texto ? `Ubicación encontrada en stock: ${texto}` : 'No se encontró ubicación registrada'; info.className = texto ? 'info-ubicacion ok' : 'info-ubicacion err'; info.style.display = 'block'; }
+    } else if (info) {
+      info.textContent = 'No se encontró ubicación registrada para este producto';
+      info.className = 'info-ubicacion err';
+      info.style.display = 'block';
+    }
+  } catch (e) {}
+}
+
+function toggleAcordeon(btn, bodyId) {
+  const body   = document.getElementById(bodyId);
+  const isOpen = body.classList.contains('open');
+  document.querySelectorAll('.acordeon-body').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.acordeon-btn').forEach(b => b.classList.remove('open'));
+  if (!isOpen) {
+    body.classList.add('open');
+    btn.classList.add('open');
+    const fam = bodyId.replace('bloque_','');
+
+    if (fam === 'nuevo') {
+      actualizarVisibilidadUbicacionNuevo(document.getElementById('tipo_movimiento').value);
+      return;
+    }
+    const cont = document.getElementById('items_' + fam);
+    if (cont && cont.children.length === 0) addItem(fam);
+  }
+}
+
+function actualizarVisibilidadUbicacionNuevo(tipoMov) {
+  const bloque = document.getElementById('ubicacion_bloque_nuevo');
+  if (!bloque) return;
+  if (!esMovimientoConUbicacion(tipoMov)) {
+    bloque.classList.remove('activa');
+    ['deposito','estante','columna','fila'].forEach(c => { const el = document.getElementById('nuevo_'+c); if (el) el.value=''; });
+    const info = document.getElementById('info_ubic_nuevo');
+    if (info) { info.style.display = 'none'; info.textContent=''; }
+    return;
+  }
+  bloque.classList.add('activa');
+  if (esMovimientoDevolucion(tipoMov)) buscarUbicacionSiCorrespondeNuevo();
+}
+
+function showOther(sel, otherId) {
+  const el = document.getElementById(otherId);
+  el.style.display = sel.value === 'OTRO' ? 'block' : 'none';
+  if (sel.value !== 'OTRO') el.value = '';
+}
+
+// ── Talles compartidos ──
+const TALLES_ROPA_NUM = ['36','38','40','42','44','46','48','50','52','54','56','58','60','62','64'];
+const TALLES_ROPA_LET = ['XS','S','M','L','XL','XXL','XXXL','4XL','5XL'];
+const TALLES_CALZADO  = ['34','35','36','37','38','39','40','41','42','43','44','45','46','47'];
+const TALLES_MAM_TELA = ['40','42','44','46','48','50','52','54','56','58','60','No especificado'];
+const TALLES_MAM_DESC = ['XS','S','M','L','XL','XXL','XXXL','4XL','No especificado'];
+
+function campoEstado(fam, n) {
+  return `${lbl(fam,'estado','Estado')}
+    <select name="${fam}_estado_${n}" data-fam="${fam}" data-campo="estado">
+      <option value="">— Seleccioná —</option>${opts(['Nuevo','Usado','Dado de baja','Otro'])}
+    </select>`;
+}
+
+function addItem(fam) {
+  counters[fam]++;
+  const n    = counters[fam];
+  const cont = document.getElementById('items_'+fam);
+  if (!cont) return;
+
+  const qtyRow = `<div class="qty-unit">
+    <input type="number" name="${fam}_cantidad_${n}" data-fam="${fam}" data-campo="cantidad" min="1" placeholder="0">
+    <select name="${fam}_unidad_${n}">${uOpts(fam)}</select>
+  </div>`;
+
+  const TEMPLATES = {
+    guantes: `
+      ${lbl('guantes','tipo','Tipo / Material')}
+      <select name="guantes_tipo_${n}" data-fam="guantes" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Dieléctrico CL00','Látex','Licrado','Para Herrero (Cuero)','PVC Sintético','Tejido Nitrilo','Vaqueta','Otro'])}</select>
+      ${lbl('guantes','marca','Marca')}
+      <select name="guantes_marca_${n}" data-fam="guantes" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Glovex','Jindi','Marutex','DP','DPS','Canor','ZB','Sin marca','Otro'])}</select>
+      ${lbl('guantes','talle','Talle')}
+      <select name="guantes_talle_${n}" data-fam="guantes" data-campo="talle">
+        <option value="">— Seleccioná —</option>${opts(['6"','7"','8"','9"','10"','11"','12"','No aplica','Otro'])}</select>
+      ${campoEstado('guantes',n)}
+      ${lbl('guantes','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="guantes_observaciones_${n}" placeholder="Ej: Par izquierdo, Clase CL00, color rojo...">`,
+
+    anteojos: `
+      ${lbl('anteojos','tipo','Tipo')}
+      <select name="anteojos_tipo_${n}" data-fam="anteojos" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Anteojos','Antiparras','Otro'])}</select>
+      ${lbl('anteojos','lente','Tipo de Lente')}
+      <select name="anteojos_lente_${n}" data-fam="anteojos" data-campo="lente">
+        <option value="">— Seleccioná —</option>${opts(['Transparente','Gris','Oscuro','Otro'])}</select>
+      ${lbl('anteojos','marca','Marca')}
+      <select name="anteojos_marca_${n}" data-fam="anteojos" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Argon','Libus','DP','Aviator (Libus)','Steel Pro','UCU','Sin marca','Otro'])}</select>
+      ${campoEstado('anteojos',n)}
+      ${lbl('anteojos','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="anteojos_observaciones_${n}" placeholder="Ej: Armazón azul, lente rayado, con cordón...">`,
+
+    protectores: `
+      ${lbl('protectores','tipo','Tipo')}
+      <select name="protectores_tipo_${n}" data-fam="protectores" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Barbijo antipolvo','Cartucho contra amoníaco','Mentonera','Protector auditivo','Otro'])}</select>
+      ${lbl('protectores','marca','Marca')}
+      <select name="protectores_marca_${n}" data-fam="protectores" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Libus','Quantum','3M','Sin marca','Otro'])}</select>
+      ${campoEstado('protectores',n)}
+      ${lbl('protectores','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="protectores_observaciones_${n}" placeholder="Ej: Dusk Mask, Mentonera 15mm, con vincha...">`,
+
+    cascos: `
+      ${lbl('cascos','color','Color')}
+      <select name="cascos_color_${n}" data-fam="cascos" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Amarillo','Azul','Blanco','Verde','Rojo','Naranja','Sin especificar','Otro'])}</select>
+      ${lbl('cascos','equipamiento','Equipamiento')}
+      <select name="cascos_equipamiento_${n}" data-fam="cascos" data-campo="equipamiento">
+        <option value="">— Seleccioná —</option>${opts(['Con mentonera','Con arnés','Sin accesorio','Otro'])}</select>
+      ${lbl('cascos','marca','Marca')}
+      <select name="cascos_marca_${n}" data-fam="cascos" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Libus','Sin marca','Otro'])}</select>
+      ${campoEstado('cascos',n)}
+      ${lbl('cascos','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="cascos_observaciones_${n}" placeholder="Ej: Devolución Ciudad Deportiva, mentonera rota...">`,
+
+    bolsos: `
+      ${lbl('bolsos','tipo','Tipo')}
+      <select name="bolsos_tipo_${n}" data-fam="bolsos" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Bolsa porta herramienta para altura','Estuche de cuero','Porta herramienta electricista','Organizador','Otro'])}</select>
+      ${lbl('bolsos','marca','Marca')}
+      <select name="bolsos_marca_${n}" data-fam="bolsos" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Deltaplus','Makava','Kiokan','Sin marca','Otro'])}</select>
+      ${campoEstado('bolsos',n)}
+      ${lbl('bolsos','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="bolsos_observaciones_${n}" placeholder="Ej: Modelo RPM E1, Talle 95, cierre roto...">`,
+
+    arneses: `
+      ${lbl('arneses','tipo','Tipo de Equipo')}
+      <select name="arneses_tipo_${n}" data-fam="arneses" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Arnés de seguridad completo','Arnés p/ casco soldador','Cabo de vida simple','Cabo de vida doble (dos ganchos)','Cabo de vida con amortiguador','Soga de vida','Línea de vida horizontal','Conector / Mosquetón de seguridad','Otro'])}</select>
+      ${lbl('arneses','marca','Marca')}
+      <select name="arneses_marca_${n}" data-fam="arneses" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Delta Plus','Caran','3M','Karam','Protecta','Sin marca','Otro'])}</select>
+      ${campoEstado('arneses',n)}
+      ${lbl('arneses','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="arneses_observaciones_${n}" placeholder="Ej: Longitud 1.5m, gancho giratorio, certificado IRAM...">`,
+
+    eslingas: `
+      ${lbl('eslingas','longitud','Longitud')}
+      <select name="eslingas_longitud_${n}" data-fam="eslingas" data-campo="longitud">
+        <option value="">— Seleccioná —</option>${opts(['1 metro','2 metros','3 metros','4 metros','5 metros','6 metros','8 metros','9 metros','10 metros','12 metros','15 metros','20 metros','25 metros','30 metros','Otro'])}</select>
+      ${lbl('eslingas','color_faja','Color de Faja (indica tonelaje)')}
+      <select name="eslingas_color_faja_${n}" data-fam="eslingas" data-campo="color_faja">
+        <option value="">— Seleccioná —</option>${opts(['Verde — 1 tonelada','Rojo — 2 toneladas','Azul — 2 toneladas','Naranja — 3 toneladas','Gris — 4 toneladas','Amarillo — capacidad variable','Sin especificar','Otro'])}</select>
+      ${lbl('eslingas','ancho','Ancho de Faja')}
+      <select name="eslingas_ancho_${n}" data-fam="eslingas" data-campo="ancho">
+        <option value="">— Seleccioná —</option>${opts(['25 mm','35 mm','50 mm','60 mm','75 mm','100 mm','No especificado','Otro'])}</select>
+      ${lbl('eslingas','norma','Norma / Certificación')}
+      <select name="eslingas_norma_${n}" data-fam="eslingas" data-campo="norma">
+        <option value="">— Seleccioná —</option>${opts(['Certificado IRAM 3810','Certificado EN 1492','Estándar (sin sello)','No especificado','Otro'])}</select>
+      ${lbl('eslingas','marca','Marca')}
+      <select name="eslingas_marca_${n}" data-fam="eslingas" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['WD','Delta Plus','Dolezych','Slingmax','Sin marca','Otro'])}</select>
+      ${campoEstado('eslingas',n)}
+      ${lbl('eslingas','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="eslingas_observaciones_${n}" placeholder="Ej: Ojal simple, ojal con protector, desgaste visible...">`,
+
+    criquets: `
+      ${lbl('criquets','tipo','Tipo')}
+      <select name="criquets_tipo_${n}" data-fam="criquets" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Criquet tensor con linga','Criquet tensor sin linga','Tensor de trinquete (ratchet)','Otro'])}</select>
+      ${lbl('criquets','capacidad','Capacidad de Carga')}
+      <select name="criquets_capacidad_${n}" data-fam="criquets" data-campo="capacidad">
+        <option value="">— Seleccioná —</option>${opts(['500 kg','1.000 kg (1 tn)','1.500 kg','2.000 kg (2 tn)','3.000 kg (3 tn)','5.000 kg (5 tn)','No especificado','Otro'])}</select>
+      ${lbl('criquets','longitud','Longitud de Correa')}
+      <select name="criquets_longitud_${n}" data-fam="criquets" data-campo="longitud">
+        <option value="">— Seleccioná —</option>${opts(['1 metro','2 metros','3 metros','4 metros','5 metros','6 metros','8 metros','10 metros','No especificado','Otro'])}</select>
+      ${lbl('criquets','marca','Marca')}
+      <select name="criquets_marca_${n}" data-fam="criquets" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['WD','Delta Plus','Dolezych','Sin marca','Otro'])}</select>
+      ${campoEstado('criquets',n)}
+      ${lbl('criquets','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="criquets_observaciones_${n}" placeholder="Ej: Trinquete trabado, correa deshilachada, gancho doblado...">`,
+
+    botas: `
+      ${lbl('botas','marca','Marca')}
+      <select name="botas_marca_${n}" data-fam="botas" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Ombu','Voran','Boris','Febo','Grafa 70','Sin marca','Otro'])}</select>
+      ${lbl('botas','talle','Talle')}
+      <select name="botas_talle_${n}" data-fam="botas" data-campo="talle">
+        <option value="">— Seleccioná —</option>${opts(TALLES_CALZADO)}<option value="Otro">Otro</option></select>
+      ${lbl('botas','tipo','Tipo')}
+      <select name="botas_tipo_${n}" data-fam="botas" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Estándar','Industrial','Dieléctrico','Otro'])}</select>
+      ${campoEstado('botas',n)}
+      ${lbl('botas','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="botas_observaciones_${n}" placeholder="Ej: Suela desgastada, color no estándar...">`,
+
+    botines: `
+      ${lbl('botines','tipo','Tipo')}
+      <select name="botines_tipo_${n}" data-fam="botines" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Terra con Puntera','Punta de acero','Francés','Dieléctrico','Estándar','Industrial','Otro'])}</select>
+      ${lbl('botines','marca','Marca')}
+      <select name="botines_marca_${n}" data-fam="botines" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Terra','Voran','Ombu','Grafa 70','L39','Boris','Halcón','Onwork','Aurelio','Conwork','Febo','Macsi','Sin marca','Otro'])}</select>
+      ${lbl('botines','talle','Talle')}
+      <select name="botines_talle_${n}" data-fam="botines" data-campo="talle">
+        <option value="">— Seleccioná —</option>${opts(['39','40','41','42','43'])}<option value="Otro">Otro talle</option></select>
+      ${lbl('botines','color','Color')}
+      <select name="botines_color_${n}" data-fam="botines" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Negro','Marrón','Sin especificar','Otro'])}</select>
+      ${campoEstado('botines',n)}
+      ${lbl('botines','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="botines_observaciones_${n}" placeholder="Ej: Terra con puntera, puntera despegada...">`,
+
+    botines_mujer: `
+      ${lbl('botines_mujer','tipo','Tipo')}
+      <select name="botines_mujer_tipo_${n}" data-fam="botines_mujer" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Botín Capri Gray PU','Estándar','Otro'])}</select>
+      ${lbl('botines_mujer','marca','Marca')}
+      <select name="botines_mujer_marca_${n}" data-fam="botines_mujer" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Terra','Sin marca','Otro'])}</select>
+      ${lbl('botines_mujer','talle','Talle')}
+      <select name="botines_mujer_talle_${n}" data-fam="botines_mujer" data-campo="talle">
+        <option value="">— Seleccioná —</option>${opts(['35','36','38','39'])}<option value="Otro">Otro talle</option></select>
+      ${lbl('botines_mujer','color','Color')}
+      <select name="botines_mujer_color_${n}" data-fam="botines_mujer" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Gray (Gris)','Negro','Sin especificar','Otro'])}</select>
+      ${campoEstado('botines_mujer',n)}
+      ${lbl('botines_mujer','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="botines_mujer_observaciones_${n}" placeholder="Ej: Capri Gray PU, cuero sintético...">`,
+
+    camisas: `
+      ${lbl('camisas','marca','Marca')}
+      <select name="camisas_marca_${n}" data-fam="camisas" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Grafa 70','Grafa Texw','Kabaro S.A.','Pampero','W','Wrangler','Cowboy','Sin marca','Otro'])}</select>
+      <label>Tipo de Tejido <span class="opc">(opcional)</span></label>
+      <select name="camisas_tejido_${n}" data-fam="camisas" data-campo="tejido">
+        <option value="">— Seleccioná —</option>${opts(['Grafa','Jean','Otro'])}</select>
+      ${lbl('camisas','talle','Talle')}
+      <select name="camisas_talle_${n}" data-fam="camisas" data-campo="talle">
+        <option value="">— Seleccioná —</option>
+        <optgroup label="Numérico">${opts(['40','42','44','46','48','50','54'])}</optgroup>
+        <optgroup label="Talles estándar">${opts(TALLES_ROPA_NUM)}</optgroup>
+        <optgroup label="Letras">${opts(TALLES_ROPA_LET)}</optgroup>
+        <option value="Sin talle">Sin talle en etiqueta</option>
+        <option value="Otro">Otro</option></select>
+      ${lbl('camisas','color','Color')}
+      <select name="camisas_color_${n}" data-fam="camisas" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Azulino','Beige','Azul claro','Azul oscuro','Azul jean','Sin especificar','Otro'])}</select>
+      ${lbl('camisas','tipo','Tipo')}
+      <select name="camisas_tipo_${n}" data-fam="camisas" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Estándar','Con reflectivo','Manga corta','Manga larga','Otro'])}</select>
+      ${campoEstado('camisas',n)}
+      ${lbl('camisas','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="camisas_observaciones_${n}" placeholder="Ej: Camisa azulino talle 42, botón faltante...">`,
+
+    pantalones: `
+      ${lbl('pantalones','marca','Marca')}
+      <select name="pantalones_marca_${n}" data-fam="pantalones" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Grafa 70','Grafa Texw','Productivo','Búfalo','Tavernitti','Gaucho','W','Sin marca','Otro'])}</select>
+      <label>Tipo de Tejido <span class="opc">(opcional)</span></label>
+      <select name="pantalones_tejido_${n}" data-fam="pantalones" data-campo="tejido">
+        <option value="">— Seleccioná —</option>${opts(['Grafa','Jean','Otro'])}</select>
+      ${lbl('pantalones','talle','Talle')}
+      <select name="pantalones_talle_${n}" data-fam="pantalones" data-campo="talle">
+        <option value="">— Seleccioná —</option>
+        <optgroup label="Numérico">${opts(['40','42','44','46','48','54'])}</optgroup>
+        <optgroup label="Talles estándar">${opts(TALLES_ROPA_NUM)}</optgroup>
+        <optgroup label="Letras">${opts(TALLES_ROPA_LET)}</optgroup>
+        <option value="Sin talle">Sin talle en etiqueta</option>
+        <option value="Otro">Otro</option></select>
+      ${lbl('pantalones','color','Color')}
+      <select name="pantalones_color_${n}" data-fam="pantalones" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Azulino','Beige','Azul claro','Azul oscuro','Azul jean','Sin especificar','Otro'])}</select>
+      ${lbl('pantalones','tipo','Tipo')}
+      <select name="pantalones_tipo_${n}" data-fam="pantalones" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Estándar','Con reflectivo','Con cintura elástica','Con pinzas','Tela Jean','Otro'])}</select>
+      ${campoEstado('pantalones',n)}
+      ${lbl('pantalones','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="pantalones_observaciones_${n}" placeholder="Ej: Pantalón azulino talle 44, cintura elástica...">`,
+
+    camperas: `
+      ${lbl('camperas','marca','Marca / Tejido')}
+      <select name="camperas_marca_${n}" data-fam="camperas" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Grafa 70','Pampero','Ombu','Makava','Deltaplus','Sin marca','Otro'])}</select>
+      ${lbl('camperas','talle','Talle')}
+      <select name="camperas_talle_${n}" data-fam="camperas" data-campo="talle">
+        <option value="">— Seleccioná —</option>
+        <optgroup label="Grafa 70 / Numérico">${opts(['40','42','44','46','48','50','52','54','56','58','60'])}</optgroup>
+        <optgroup label="Letras">${opts(TALLES_ROPA_LET)}</optgroup>
+        <option value="Sin talle">Sin talle en etiqueta</option>
+        <option value="Otro">Otro</option></select>
+      ${lbl('camperas','color','Color')}
+      <select name="camperas_color_${n}" data-fam="camperas" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Azulino','Azul','Azul oscuro','Negro','Beige','Sin especificar','Otro'])}</select>
+      ${lbl('camperas','tipo','Tipo')}
+      <select name="camperas_tipo_${n}" data-fam="camperas" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['De abrigo','Térmica','Impermeable','Estándar','Con reflectivo','Otro'])}</select>
+      ${campoEstado('camperas',n)}
+      ${lbl('camperas','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="camperas_observaciones_${n}" placeholder="Ej: Campera de abrigo azulino, con capucha...">`,
+
+    mamelucos: `
+      ${lbl('mamelucos','tipo','Tipo')}
+      <select name="mamelucos_tipo_${n}" data-fam="mamelucos" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['De tela','Descartable','Otro'])}</select>
+      ${lbl('mamelucos','marca','Marca')}
+      <select name="mamelucos_marca_${n}" data-fam="mamelucos" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Grafa 70','Nubus','Sttelglen','3M','Sin marca','Otro'])}</select>
+      ${lbl('mamelucos','talle','Talle')}
+      <select name="mamelucos_talle_${n}" data-fam="mamelucos" data-campo="talle">
+        <option value="">— Seleccioná —</option>
+        <optgroup label="Tela (numérico)">${opts(TALLES_MAM_TELA)}</optgroup>
+        <optgroup label="Descartable (letras)">${opts(TALLES_MAM_DESC)}</optgroup>
+        <option value="Otro">Otro</option></select>
+      ${campoEstado('mamelucos',n)}
+      ${lbl('mamelucos','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="mamelucos_observaciones_${n}" placeholder="Ej: Tela jean, cremallera rota, descartable sin talle...">`,
+
+    chalecos: `
+      ${lbl('chalecos','color','Color')}
+      <select name="chalecos_color_${n}" data-fam="chalecos" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Naranja','Verde','Amarillo','Sin especificar','Otro'])}</select>
+      ${lbl('chalecos','talle','Talle')}
+      <select name="chalecos_talle_${n}" data-fam="chalecos" data-campo="talle">
+        <option value="">— Seleccioná —</option>${opts(['XS','S','M','L','XL','XXL','XXXL','4XL','5XL','Sin talle'])}<option value="Otro">Otro</option></select>
+      ${campoEstado('chalecos',n)}
+      ${lbl('chalecos','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="chalecos_observaciones_${n}" placeholder="Ej: Con cintas reflectivas, sin marca, talle no visible...">`,
+
+    delantales: `
+      ${lbl('delantales','tipo','Tipo')}
+      <select name="delantales_tipo_${n}" data-fam="delantales" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Delantal de cuero','Saco soldador','Otro'])}</select>
+      ${lbl('delantales','marca','Marca')}
+      <select name="delantales_marca_${n}" data-fam="delantales" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Conor','Nubus','Sin marca','Otro'])}</select>
+      ${lbl('delantales','talle','Talle')}
+      <select name="delantales_talle_${n}" data-fam="delantales" data-campo="talle">
+        <option value="">— Seleccioná —</option>${opts(['Talle 1','Talle 2','Talle 3','Talle 4','Talle 5','Talle 6','Talle especial','Sin talle'])}<option value="Otro">Otro</option></select>
+      ${lbl('delantales','color','Color')}
+      <select name="delantales_color_${n}" data-fam="delantales" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Amarillo','Marrón','Sin especificar','Otro'])}</select>
+      ${campoEstado('delantales',n)}
+      ${lbl('delantales','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="delantales_observaciones_${n}" placeholder="Ej: Talle especial largo, quemadura leve en manga...">`,
+
+    capas: `
+      ${lbl('capas','color','Color')}
+      <select name="capas_color_${n}" data-fam="capas" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Amarillo','Verde','Naranja','Sin especificar','Otro'])}</select>
+      ${lbl('capas','tipo','Tipo')}
+      <select name="capas_tipo_${n}" data-fam="capas" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Con capucha','Sin capucha','Otro'])}</select>
+      ${lbl('capas','marca','Marca')}
+      <select name="capas_marca_${n}" data-fam="capas" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Nubus','Sin marca','Otro'])}</select>
+      ${lbl('capas','talle','Talle')}
+      <select name="capas_talle_${n}" data-fam="capas" data-campo="talle">
+        <option value="">— Seleccioná —</option>${opts(['XS','S','M','L','XL','XXL','XXXL','4XL','5XL','Sin talle'])}<option value="Otro">Otro</option></select>
+      ${campoEstado('capas',n)}
+      ${lbl('capas','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="capas_observaciones_${n}" placeholder="Ej: Color no estándar, sin talle en etiqueta...">`,
+  };
+
+  const famLabel = FAM_NAMES[fam] ? FAM_NAMES[fam].split(' ').slice(1).join(' ') : fam;
+  const html = `<div class="item-block" id="item_${fam}_${n}">
+    <button class="btn-del" onclick="removeItem('item_${fam}_${n}')">✕</button>
+    <div class="item-block-title">${famLabel} #${n}</div>
+    ${TEMPLATES[fam] || ''}
+    ${bloqueFotoItem(fam, n)}
+  </div>`;
+
+  cont.insertAdjacentHTML('beforeend', html);
+
+  const bloque = document.getElementById(`item_${fam}_${n}`);
+  if (bloque) {
+    agregarCamposOtro(bloque, fam);
+    bloque.insertAdjacentHTML('beforeend', bloqueUbicacionItem(fam, n));
+    bloque.querySelectorAll('input[type="text"]').forEach(inp => forzarMayusculas(inp));
+    bloque.querySelectorAll('[data-fam][data-campo]').forEach(el => {
+      if (el.dataset.fam !== fam) return;
+      if (['cantidad','deposito','estante','columna','fila','estado'].includes(el.dataset.campo)) return;
+      el.addEventListener('change', () => buscarUbicacionSiCorresponde(fam, n));
+    });
+
+    actualizarVisibilidadUbicacionItem(fam, n, document.getElementById('tipo_movimiento').value);
+  }
+}
+
+function removeItem(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function validateBlock(fam, block) {
+  const errs = [];
+  (REQUIRED[fam]||[]).forEach(([campo, label]) => {
+    const el    = block.querySelector(`[data-campo="${campo}"]`);
+    if (!el) return;
+    let val      = el.value ? el.value.trim() : '';
+    const errEl  = block.querySelector(`[data-err="${fam}_${campo}"]`);
+    const otroEl = block.querySelector(`[data-campo="${campo}_otro"]`);
+
+    if (val === 'Otro' && otroEl) {
+      val = otroEl.value ? otroEl.value.trim() : '';
+      if (!val) { otroEl.classList.add('err'); } else { otroEl.classList.remove('err'); }
+    }
+
+    if (!val) {
+      el.classList.add('err');
+      if (errEl) errEl.classList.add('show');
+      errs.push(label);
+    } else {
+      el.classList.remove('err');
+      if (errEl) errEl.classList.remove('show');
+    }
+  });
+
+  const tipoMov = document.getElementById('tipo_movimiento').value;
+  if (esMovimientoConUbicacion(tipoMov)) {
+    ['deposito','estante','columna','fila'].forEach(campo => {
+      const el = block.querySelector(`[data-fam="${fam}"][data-campo="${campo}"]`);
+      if (!el) return;
+      const val = el.value ? el.value.trim() : '';
+      if (!val) { el.classList.add('err'); errs.push(`Ubicación → ${campo}`); }
+      else { el.classList.remove('err'); }
+    });
+  }
+
+  return errs;
+}
+
+function collectItems(fam) {
+  const cont = document.getElementById('items_'+fam);
+  if (!cont) return [];
+  return Array.from(cont.querySelectorAll('.item-block')).map(block => {
+    const match = block.id.match(new RegExp(`^item_${fam}_(\\d+)$`));
+    const n = match ? match[1] : null;
+    const data = {};
+    block.querySelectorAll('select[data-fam], input[data-fam]').forEach(el => {
+      if (el.dataset.fam !== fam) return;
+      const campo = el.dataset.campo;
+      if (campo) data[campo] = el.value;
+    });
+    block.querySelectorAll('input[type="text"]').forEach(el => {
+      if (el.name && el.name.includes('_observaciones_')) {
+        data['observaciones'] = el.value;
+      }
+    });
+    const fotosItem = fotosPendientes[`${fam}_${n}`];
+    if (n && fotosItem && fotosItem.length) data.fotos_base64 = fotosItem;
+    return Object.values(data).some(v => v) ? data : null;
+  }).filter(Boolean);
+}
+
+function closeErrOverlay() {
+  document.getElementById('ov-err').classList.remove('show');
+  document.querySelector('.acordeon-btn.has-err')?.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+// ── Borrador automático en localStorage ──
+let draftTimer = null;
+
+function actualizarEstadoBorrador(texto) {
+  const el = document.getElementById('borrador_estado');
+  if (el) el.textContent = texto;
+}
+
+function guardarBorrador() {
+  const estado = {
+    tipo_movimiento: document.getElementById('tipo_movimiento').value,
+    responsable: document.getElementById('responsable').value,
+    responsable_otro: document.getElementById('responsable_otro').value,
+    obra: document.getElementById('obra').value,
+    obra_otro: document.getElementById('obra_otro').value,
+    observaciones: document.getElementById('observaciones').value,
+    nuevo_descripcion: document.getElementById('nuevo_descripcion').value,
+    nuevo_cantidad: document.getElementById('nuevo_cantidad').value,
+    nuevo_unidad: document.getElementById('nuevo_unidad').value,
+    nuevo_observacion: document.getElementById('nuevo_observacion').value,
+    nuevo_deposito: document.getElementById('nuevo_deposito').value,
+    nuevo_estante: document.getElementById('nuevo_estante').value,
+    nuevo_columna: document.getElementById('nuevo_columna').value,
+    nuevo_fila: document.getElementById('nuevo_fila').value,
+    items: {}
+  };
+
+  FAMILIES.forEach(fam => {
+    const cont = document.getElementById('items_' + fam);
+    if (!cont) return;
+    estado.items[fam] = [];
+    cont.querySelectorAll('.item-block').forEach(bloque => {
+      const item = {};
+      bloque.querySelectorAll('select, input[type="text"], input[type="number"]').forEach(campo => {
+        if (campo.name) item[campo.name] = campo.value;
+      });
+      estado.items[fam].push(item);
+    });
+  });
+
+  try {
+    localStorage.setItem(CONFIG.storageKey, JSON.stringify(estado));
+    actualizarEstadoBorrador('Borrador guardado automáticamente');
+  } catch (e) {}
+}
+
+function programarGuardado() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(guardarBorrador, 250);
+}
+
+function restaurarBorrador() {
+  let raw;
+  try { raw = localStorage.getItem(CONFIG.storageKey); } catch (e) { raw = null; }
+  if (!raw) {
+    actualizarEstadoBorrador('Borrador guardado automáticamente en este navegador.');
+    return;
+  }
+
+  let estado;
+  try { estado = JSON.parse(raw); } catch { actualizarEstadoBorrador('No se pudo restaurar el borrador.'); return; }
+  if (!estado) return;
+
+  document.getElementById('tipo_movimiento').value = estado.tipo_movimiento || '';
+  document.getElementById('responsable').value = estado.responsable || '';
+  document.getElementById('responsable_otro').value = estado.responsable_otro || '';
+  document.getElementById('responsable_otro').style.display = estado.responsable === 'OTRO' ? 'block' : 'none';
+  document.getElementById('obra').value = estado.obra || '';
+  document.getElementById('obra_otro').value = estado.obra_otro || '';
+  document.getElementById('obra_otro').style.display = estado.obra === 'OTRO' ? 'block' : 'none';
+  document.getElementById('observaciones').value = estado.observaciones || '';
+  document.getElementById('nuevo_descripcion').value = estado.nuevo_descripcion || '';
+  document.getElementById('nuevo_cantidad').value = estado.nuevo_cantidad || '';
+  document.getElementById('nuevo_unidad').value = estado.nuevo_unidad || 'un';
+  document.getElementById('nuevo_observacion').value = estado.nuevo_observacion || '';
+  document.getElementById('nuevo_deposito').value = estado.nuevo_deposito || '';
+  document.getElementById('nuevo_estante').value = estado.nuevo_estante || '';
+  document.getElementById('nuevo_columna').value = estado.nuevo_columna || '';
+  document.getElementById('nuevo_fila').value = estado.nuevo_fila || '';
+  actualizarVisibilidadUbicacionNuevo(estado.tipo_movimiento || '');
+
+  FAMILIES.forEach(fam => {
+    const items = estado.items?.[fam] || [];
+    items.forEach(item => {
+      addItem(fam);
+      const cont = document.getElementById('items_' + fam);
+      const bloque = cont ? cont.lastElementChild : null;
+      if (!bloque) return;
+      Object.entries(item).forEach(([name, value]) => {
+        const campo = bloque.querySelector(`[name="${name}"]`);
+        if (!campo) return;
+        campo.value = value;
+      });
+      bloque.querySelectorAll('select[data-campo]').forEach(sel => {
+        if (sel.value === 'Otro') {
+          const otro = sel.nextElementSibling;
+          if (otro && otro.classList.contains('campo-otro-item')) otro.style.display = 'block';
+        }
+      });
+    });
+  });
+
+  actualizarEstadoBorrador('Borrador restaurado');
+}
+
+function resetForm(limpiarBorrador = true) {
+  if (limpiarBorrador) { try { localStorage.removeItem(CONFIG.storageKey); } catch (e) {} }
+  document.getElementById('tipo_movimiento').value = '';
+  document.getElementById('responsable').value     = '';
+  document.getElementById('obra').value            = '';
+  ['responsable_otro','obra_otro'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+    document.getElementById(id).value = '';
+  });
+  FAMILIES.forEach(f => {
+    const c = document.getElementById('items_'+f);
+    if (c) c.innerHTML = '';
+    counters[f] = 0;
+  });
+  Object.keys(fotosPendientes).forEach(k => delete fotosPendientes[k]);
+  ['nuevo_descripcion','nuevo_cantidad','nuevo_observacion'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('nuevo_unidad').value = 'un';
+  ['nuevo_deposito','nuevo_estante','nuevo_columna','nuevo_fila'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const infoNuevo = document.getElementById('info_ubic_nuevo');
+  if (infoNuevo) { infoNuevo.style.display = 'none'; infoNuevo.textContent = ''; }
+  document.getElementById('observaciones').value = '';
+  document.querySelectorAll('.acordeon-body').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.acordeon-btn').forEach(b => b.classList.remove('open','has-err'));
+  document.querySelectorAll('.err').forEach(el => el.classList.remove('err'));
+  document.querySelectorAll('.f-err-msg.show').forEach(el => el.classList.remove('show'));
+  document.getElementById('f-err-banner').classList.remove('show');
+  document.getElementById('f-err-list').innerHTML = '';
+  document.getElementById('ov-ok').classList.remove('show');
+  document.getElementById('ov-err').classList.remove('show');
+  const btn = document.getElementById('btn-submit');
+  btn.style.display = 'block'; btn.disabled = false; btn.textContent = 'Registrar movimiento';
+  stockLoaded = false;
+  actualizarEstadoBorrador('Borrador guardado automáticamente en este navegador.');
+}
+
+async function submitForm() {
+  normalizarCamposOtroAlEnviar();
+
+  const tipo = document.getElementById('tipo_movimiento').value;
+  let resp = document.getElementById('responsable').value;
+  if (resp === 'OTRO') resp = document.getElementById('responsable_otro').value.trim();
+  let obra = document.getElementById('obra').value;
+  if (obra === 'OTRO') obra = document.getElementById('obra_otro').value.trim();
+
+  document.querySelectorAll('.err').forEach(el => el.classList.remove('err'));
+  document.querySelectorAll('.f-err-msg.show').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('.acordeon-btn.has-err').forEach(el => el.classList.remove('has-err'));
+  document.getElementById('f-err-banner').classList.remove('show');
+  document.getElementById('f-err-list').innerHTML = '';
+
+  const errList = document.getElementById('f-err-list');
+  const ovList  = document.getElementById('ov-err-list');
+  ovList.innerHTML = '';
+
+  let hasError = false;
+  const famErrors = new Set();
+
+  function markGlobal(id, label) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('err');
+    const li = document.createElement('li'); li.textContent = label;
+    errList.appendChild(li);
+    hasError = true;
+  }
+
+  if (!tipo) markGlobal('tipo_movimiento', 'Datos generales → Tipo de movimiento');
+  if (!resp) markGlobal('responsable',     'Datos generales → Responsable');
+  if (!obra) markGlobal('obra',            'Datos generales → Obra o destino');
+
+  FAMILIES.forEach(fam => {
+    const cont = document.getElementById('items_'+fam);
+    if (!cont) return;
+    let famErr = false;
+    Array.from(cont.querySelectorAll('.item-block')).forEach((block, i) => {
+      const errs = validateBlock(fam, block);
+      if (errs.length) {
+        hasError = true; famErr = true; famErrors.add(FAM_NAMES[fam]);
+        errs.forEach(e => {
+          const li = document.createElement('li');
+          li.textContent = `${FAM_NAMES[fam]} #${i+1} → ${e}`;
+          errList.appendChild(li);
+        });
+      }
+    });
+    if (famErr) {
+      const body = document.getElementById('bloque_' + fam);
+      const btn  = body?.previousElementSibling;
+      if (body) body.classList.add('open');
+      if (btn)  { btn.classList.add('open'); btn.classList.add('has-err'); }
+    }
+  });
+
+  const hasProducts = FAMILIES.some(f => {
+    const c = document.getElementById('items_'+f);
+    return c && c.querySelectorAll('.item-block').length > 0;
+  });
+  const nuevoDesc = document.getElementById('nuevo_descripcion').value.trim();
+
+  if (!hasProducts && !nuevoDesc) {
+    hasError = true;
+    const li = document.createElement('li'); li.textContent = 'Sin productos — agregá al menos uno';
+    errList.appendChild(li);
+    famErrors.add('Sin productos cargados');
+  }
+
+  if (nuevoDesc) {
+    const cantNuevo = document.getElementById('nuevo_cantidad').value;
+    if (!cantNuevo || Number(cantNuevo) < 1) {
+      hasError = true;
+      document.getElementById('nuevo_cantidad').classList.add('err');
+      const li = document.createElement('li');
+      li.textContent = 'Producto no listado → Cantidad';
+      errList.appendChild(li);
+      famErrors.add('Producto no listado');
+    }
+  }
+
+  if (nuevoDesc && esMovimientoConUbicacion(tipo)) {
+    ['deposito','estante','columna','fila'].forEach(campo => {
+      const el = document.getElementById(`nuevo_${campo}`);
+      if (el && !String(el.value || '').trim()) {
+        hasError = true;
+        el.classList.add('err');
+        const li = document.createElement('li');
+        li.textContent = `Producto no listado → Ubicación → ${campo}`;
+        errList.appendChild(li);
+        famErrors.add('Producto no listado');
+      }
+    });
+  }
+
+  if (hasError) {
+    famErrors.forEach(n => {
+      const li = document.createElement('li'); li.textContent = n; ovList.appendChild(li);
+    });
+    document.getElementById('f-err-banner').classList.add('show');
+    document.getElementById('ov-err').classList.add('show');
+    return;
+  }
+
+  const payload = {
+    fecha: new Date().toLocaleString('es-AR', { hour12: false }),
+    tipo_movimiento: normalizarTipoMovimiento(tipo),
+    responsable: resp,
+    obra,
+    zona: ZONA_FIJA,
+    observaciones: document.getElementById('observaciones').value.trim(),
+  };
+
+  FAMILIES.forEach(f => { payload[f] = collectItems(f); });
+
+  if (nuevoDesc) {
+    payload.producto_nuevo = {
+      descripcion: nuevoDesc,
+      cantidad:    document.getElementById('nuevo_cantidad').value,
+      unidad:      document.getElementById('nuevo_unidad').value,
+      observacion: document.getElementById('nuevo_observacion').value.trim(),
+      deposito:    document.getElementById('nuevo_deposito').value,
+      estante:     document.getElementById('nuevo_estante').value,
+      columna:     document.getElementById('nuevo_columna').value,
+      fila:        document.getElementById('nuevo_fila').value,
+    };
+  }
+
+  const total = FAMILIES.reduce((s, f) => s + (payload[f]||[]).length, 0) + (nuevoDesc ? 1 : 0);
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    try { localStorage.removeItem(CONFIG.storageKey); } catch (e) {}
+    document.getElementById('ov-ok-detail').textContent =
+      `${tipo} registrada por ${resp} — ${total} producto${total!==1?'s':''} guardado${total!==1?'s':''}.`;
+    document.getElementById('ov-ok').classList.add('show');
+    btn.style.display = 'none';
+    stockLoaded = false;
+  } catch {
+    alert('Error al enviar. Verificá tu conexión.');
+    btn.disabled = false; btn.textContent = 'Registrar movimiento';
+  }
+}
+
+function poblarSelectsGenerales() {
+  const selResp = document.getElementById('responsable');
+  const selObra = document.getElementById('obra');
+  CONFIG.responsables.forEach(r => {
+    const opt = document.createElement('option'); opt.textContent = r; selResp.appendChild(opt);
+  });
+  const otroResp = document.createElement('option'); otroResp.value = 'OTRO'; otroResp.textContent = 'Otro...'; selResp.appendChild(otroResp);
+
+  CONFIG.obras.forEach(o => {
+    const opt = document.createElement('option'); opt.textContent = o; selObra.appendChild(opt);
+  });
+  const otroObra = document.createElement('option'); otroObra.value = 'OTRO'; otroObra.textContent = 'Otra obra...'; selObra.appendChild(otroObra);
+}
+
+// ============================================================
+// 3.7 INICIALIZACIÓN
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  poblarSelectsGenerales();
+
+  forzarMayusculas(document.getElementById('responsable_otro'));
+  forzarMayusculas(document.getElementById('obra_otro'));
+  forzarMayusculas(document.getElementById('nuevo_descripcion'));
+  forzarMayusculas(document.getElementById('nuevo_observacion'));
+  forzarMayusculas(document.getElementById('observaciones'));
+
+  const estSel = document.getElementById('nuevo_estante');
+  if (estSel) estSel.innerHTML = '<option value="">— Seleccioná —</option>' + UBIC_ESTANTE_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
+  const colSel = document.getElementById('nuevo_columna');
+  if (colSel) colSel.innerHTML = '<option value="">— Seleccioná —</option>' + UBIC_COLUMNA_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
+  const filSel = document.getElementById('nuevo_fila');
+  if (filSel) filSel.innerHTML = '<option value="">— Seleccioná —</option>' + UBIC_FILA_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
+
+  const nuevoDescripcion = document.getElementById('nuevo_descripcion');
+  if (nuevoDescripcion) {
+    nuevoDescripcion.addEventListener('input', buscarUbicacionSiCorrespondeNuevo);
+    nuevoDescripcion.addEventListener('change', buscarUbicacionSiCorrespondeNuevo);
+  }
+
+  const tipoMov = document.getElementById('tipo_movimiento');
+  if (tipoMov) {
+    tipoMov.addEventListener('change', function() {
+      FAMILIES.forEach(fam => {
+        const contenedor = document.getElementById('items_' + fam);
+        if (!contenedor) return;
+        contenedor.querySelectorAll('.item-block').forEach(bloque => {
+          const match = bloque.id.match(new RegExp(`^item_${fam}_(\\d+)$`));
+          if (match) actualizarVisibilidadUbicacionItem(fam, Number(match[1]), this.value);
+        });
+      });
+      actualizarVisibilidadUbicacionNuevo(this.value);
+    });
+  }
+
+  document.addEventListener('input', function(e) {
+    if (e.target.matches('input, select, textarea')) programarGuardado();
+  });
+  document.addEventListener('change', function(e) {
+    if (e.target.matches('input, select, textarea')) programarGuardado();
+  });
+  restaurarBorrador();
+  revisarDeepLinkProducto();
+});
+
+// ============================================================
+// 3.8 DEEP LINK DESDE EL BUSCADOR MAESTRO
+// ============================================================
+function revisarDeepLinkProducto() {
+  const params = new URLSearchParams(window.location.search);
+  const idProducto = params.get('id');
+  if (!idProducto) return;
+
+  goStock();
+  const intentarAbrir = () => {
+    const idx = stockData.findIndex(p => p.id === idProducto);
+    if (idx >= 0) {
+      openDetail(idx);
+    } else if (stockLoaded) {
+      // ya cargó el stock pero no está ese ID — no hacemos nada más
+    } else {
+      setTimeout(intentarAbrir, 300);
+    }
+  };
+  intentarAbrir();
+}
+</script>
+</body>
+</html>

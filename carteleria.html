@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Señalización de Depósito - RPM Construcciones</title>
+<style>
+  :root{
+    --negro: #1a1a1a;
+    --gris: #666;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    margin: 0;
+    background:#e9e9e9;
+    color: var(--negro);
+  }
+
+  /* ---------- Panel (no se imprime) ---------- */
+  .panel{
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px 28px 4px;
+    border-bottom: 4px solid #0B5CAB;
+  }
+  .panel h1{ font-size: 20px; margin: 0 0 4px; }
+  .panel p{ font-size: 13px; color: var(--gris); margin: 4px 0; line-height:1.5;}
+
+  .tipo-tabs{ display:flex; gap:8px; margin-top:16px; }
+  .tipo-btn{
+    padding:10px 18px; border:2px solid #1E2A38; background:white; color:#1E2A38;
+    font-weight:bold; font-size:14px; border-radius:6px 6px 0 0; cursor:pointer; border-bottom:none;
+  }
+  .tipo-btn.active{ background:#1E2A38; color:white; }
+
+  .bloque-tipo{ display:none; border-top: 2px solid #1E2A38; padding: 14px 0; }
+  .bloque-tipo.active{ display:block; }
+
+  .fila-controles{
+    display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;
+    padding: 6px 0 12px;
+  }
+  .grupo-alineado{ display:flex; align-items:center; gap:16px; }
+  .fila-controles label{ font-size:12px; display:flex; flex-direction:column; gap:4px; font-weight:bold; color:#333;}
+  .fila-controles input[type=number], .fila-controles input[type=text]{ padding:6px 8px; font-size:13px; width:78px; border:1px solid #ccc; border-radius:4px;}
+  .fila-controles input.ancho-txt{ width: 150px; }
+  .fila-controles input[type=color]{ width:50px; height:34px; padding:2px; border:1px solid #ccc; border-radius:4px; cursor:pointer; }
+  .fila-controles button.generar{
+    background: #0B5CAB; color:white; border:none; padding:9px 16px;
+    border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer;
+  }
+  .fila-controles button.generar:hover{ background: #063E75; }
+
+  .subtabs{ display:flex; gap:8px; margin: 4px 0 10px; }
+  .sub-btn{
+    padding:7px 14px; border:2px solid #0B5CAB; background:white; color:#0B5CAB;
+    font-weight:bold; font-size:12px; border-radius:6px; cursor:pointer;
+  }
+  .sub-btn.active{ background:#0B5CAB; color:white; }
+
+  .imprimir-btn{
+    background:#222; color:white; border:none; padding:9px 16px;
+    border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer;
+  }
+
+  /* ---------- Recomendaciones (colapsable) ---------- */
+  .recos{
+    background:#F7F9FB; border:1px solid #dde3ea; border-radius:8px;
+    padding:10px 20px; margin: 16px 0 20px;
+  }
+  .recos[open]{ padding-bottom:16px; }
+  .recos summary{
+    font-size:13px; font-weight:bold; color:#1E2A38; cursor:pointer;
+    padding:6px 0; list-style:none;
+  }
+  .recos summary::-webkit-details-marker{ display:none; }
+  .recos summary::before{ content:"▸ "; color:#0B5CAB; }
+  .recos[open] summary::before{ content:"▾ "; }
+  .recos ol{ margin:10px 0 0; padding-left:18px; }
+  .recos li{ font-size:13px; line-height:1.6; margin-bottom:8px; color:#333; }
+  .recos b{ color:#0B5CAB; }
+
+  @media print{
+    .panel{ display:none; }
+    body{ background:white; }
+  }
+
+  @media print{
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+  /* ---------- Hoja de carteles ---------- */
+  .sheet{
+    max-width: 1000px;
+    margin: 18px auto;
+    display: none;
+    flex-wrap: wrap;
+    gap: 8mm;
+    padding: 10mm;
+    background: white;
+  }
+  .sheet.activa{ display:flex; }
+
+  @media print{
+    .sheet{ margin:0; padding:6mm; max-width:none; display:none; }
+    .sheet.activa{ display:flex; }
+  }
+
+  /* Guía de corte: rectángulo punteado alrededor de cada cartel */
+  .corte{
+    outline: 0.4mm dashed #9aa2ab;
+    outline-offset: 0mm;
+  }
+
+  /* ================= CELDAS (1B, 3D...) ================= */
+  .celda{
+    border-radius: 2mm;
+    display:flex; align-items:center; justify-content:center;
+    background:white;
+    font-weight:900;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .celda .codigo{ display:flex; align-items:center; gap: 0.2em; letter-spacing: 0.5px; color: var(--negro); }
+  .flecha-svg{ display:block; flex-shrink:0; }
+
+  .celda-doble{
+    border-radius: 2mm;
+    display:flex;
+    overflow:hidden;
+    background:white;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .celda-doble .mitad{ flex:1; display:flex; align-items:center; justify-content:center; gap:0.2em; font-weight:900; color:var(--negro); }
+  .celda-doble .divisor{ width: 1.5mm; }
+
+  /* ================= FILAS (letras grandes) ================= */
+  .fila-tag{
+    border-radius: 3mm;
+    display:flex; align-items:center; justify-content:center;
+    background:white;
+    font-weight:900;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ================= ESTANTES ================= */
+  .estante-tag{
+    border-radius: 5mm;
+    display:flex; align-items:center;
+    overflow:hidden;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .estante-tag .franja{ width: 50mm; align-self:stretch; flex-shrink:0; }
+  .estante-tag .contenido{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2mm; align-self:stretch; }
+  .estante-tag .rotulo{ font-weight:700; letter-spacing:2px; opacity:0.85; }
+  .estante-tag .numero{ font-weight:900; line-height:1; }
+
+/* ---------- Selector de color personalizado ---------- */
+  .color-swatch-btn{
+    width:30px; height:30px; border-radius:50%; border:2px solid #ccc;
+    cursor:pointer; padding:0; flex-shrink:0; box-shadow: inset 0 0 0 2px rgba(255,255,255,.6);
+  }
+
+  /* ---- PARTE 1: menú desplegable ---- */
+  .cp-menu{
+    position:fixed; z-index:998; background:white; border:1px solid #ddd;
+    border-radius:10px; box-shadow:0 6px 24px rgba(0,0,0,.18); padding:14px; width:264px;
+    max-height: 80vh; overflow-y:auto;
+  }
+  .cp-grid{ display:grid; grid-template-columns:repeat(10, 18px); gap:6px; margin-bottom:12px; justify-content:start; }
+  .cp-fila{ display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap; }
+  .cp-circulo{
+    width:18px; height:18px; border-radius:50%; cursor:pointer;
+    border:1px solid rgba(0,0,0,.15); display:inline-block;
+  }
+  .cp-circulo:hover{ transform:scale(1.15); }
+  .cp-titulo{ font-size:10px; font-weight:bold; color:#888; letter-spacing:.5px; margin:8px 0 6px; text-transform:uppercase; }
+  .cp-personalizado-fila{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .cp-eyedropper{
+    width:22px; height:22px; border:1px solid #ccc; border-radius:4px; background:white;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; flex-shrink:0;
+  }
+  .cp-add-btn{
+    width:20px; height:20px; border-radius:50%; border:1px dashed #999; background:white;
+    color:#666; font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+
+  /* ---- PARTE 2: modal avanzado ---- */
+  .cp-modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.35);
+    display:flex; align-items:center; justify-content:center; z-index:1000;
+  }
+  .cp-panel{
+    background:white; border-radius:16px; box-shadow:0 10px 32px rgba(0,0,0,.25);
+    padding:20px; width:260px;
+  }
+  .cp-header{ text-align:center; font-size:12px; font-weight:bold; letter-spacing:1px; color:#555; margin-bottom:12px; text-transform:uppercase; }
+  .cp-canvas-wrap{ position:relative; width:100%; height:180px; border-radius:8px; overflow:hidden; margin-bottom:14px; cursor:crosshair; }
+  .cp-canvas-wrap canvas{ display:block; width:100%; height:100%; }
+  .cp-canvas-dot{
+    position:absolute; width:14px; height:14px; border-radius:50%; border:2px solid white;
+    box-shadow:0 0 0 1px rgba(0,0,0,.4); transform:translate(-50%,-50%); pointer-events:none;
+  }
+  .cp-controls-row{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .cp-preview-circle{ width:30px; height:30px; border-radius:50%; border:1px solid #ccc; flex-shrink:0; }
+  .cp-eyedropper-cell{
+    width:30px; height:30px; border-radius:6px; border:1px solid #ccc; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; background:white;
+  }
+  .cp-hue-slider{
+    flex:1; height:14px; border-radius:7px; -webkit-appearance:none; appearance:none;
+    background:linear-gradient(to right,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);
+    outline:none; cursor:pointer;
+  }
+  .cp-hue-slider::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:white; border:2px solid #888; box-shadow:0 0 2px rgba(0,0,0,.4);
+  }
+  .cp-fields-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:14px; }
+  .cp-field label{ display:block; font-size:10px; color:#888; margin-bottom:3px; text-align:center; }
+  .cp-field input{
+    width:100%; text-align:center; font-size:11px; padding:5px 2px;
+    border:1px solid #ccc; border-radius:5px; box-sizing:border-box;
+  }
+  .cp-field-hex input{ border-color:#e08a2c; }
+  .cp-buttons-row{ display:flex; gap:8px; }
+  .cp-btn{ flex:1; padding:8px 0; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; border:none; }
+  .cp-btn-cancelar{ background:white; border:1.5px solid #1b5e3f; color:#1b5e3f; }
+  .cp-btn-aceptar{ background:#1b5e3f; border:1.5px solid #1b5e3f; color:white; }
+</style>
+</head>
+<body>
+
+  <div class="panel">
+    <h1>Generador de cartelería de depósito — RPM Construcciones</h1>
+    <p>Usá esta herramienta para imprimir la señalización de ubicación de cualquier estantería del depósito. Elegí el tipo de cartel que necesitás: <b>Celdas</b> (identifica cada casillero, ej. 1B), <b>Filas</b> (letra grande para ubicar el nivel desde el pasillo) o <b>Estantes</b> (identifica cada mueble/estantería completo). Configurá cantidad, tamaño y color según el estante que estés señalizando, generá los carteles e imprimilos — cada uno sale con una línea punteada para guiar el corte.</p>
+
+    <div class="tipo-tabs">
+      <button class="tipo-btn active" data-tipo="celdas" onclick="mostrarTipo('celdas')">Celdas (1B, 3D...)</button>
+      <button class="tipo-btn" data-tipo="filas" onclick="mostrarTipo('filas')">Filas (letras)</button>
+      <button class="tipo-btn" data-tipo="estantes" onclick="mostrarTipo('estantes')">Estantes</button>
+    </div>
+
+    <!-- ===================== CELDAS ===================== -->
+    <div class="bloque-tipo active" id="bloque-celdas">
+      <div class="fila-controles">
+        <label>Columnas <input type="number" id="c-cols" value="6" min="1" max="30"></label>
+        <label>Filas (letras) <input type="text" class="ancho-txt" id="c-filas" value="A,B,C,D,E"></label>
+        <label>Tipo de cartel
+          <select id="c-modo" onchange="toggleAnchoDoble()">
+            <option value="dual">Dual (A+B juntas)</option>
+            <option value="simple">Simple (una fila por cartel)</option>
+          </select>
+        </label>
+        <label>Dirección de flecha
+          <select id="c-direccion">
+            <option value="arriba">Arriba ↑</option>
+            <option value="abajo">Abajo ↓</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="fila-controles">
+        <label>Ancho del cartel (mm) <input type="number" id="c-ancho" value="60" min="20"></label>
+        <label>Alto del cartel (mm) <input type="number" id="c-alto" value="30" min="15"></label>
+        <label id="c-anchod-label">Ancho doble A/B (mm) <input type="number" id="c-anchod" value="95" min="30"></label>
+        <label>Grosor de marco (mm) <input type="number" id="c-marco" value="2.6" min="0" step="0.2"></label>
+      </div>
+
+      <div class="fila-controles">
+        <label>Color
+          <input type="hidden" id="c-color" value="#0B5CAB">
+          <button type="button" class="color-swatch-btn" data-target="c-color" style="background:#0B5CAB;" onclick="abrirColorPicker('c-color', this)"></button>
+        </label>
+        <button class="generar" onclick="generarCeldas()">Generar</button>
+        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+      </div>
+    </div>
+
+    <!-- ===================== FILAS ===================== -->
+    <div class="bloque-tipo" id="bloque-filas">
+      <div class="fila-controles">
+        <label>Letras <input type="text" class="ancho-txt" id="f-letras" value="A,B,C,D,E"></label>
+        <label>Repetir cada letra x <input type="number" id="f-rep" value="1" min="1" max="10"></label>
+        <label>Ancho (mm) <input type="number" id="f-ancho" value="70" min="20"></label>
+        <label>Alto (mm) <input type="number" id="f-alto" value="70" min="20"></label>
+        <div class="grupo-alineado">
+          <label>Grosor de marco (mm) <input type="number" id="f-marco" value="2.6" min="0" step="0.2"></label>
+          <label>Color
+            <input type="hidden" id="f-color" value="#0B5CAB">
+            <button type="button" class="color-swatch-btn" data-target="f-color" style="background:#0B5CAB;" onclick="abrirColorPicker('f-color', this)"></button>
+          </label>
+        </div>
+        <button class="generar" onclick="generarFilas()">Generar</button>
+        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+      </div>
+    </div>
+
+    <!-- ===================== ESTANTES ===================== -->
+    <div class="bloque-tipo" id="bloque-estantes">
+      <div class="subtabs">
+        <button class="sub-btn active" onclick="mostrarOpcionEstante(1)">Opción 1 · Grafito</button>
+        <button class="sub-btn" onclick="mostrarOpcionEstante(2)">Opción 2 · Ahorro de tinta</button>
+      </div>
+      <div class="fila-controles">
+        <label>Cantidad de estantes <input type="number" id="e-cant" value="4" min="1" max="30"></label>
+        <label>Empieza en # <input type="number" id="e-inicio" value="1" min="1"></label>
+        <label>Ancho (mm) <input type="number" id="e-ancho" value="260" min="80"></label>
+        <label>Alto (mm) <input type="number" id="e-alto" value="120" min="50"></label>
+        <div class="grupo-alineado">
+          <label>Color de fondo
+            <input type="hidden" id="e-fondo" value="#1E2A38">
+            <button type="button" class="color-swatch-btn" data-target="e-fondo" style="background:#1E2A38;" onclick="abrirColorPicker('e-fondo', this)"></button>
+          </label>
+          <label>Color de franja
+            <input type="hidden" id="e-franja" value="#E08A2C">
+            <button type="button" class="color-swatch-btn" data-target="e-franja" style="background:#E08A2C;" onclick="abrirColorPicker('e-franja', this)"></button>
+          </label>
+        </div>
+        <button class="generar" onclick="generarEstantes()">Generar</button>
+        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+      </div>
+    </div>
+
+    <details class="recos">
+      <summary>Consejos para armar y colocar la cartelería</summary>
+      <ol>
+        <li><b>Un color por depósito.</b> Si hay más de un depósito, usá un color distinto en el selector para cada uno — así se identifica de un vistazo en cuál estás parado.</li>
+        <li><b>Protegé el papel.</b> Si se imprime en papel común, una funda autoadhesiva transparente o cinta de embalar por encima ayuda a que dure más contra el polvo y el manoseo.</li>
+        <li><b>Tamaño según distancia de lectura:</b> el cartel de Estante se lee cruzando el depósito, el de Fila desde el pasillo, y el de Celda de cerca, parado frente al estante. Ajustá el tamaño de cada uno pensando desde dónde se va a leer.</li>
+      </ol>
+    </details>
+  </div>
+
+  <div id="sheet-celdas" class="sheet activa"></div>
+  <div id="sheet-filas" class="sheet"></div>
+  <div id="sheet-estantes-1" class="sheet"></div>
+  <div id="sheet-estantes-2" class="sheet"></div>
+
+<script>
+/* ---------- Navegación de tabs ---------- */
+const opcionEstante = { valor: 1 };
+
+/* ---------- Imprimir desde fuera del embed de Sites ---------- */
+function abrirYImprimir(){
+  const sheetActiva = document.querySelector('.sheet.activa');
+  if(!sheetActiva || !sheetActiva.innerHTML.trim()){
+    alert('No hay carteles generados. Presioná "Generar" antes de imprimir.');
+    return;
+  }
+
+  const nueva = window.open('', '_blank');
+  if(!nueva){
+    alert('Tu navegador bloqueó la ventana nueva. Habilitá los popups para este sitio y probá de nuevo.');
+    return;
+  }
+
+  const estilos = document.querySelector('style').innerHTML;
+
+  nueva.document.open();
+  nueva.document.write(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <title>Imprimir carteles</title>
+      <style>${estilos}</style>
+    </head>
+    <body>
+      <div class="sheet activa">${sheetActiva.innerHTML}</div>
+    </body>
+    </html>
+  `);
+  nueva.document.close();
+
+  nueva.focus();
+  setTimeout(function(){
+    nueva.print();
+  }, 350);
+}
+
+function mostrarTipo(tipo){
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.toggle('active', b.dataset.tipo===tipo));
+  document.querySelectorAll('.bloque-tipo').forEach(b => b.classList.remove('active'));
+  document.getElementById('bloque-'+tipo).classList.add('active');
+  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('activa'));
+
+  if(tipo==='celdas') document.getElementById('sheet-celdas').classList.add('activa');
+  if(tipo==='filas') document.getElementById('sheet-filas').classList.add('activa');
+  if(tipo==='estantes') document.getElementById('sheet-estantes-'+opcionEstante.valor).classList.add('activa');
+}
+
+function mostrarOpcionEstante(n){
+  opcionEstante.valor = n;
+  document.querySelectorAll('#bloque-estantes .sub-btn').forEach((b,i)=> b.classList.toggle('active', i===n-1));
+  document.getElementById('sheet-estantes-1').classList.remove('activa');
+  document.getElementById('sheet-estantes-2').classList.remove('activa');
+  document.getElementById('sheet-estantes-'+n).classList.add('activa');
+}
+
+/* ---------- Flecha SVG gruesa (bien visible pero compacta) ---------- */
+function flechaSVG(direccion, tamano, color){
+  const t = tamano;
+  const puntos = direccion === 'arriba'
+    ? `${t*0.5},0 ${t},${t*0.65} ${t*0.68},${t*0.65} ${t*0.68},${t} ${t*0.32},${t} ${t*0.32},${t*0.65} 0,${t*0.65}`
+    : `${t*0.5},${t} ${t},${t*0.35} ${t*0.68},${t*0.35} ${t*0.68},0 ${t*0.32},0 ${t*0.32},${t*0.35} 0,${t*0.35}`;
+  return `<svg class="flecha-svg" width="${t*0.55}" height="${t*0.55}" viewBox="0 0 ${t} ${t}"><polygon points="${puntos}" fill="${color}"/></svg>`;
+}
+
+/* ---------- CELDAS ---------- */
+function construirCelda(col, filas, anchoEst, altoEst, anchoDoble, marco, color, modo, direccion){
+  let html = '';
+  const tamArrow = altoEst * 1.8;
+
+  // Solo arma el cartel dual (A+B juntas) si el modo es "dual"
+  if(modo === 'dual' && filas.length >= 2 && filas[0]==='A' && filas[1]==='B'){
+    html += `
+      <div class="celda-doble corte" style="width:${anchoDoble}mm;height:${altoEst}mm;border:${marco}mm solid ${color};">
+        <div class="mitad" style="font-size:${altoEst*0.36}mm;">${flechaSVG('abajo', tamArrow, color)}${col}A</div>
+        <div class="divisor" style="background:${color};"></div>
+        <div class="mitad" style="font-size:${altoEst*0.36}mm;">${col}B${flechaSVG('arriba', tamArrow, color)}</div>
+      </div>`;
+    filas = filas.slice(2);
+  }
+
+  // El resto (o todas las filas, si el modo es "simple") usan la dirección de flecha elegida
+  filas.forEach(f => {
+    html += `
+      <div class="celda corte" style="width:${anchoEst}mm;height:${altoEst}mm;border:${marco}mm solid ${color};">
+        <div class="codigo" style="font-size:${altoEst*0.36}mm;">${col}${f}${flechaSVG(direccion, tamArrow, color)}</div>
+      </div>`;
+  });
+  return html;
+}
+
+function generarCeldas(){
+  const numCols = parseInt(document.getElementById('c-cols').value) || 6;
+  const filasBase = document.getElementById('c-filas').value.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean);
+  const anchoEst = parseFloat(document.getElementById('c-ancho').value) || 60;
+  const altoEst = parseFloat(document.getElementById('c-alto').value) || 30;
+  const anchoDoble = parseFloat(document.getElementById('c-anchod').value) || 95;
+  const marco = parseFloat(document.getElementById('c-marco').value);
+  const color = document.getElementById('c-color').value;
+  const modo = document.getElementById('c-modo').value;
+  const direccion = document.getElementById('c-direccion').value;
+
+  let out = '';
+  for(let c=1; c<=numCols; c++){
+    out += construirCelda(c, [...filasBase], anchoEst, altoEst, anchoDoble, marco, color, modo, direccion);
+  }
+  document.getElementById('sheet-celdas').innerHTML = out;
+}
+
+/* ---------- FILAS ---------- */
+function generarFilas(){
+  const letras = document.getElementById('f-letras').value.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean);
+  const rep = parseInt(document.getElementById('f-rep').value) || 1;
+  const ancho = parseFloat(document.getElementById('f-ancho').value) || 70;
+  const alto = parseFloat(document.getElementById('f-alto').value) || 70;
+  const marco = parseFloat(document.getElementById('f-marco').value);
+  const color = document.getElementById('f-color').value;
+
+  let out = '';
+  letras.forEach(l => {
+    for(let i=0;i<rep;i++){
+      out += `<div class="fila-tag corte" style="width:${ancho}mm;height:${alto}mm;font-size:${alto*0.5}mm;border:${marco}mm solid ${color};color:${color};">${l}</div>`;
+    }
+  });
+  document.getElementById('sheet-filas').innerHTML = out;
+}
+
+/* ---------- ESTANTES ---------- */
+function generarEstantes(){
+  const cant = parseInt(document.getElementById('e-cant').value) || 4;
+  const inicio = parseInt(document.getElementById('e-inicio').value) || 1;
+  const ancho = parseFloat(document.getElementById('e-ancho').value) || 260;
+  const alto = parseFloat(document.getElementById('e-alto').value) || 120;
+  const fondo = document.getElementById('e-fondo').value;
+  const franja = document.getElementById('e-franja').value;
+
+  // Opción 1: fondo de color sólido, texto blanco
+  let out1 = '';
+  // Opción 2: fondo blanco, contorno de color (ahorro de tinta)
+  let out2 = '';
+
+  for(let i=0;i<cant;i++){
+    const n = inicio + i;
+    out1 += `
+      <div class="estante-tag corte" style="width:${ancho}mm;height:${alto}mm;background:${fondo};color:white;">
+        <div class="franja" style="background:${franja};"></div>
+        <div class="contenido">
+          <div class="rotulo" style="font-size:${alto*0.11}mm;">ESTANTE</div>
+          <div class="numero" style="font-size:${alto*0.5}mm;">${n}</div>
+        </div>
+      </div>`;
+    out2 += `
+      <div class="estante-tag corte" style="width:${ancho}mm;height:${alto}mm;background:white;color:${fondo};border:3mm solid ${fondo};">
+        <div class="franja" style="background:${franja};"></div>
+        <div class="contenido">
+          <div class="rotulo" style="font-size:${alto*0.11}mm;">ESTANTE</div>
+          <div class="numero" style="font-size:${alto*0.5}mm;">${n}</div>
+        </div>
+      </div>`;
+  }
+  document.getElementById('sheet-estantes-1').innerHTML = out1;
+  document.getElementById('sheet-estantes-2').innerHTML = out2;
+}
+
+function toggleAnchoDoble(){
+  const modo = document.getElementById('c-modo').value;
+  document.getElementById('c-anchod-label').style.display = (modo === 'dual') ? 'flex' : 'none';
+}
+
+generarCeldas();
+generarFilas();
+generarEstantes();
+toggleAnchoDoble();
+
+/* ---------- Selector de color personalizado (estilo Google Docs) ---------- */
+/* ---------- Selector de color: PARTE 1 (menú) + PARTE 2 (modal avanzado) ---------- */
+const CP_PRESETS = [
+  ['#000000','#434343','#666666','#999999','#b7b7b7','#cccccc','#d9d9d9','#efefef','#f3f3f3','#ffffff'],
+  ['#980000','#ff0000','#ff9900','#ffff00','#00ff00','#00ffff','#4a86e8','#0000ff','#9900ff','#ff00ff'],
+  ['#e6b8af','#f4cccc','#fce5cd','#fff2cc','#d9ead3','#d0e0e3','#c9daf8','#cfe2f3','#d9d2e9','#ead1dc'],
+  ['#dd7e6b','#ea9999','#f9cb9c','#ffe599','#b6d7a8','#a2c4c9','#a4c2f4','#9fc5e8','#b4a7d6','#d5a6bd'],
+  ['#cc4125','#e06666','#f6b26b','#ffd966','#93c47d','#76a5af','#6d9eeb','#6fa8dc','#8e7cc3','#c27ba0'],
+  ['#a61c00','#cc0000','#e69138','#f1c232','#6aa84f','#45818e','#3c78d8','#3d85c6','#674ea7','#a64d79'],
+  ['#85200c','#990000','#b45f06','#bf9000','#38761d','#134f5c','#1155cc','#0b5394','#351c75','#741b47'],
+  ['#5b0f00','#660000','#783f04','#7f6000','#274e13','#0c343d','#1c4587','#073763','#20124d','#4c1130'],
+];
+const CP_ESTANDAR = ['#000000','#ffffff','#4a86e8','#ff0000','#ffff00','#00ff00','#ff9900','#9900ff'];
+let cpFavoritos = ['#0B5CAB','#E08A2C'];
+let cpMenuActivo = null;
+let cpModalActivo = null;
+let cpTarget = { inputId:null, btnEl:null };
+let cpEstadoModal = { h:210, s:70, v:65 };
+
+/* --- conversiones de color --- */
+function hexAHsv(hex){
+  const r=parseInt(hex.substr(1,2),16), g=parseInt(hex.substr(3,2),16), b=parseInt(hex.substr(5,2),16);
+  return rgbAHsv(r,g,b);
+}
+function rgbAHsv(r,g,b){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
+  let h=0;
+  if(d!==0){
+    if(max===r) h=((g-b)/d)%6;
+    else if(max===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h*=60; if(h<0) h+=360;
+  }
+  const s = max===0?0:d/max;
+  return { h, s:s*100, v:max*100 };
+}
+function hsvARgb(h,s,v){
+  s/=100; v/=100;
+  const c=v*s, x=c*(1-Math.abs((h/60)%2-1)), m=v-c;
+  let r,g,b;
+  if(h<60){r=c;g=x;b=0;} else if(h<120){r=x;g=c;b=0;} else if(h<180){r=0;g=c;b=x;}
+  else if(h<240){r=0;g=x;b=c;} else if(h<300){r=x;g=0;b=c;} else {r=c;g=0;b=x;}
+  return { r:Math.round((r+m)*255), g:Math.round((g+m)*255), b:Math.round((b+m)*255) };
+}
+function rgbAHex(r,g,b){
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+
+/* --- PARTE 1: menú desplegable --- */
+function cpCrearCirculo(color){
+  const c = document.createElement('span');
+  c.className = 'cp-circulo';
+  c.style.background = color;
+  c.title = color;
+  c.onclick = () => cpElegirColor(cpTarget.inputId, color);
+  return c;
+}
+
+function abrirColorPicker(inputId, btnEl){
+  cerrarTodo();
+  cpTarget = { inputId, btnEl };
+
+  const menu = document.createElement('div');
+  menu.className = 'cp-menu';
+
+  const grid = document.createElement('div');
+  grid.className = 'cp-grid';
+  CP_PRESETS.forEach(fila => fila.forEach(color => grid.appendChild(cpCrearCirculo(color))));
+  menu.appendChild(grid);
+
+  const tituloEst = document.createElement('div');
+  tituloEst.className = 'cp-titulo';
+  tituloEst.textContent = 'Estándar';
+  menu.appendChild(tituloEst);
+
+  const filaEst = document.createElement('div');
+  filaEst.className = 'cp-fila';
+  CP_ESTANDAR.forEach(color => filaEst.appendChild(cpCrearCirculo(color)));
+  menu.appendChild(filaEst);
+
+  const tituloPer = document.createElement('div');
+  tituloPer.className = 'cp-titulo';
+  tituloPer.textContent = 'Personalizado';
+  menu.appendChild(tituloPer);
+
+  const filaPer = document.createElement('div');
+  filaPer.className = 'cp-personalizado-fila';
+
+  const gotero = document.createElement('button');
+  gotero.type = 'button';
+  gotero.className = 'cp-eyedropper';
+  gotero.textContent = '💧';
+  gotero.title = 'Cuentagotas';
+  gotero.onclick = async () => {
+    if(window.EyeDropper){
+      try{
+        const res = await new EyeDropper().open();
+        cpElegirColor(inputId, res.sRGBHex);
+      }catch(e){}
+    } else {
+      alert('Tu navegador no soporta el cuentagotas. Usá el botón (+) para el selector avanzado.');
+    }
+  };
+  filaPer.appendChild(gotero);
+
+  cpFavoritos.forEach(color => filaPer.appendChild(cpCrearCirculo(color)));
+
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'cp-add-btn';
+  addBtn.textContent = '+';
+  addBtn.title = 'Selector avanzado';
+  addBtn.onclick = () => abrirModalAvanzado();
+  filaPer.appendChild(addBtn);
+  menu.appendChild(filaPer);
+
+  document.body.appendChild(menu);
+  const r = btnEl.getBoundingClientRect();
+  const margen = 8;
+  const anchoPantalla = document.documentElement.clientWidth;
+  const altoPantalla = document.documentElement.clientHeight;
+
+  let left = r.left + r.width/2 - menu.offsetWidth/2;
+  left = Math.max(margen, Math.min(left, anchoPantalla - menu.offsetWidth - margen));
+
+  let top = r.bottom + 6;
+  if(top + menu.offsetHeight > altoPantalla){
+    top = Math.max(margen, r.top - menu.offsetHeight - 6);
+  }
+
+  menu.style.top = top + 'px';
+  menu.style.left = left + 'px';
+  cpMenuActivo = menu;
+    setTimeout(() => document.addEventListener('click', cpClickAfuera), 0);
+  }
+
+/* --- PARTE 2: modal avanzado --- */
+function abrirModalAvanzado(){
+  cerrarMenu();
+  const actual = document.getElementById(cpTarget.inputId).value || '#0B5CAB';
+  cpEstadoModal = hexAHsv(actual);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'cp-modal-overlay';
+  overlay.innerHTML = `
+    <div class="cp-panel">
+      <div class="cp-header">Personalizado</div>
+      <div class="cp-canvas-wrap" id="cp-canvas-wrap">
+        <canvas id="cp-canvas" width="220" height="180"></canvas>
+        <div class="cp-canvas-dot" id="cp-canvas-dot"></div>
+      </div>
+      <div class="cp-controls-row">
+        <div class="cp-preview-circle" id="cp-preview-circle"></div>
+        <div class="cp-eyedropper-cell" id="cp-eyedropper-cell">💧</div>
+        <input type="range" class="cp-hue-slider" id="cp-hue-slider" min="0" max="360">
+      </div>
+      <div class="cp-fields-grid">
+        <div class="cp-field cp-field-hex"><label>Hex</label><input type="text" id="cp-f-hex" maxlength="7"></div>
+        <div class="cp-field"><label>R</label><input type="text" id="cp-f-r" maxlength="3"></div>
+        <div class="cp-field"><label>V</label><input type="text" id="cp-f-g" maxlength="3"></div>
+        <div class="cp-field"><label>A</label><input type="text" id="cp-f-b" maxlength="3"></div>
+      </div>
+      <div class="cp-buttons-row">
+        <button type="button" class="cp-btn cp-btn-cancelar" id="cp-btn-cancelar">Cancelar</button>
+        <button type="button" class="cp-btn cp-btn-aceptar" id="cp-btn-aceptar">Aceptar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  cpModalActivo = overlay;
+
+  cpDibujarCanvas();
+  cpActualizarUI();
+
+  document.getElementById('cp-hue-slider').addEventListener('input', e => {
+    cpEstadoModal.h = parseFloat(e.target.value);
+    cpDibujarCanvas();
+    cpActualizarUI();
+  });
+
+  const wrap = document.getElementById('cp-canvas-wrap');
+  const mover = (ev) => {
+    const rect = wrap.getBoundingClientRect();
+    const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+    const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
+    const x = Math.max(0, Math.min(rect.width, cx - rect.left));
+    const y = Math.max(0, Math.min(rect.height, cy - rect.top));
+    cpEstadoModal.s = (x/rect.width)*100;
+    cpEstadoModal.v = 100 - (y/rect.height)*100;
+    cpActualizarUI();
+  };
+  wrap.addEventListener('mousedown', e => {
+    mover(e);
+    const mm = (ev) => mover(ev);
+    const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); };
+    document.addEventListener('mousemove', mm);
+    document.addEventListener('mouseup', mu);
+  });
+
+  document.getElementById('cp-eyedropper-cell').onclick = async () => {
+    if(window.EyeDropper){
+      try{
+        const res = await new EyeDropper().open();
+        cpEstadoModal = hexAHsv(res.sRGBHex);
+        cpDibujarCanvas();
+        cpActualizarUI();
+      }catch(e){}
+    } else {
+      alert('Tu navegador no soporta el cuentagotas.');
+    }
+  };
+
+  ['cp-f-hex','cp-f-r','cp-f-g','cp-f-b'].forEach(id => {
+    document.getElementById(id).addEventListener('change', cpDesdeCampos);
+  });
+
+  document.getElementById('cp-btn-cancelar').onclick = () => {
+    cerrarModal();
+    abrirColorPicker(cpTarget.inputId, cpTarget.btnEl); // vuelve al menú principal
+  };
+  document.getElementById('cp-btn-aceptar').onclick = () => {
+    const {r,g,b} = hsvARgb(cpEstadoModal.h, cpEstadoModal.s, cpEstadoModal.v);
+    const hex = rgbAHex(r,g,b);
+    if(!cpFavoritos.includes(hex)) cpFavoritos.push(hex);
+    cpElegirColor(cpTarget.inputId, hex);
+  };
+}
+
+function cpDibujarCanvas(){
+  const canvas = document.getElementById('cp-canvas');
+  const ctx = canvas.getContext('2d');
+  const {r,g,b} = hsvARgb(cpEstadoModal.h, 100, 100);
+
+  ctx.fillStyle = `rgb(${r},${g},${b})`;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  const gBlanco = ctx.createLinearGradient(0,0,canvas.width,0);
+  gBlanco.addColorStop(0,'rgba(255,255,255,1)');
+  gBlanco.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle = gBlanco;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  const gNegro = ctx.createLinearGradient(0,0,0,canvas.height);
+  gNegro.addColorStop(0,'rgba(0,0,0,0)');
+  gNegro.addColorStop(1,'rgba(0,0,0,1)');
+  ctx.fillStyle = gNegro;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+function cpActualizarUI(){
+  const {r,g,b} = hsvARgb(cpEstadoModal.h, cpEstadoModal.s, cpEstadoModal.v);
+  const hex = rgbAHex(r,g,b);
+
+  document.getElementById('cp-preview-circle').style.background = hex;
+  document.getElementById('cp-hue-slider').value = cpEstadoModal.h;
+  document.getElementById('cp-f-hex').value = hex;
+  document.getElementById('cp-f-r').value = r;
+  document.getElementById('cp-f-g').value = g;
+  document.getElementById('cp-f-b').value = b;
+
+  const wrap = document.getElementById('cp-canvas-wrap');
+  const dot = document.getElementById('cp-canvas-dot');
+  dot.style.left = (cpEstadoModal.s/100 * wrap.clientWidth) + 'px';
+  dot.style.top = ((100-cpEstadoModal.v)/100 * wrap.clientHeight) + 'px';
+}
+
+function cpDesdeCampos(){
+  const hexVal = document.getElementById('cp-f-hex').value.trim();
+  if(/^#[0-9A-Fa-f]{6}$/.test(hexVal)){
+    cpEstadoModal = hexAHsv(hexVal);
+  } else {
+    const r = parseInt(document.getElementById('cp-f-r').value)||0;
+    const g = parseInt(document.getElementById('cp-f-g').value)||0;
+    const b = parseInt(document.getElementById('cp-f-b').value)||0;
+    cpEstadoModal = rgbAHsv(r,g,b);
+  }
+  cpDibujarCanvas();
+  cpActualizarUI();
+}
+
+/* --- aplicar / cerrar --- */
+function cpElegirColor(inputId, color){
+  document.getElementById(inputId).value = color;
+  const btn = document.querySelector(`[data-target="${inputId}"]`);
+  if(btn) btn.style.background = color;
+  cerrarTodo();
+}
+function cpClickAfuera(e){
+  if(cpMenuActivo && !cpMenuActivo.contains(e.target) && !e.target.classList.contains('color-swatch-btn')){
+    cerrarMenu();
+  }
+}
+function cerrarMenu(){
+  if(cpMenuActivo){
+    cpMenuActivo.remove();
+    cpMenuActivo = null;
+    document.removeEventListener('click', cpClickAfuera);
+  }
+}
+function cerrarModal(){
+  if(cpModalActivo){
+    cpModalActivo.remove();
+    cpModalActivo = null;
+  }
+}
+function cerrarTodo(){
+  cerrarMenu();
+  cerrarModal();
+}
+</script>
+</body>
+</html>
