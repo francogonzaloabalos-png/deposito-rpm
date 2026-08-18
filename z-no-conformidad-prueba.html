@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventario y calidad</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+:root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --line: #d9dee7;
+      --muted: #667085;
+      --text: #182230;
+      --stock: #138a5b;
+      --nc: #b54708;
+      --baja: #b42318;
+      --accent: #2454a6;
+      --soft-accent: #e8eefb;
+      --soft-warn: #fff4e5;
+      --soft-danger: #feeceb;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input, select, textarea { font: inherit; }
+    main { max-width: 1280px; margin: 0 auto; padding: 20px; }
+    header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    h1 { margin: 0 0 4px; font-size: 1.45rem; letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 1rem; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: .92rem; letter-spacing: 0; }
+    p { margin: 0; color: var(--muted); }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn { border: 1px solid var(--line); background: #fff; color: var(--text); min-height: 38px; border-radius: 7px; padding: 8px 12px; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; white-space: nowrap; }
+    .btn svg { width: 16px; height: 16px; }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn.warn { background: var(--soft-warn); border-color: #f3c77b; color: #7a4200; }
+    .btn.danger { background: var(--soft-danger); border-color: #f3b0aa; color: var(--baja); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 16px; overflow-x: auto; }
+    .tab { border: 0; background: transparent; padding: 10px 12px; color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 650; }
+    .grid { display: grid; gap: 14px; }
+    .grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+    .metric { min-height: 96px; display: flex; flex-direction: column; justify-content: space-between; }
+    .metric .label { color: var(--muted); font-size: .82rem; display: flex; align-items: center; gap: 6px; }
+    .metric .label svg { width: 15px; height: 15px; }
+    .metric .value { font-size: 1.65rem; font-weight: 760; line-height: 1; }
+    .metric.stock .value { color: var(--stock); }
+    .metric.nc .value { color: var(--nc); }
+    .metric.baja .value { color: var(--baja); }
+    .filters { display: flex; gap: 10px; align-items: center; margin: 14px 0; }
+    .filters input { margin: 0; }
+    table { width: 100%; border-collapse: collapse; margin: 0; }
+    th, td { text-align: left; padding: 10px 9px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: .78rem; text-transform: uppercase; font-weight: 700; background: #fafbfc; }
+    td strong { display: block; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .tag { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 8px; font-size: .76rem; font-weight: 650; background: #eef2f6; color: #344054; }
+    .tag.stock { background: #e7f6ee; color: var(--stock); }
+    .tag.nc { background: var(--soft-warn); color: var(--nc); }
+    .tag.baja { background: var(--soft-danger); color: var(--baja); }
+    .muted { color: var(--muted); }
+    .split { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); gap: 14px; align-items: start; }
+    .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .hidden { display: none !important; }
+    dialog { border: 0; border-radius: var(--radius); padding: 0; width: min(760px, calc(100vw - 28px)); box-shadow: 0 24px 80px rgba(16,24,40,.24); }
+    dialog::backdrop { background: rgba(24,34,48,.52); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .modal-body { padding: 16px; max-height: 76vh; overflow: auto; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--line); }
+    label { font-size: .84rem; color: #344054; font-weight: 650; }
+    input, select, textarea { margin-top: 4px; }
+    textarea { min-height: 84px; resize: vertical; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .nc-line { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; margin-top: 10px; background: #fcfcfd; }
+    .toast { position: fixed; right: 18px; bottom: 18px; background: #182230; color: white; border-radius: 7px; padding: 10px 12px; z-index: 20; opacity: 0; transform: translateY(8px); transition: .18s ease; max-width: min(460px, calc(100vw - 36px)); }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: var(--baja); }
+    .small { font-size: .82rem; }
+    .print-area { display: none; }
+    .print-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; border-bottom: 2px solid #182230; padding-bottom: 14px; margin-bottom: 18px; }
+    .print-head h1 { font-size: 1.35rem; margin: 0 0 4px; }
+    .print-head strong { font-size: 1.25rem; }
+    .print-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; margin-bottom: 18px; }
+    .print-grid div { border-bottom: 1px solid #d0d5dd; padding-bottom: 7px; }
+    .print-grid span { display: block; color: #667085; font-size: .78rem; margin-bottom: 2px; }
+    .print-document h2 { font-size: 1rem; margin: 18px 0 8px; }
+    .print-signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 42px; margin-top: 54px; }
+    .print-signatures div { border-top: 1px solid #182230; padding-top: 8px; text-align: center; color: #344054; }
+    @media (max-width: 920px) { .grid.cols-4, .grid.cols-3, .split { grid-template-columns: 1fr; } header { flex-direction: column; } .toolbar { justify-content: flex-start; } }
+    @media (max-width: 640px) { main { padding: 14px; } .grid.cols-2, .form-grid { grid-template-columns: 1fr; } th:nth-child(4), td:nth-child(4) { display: none; } .btn { width: 100%; justify-content: center; } .filters { flex-direction: column; align-items: stretch; } }
+    @media print {
+      @page { margin: 16mm; }
+      body { background: #fff; color: #182230; }
+      body > :not(.print-area) { display: none !important; }
+      .print-area { display: block !important; }
+      .print-document { font-family: Inter, Arial, sans-serif; font-size: 11pt; }
+      .print-document p { color: #344054; }
+      .print-document table { page-break-inside: auto; }
+      .print-document tr { page-break-inside: avoid; page-break-after: auto; }
+      .print-document th { background: #f2f4f7 !important; color: #344054; }
+      .print-document th, .print-document td { border-bottom: 1px solid #d0d5dd; padding: 7px 6px; }
+    }
+
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Inventario y materiales</h1>
+      <p>Sistema base para stock disponible, material no conforme y trazabilidad de calidad.</p>
+    </div>
+    <div class="toolbar">
+      <button class="btn" onclick="InventoryUI.openProductModal()"><i data-lucide="package-plus"></i>Producto</button>
+      <button class="btn primary" onclick="InventoryUI.openMovementModal('entrada')"><i data-lucide="log-in"></i>Entrada</button>
+      <button class="btn" onclick="InventoryUI.openMovementModal('salida')"><i data-lucide="log-out"></i>Salida</button>
+      <button class="btn" onclick="InventoryUI.openMovementModal('devolucion')"><i data-lucide="rotate-ccw"></i>Devolución</button>
+    </div>
+  </header>
+
+  <div id="demoBanner" class="panel hidden" style="border-color:#f3c77b;background:#fff4e5;color:#7a4200;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+    <i data-lucide="flask-conical"></i>
+    <span>Estás viendo <strong>datos de prueba</strong>. Se muestran porque no hay un backend real conectado (o todavía no tiene datos). En cuanto conectes tu API con información real, este aviso desaparece.</span>
+  </div>
+
+  <nav class="tabs" aria-label="Vistas">
+    <button class="tab active" data-view="dashboard" onclick="InventoryUI.setView('dashboard')">Stock</button>
+    <button class="tab" data-view="nc" onclick="InventoryUI.setView('nc')">No conformidades</button>
+    <button class="tab" data-view="historial" onclick="InventoryUI.setView('historial')">Historial</button>
+    <button class="tab" data-view="indicadores" onclick="InventoryUI.setView('indicadores')">Indicadores</button>
+  </nav>
+
+  <section id="view-dashboard">
+    <div class="grid cols-4">
+      <div class="panel metric stock"><div class="label"><i data-lucide="check-circle"></i>Stock disponible</div><div id="mStock" class="value">0</div></div>
+      <div class="panel metric nc"><div class="label"><i data-lucide="alert-triangle"></i>No conforme</div><div id="mNc" class="value">0</div></div>
+      <div class="panel metric baja"><div class="label"><i data-lucide="x-circle"></i>Baja</div><div id="mBaja" class="value">0</div></div>
+      <div class="panel metric"><div class="label"><i data-lucide="boxes"></i>Productos activos</div><div id="mProductos" class="value">0</div></div>
+    </div>
+
+    <div class="filters">
+      <input id="search" placeholder="Buscar por material o código" oninput="InventoryUI.render()">
+      <button class="btn" onclick="InventoryUI.loadAll()"><i data-lucide="refresh-cw"></i>Actualizar</button>
+    </div>
+
+    <div class="split">
+      <section class="panel">
+        <h2>Materiales</h2>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>Material</th><th>Código</th><th class="num">Disponible</th><th class="num">No conforme</th><th class="num">Baja</th><th></th></tr></thead>
+            <tbody id="productRows"></tbody>
+          </table>
+        </div>
+      </section>
+      <aside class="panel" id="productDetail">
+        <h2>Detalle del material</h2>
+        <p>Seleccioná un producto para ver opciones de entrada, salida, devolución, no conformidad e historial.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section id="view-nc" class="hidden">
+    <div class="panel">
+      <h2>No conformidades abiertas</h2>
+      <div style="overflow:auto">
+        <table>
+          <thead><tr><th>ID</th><th>Material</th><th class="num">Cantidad</th><th>Origen</th><th>Motivo</th><th>Situación</th><th></th></tr></thead>
+          <tbody id="ncRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-historial" class="hidden">
+    <div class="panel">
+      <h2>Historial de movimientos</h2>
+      <div style="overflow:auto">
+        <table>
+          <thead><tr><th>Fecha</th><th>Tipo</th><th>Material</th><th class="num">Cantidad</th><th>Desde</th><th>Hacia</th><th>Responsable</th></tr></thead>
+          <tbody id="movementRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-indicadores" class="hidden">
+    <div class="grid cols-3">
+      <div class="panel metric nc"><div class="label">No conformidades abiertas</div><div id="kOpenNc" class="value">0</div></div>
+      <div class="panel metric stock"><div class="label">Cantidad recuperada</div><div id="kRecovered" class="value">0</div></div>
+      <div class="panel metric baja"><div class="label">Cantidad dada de baja</div><div id="kScrapped" class="value">0</div></div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <h2>Problemas por motivo</h2>
+      <div id="reasonStats" class="grid cols-3"></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="appModal">
+  <form method="dialog" onsubmit="return false">
+    <div class="modal-head"><h2 id="modalTitle">Operación</h2><button class="btn" onclick="InventoryUI.closeModal()" aria-label="Cerrar"><i data-lucide="x"></i></button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </form>
+</dialog>
+<div id="toast" class="toast"></div>
+
+<script>
+// ============================================================
+// DATOS DE PRUEBA (DEMO) — se usan solo si no hay backend real
+// conectado (o si el backend todavía no tiene datos cargados).
+// Incluyen stock en varios productos y 5 no conformidades que
+// cubren los distintos casos de revisión: sin revisar (NC-00001),
+// pendiente (NC-00002), reparada -> vuelve a stock (NC-00003),
+// no reparable -> baja (NC-00004) y reparación parcial (NC-00005).
+// ============================================================
+const DEMO_SEED = {
+  productos: [
+    { id: 'PROD-001', codigo: 'TM-20A-2P', nombre: 'Interruptor termomagnético 20A 2P Curva C', unidad: 'unidades', categoria: 'Térmica', proveedor_id: '', activo: 'SI' },
+    { id: 'PROD-002', codigo: 'CT-25A', nombre: 'Contactor 3P 25A bobina 220V AC', unidad: 'unidades', categoria: 'Contactor', proveedor_id: '', activo: 'SI' },
+    { id: 'PROD-003', codigo: 'F24V-100W', nombre: 'Fuente 24V 100W IP65', unidad: 'unidades', categoria: 'Fuente de alimentación', proveedor_id: '', activo: 'SI' },
+    { id: 'PROD-004', codigo: 'BF-25A', nombre: 'Bornera fija bipolar 25A', unidad: 'unidades', categoria: 'Bornera', proveedor_id: '', activo: 'SI' },
+    { id: 'PROD-005', codigo: 'CM-2X05', nombre: 'Cable mallado apantallado 2x0.5mm²', unidad: 'metros', categoria: 'Cables', proveedor_id: '', activo: 'SI' },
+    { id: 'PROD-006', codigo: 'DD-40A', nombre: 'Disyuntor diferencial 2P 40A 30mA', unidad: 'unidades', categoria: 'Disyuntor', proveedor_id: '', activo: 'SI' },
+    { id: 'PROD-007', codigo: 'TL-24V-5M', nombre: 'Tira LED 24V 5m IP65 blanco cálido', unidad: 'rollos', categoria: 'Iluminación', proveedor_id: '', activo: 'SI' },
+  ],
+  ubicaciones: [
+    { id: 'STOCK', nombre: 'Stock disponible' },
+    { id: 'NO_CONFORME', nombre: 'No conforme' },
+    { id: 'BAJA', nombre: 'Baja' },
+  ],
+  existencias: [
+    { id: 'PROD-001__STOCK', producto_id: 'PROD-001', ubicacion_id: 'STOCK', cantidad: 32, actualizado_en: '2026-08-09T14:32:00.000Z' },
+    { id: 'PROD-001__NO_CONFORME', producto_id: 'PROD-001', ubicacion_id: 'NO_CONFORME', cantidad: 2, actualizado_en: '2026-08-01T08:45:00.000Z' },
+    { id: 'PROD-002__STOCK', producto_id: 'PROD-002', ubicacion_id: 'STOCK', cantidad: 12, actualizado_en: '2026-08-10T15:40:00.000Z' },
+    { id: 'PROD-002__NO_CONFORME', producto_id: 'PROD-002', ubicacion_id: 'NO_CONFORME', cantidad: 3, actualizado_en: '2026-08-06T10:15:00.000Z' },
+    { id: 'PROD-003__STOCK', producto_id: 'PROD-003', ubicacion_id: 'STOCK', cantidad: 18, actualizado_en: '2026-08-09T09:30:00.000Z' },
+    { id: 'PROD-004__STOCK', producto_id: 'PROD-004', ubicacion_id: 'STOCK', cantidad: 7, actualizado_en: '2026-08-02T11:00:00.000Z' },
+    { id: 'PROD-004__BAJA', producto_id: 'PROD-004', ubicacion_id: 'BAJA', cantidad: 3, actualizado_en: '2026-08-07T16:10:00.000Z' },
+    { id: 'PROD-005__STOCK', producto_id: 'PROD-005', ubicacion_id: 'STOCK', cantidad: 35, actualizado_en: '2026-08-11T14:05:00.000Z' },
+    { id: 'PROD-005__NO_CONFORME', producto_id: 'PROD-005', ubicacion_id: 'NO_CONFORME', cantidad: 1, actualizado_en: '2026-08-11T14:05:00.000Z' },
+    { id: 'PROD-005__BAJA', producto_id: 'PROD-005', ubicacion_id: 'BAJA', cantidad: 2, actualizado_en: '2026-08-11T14:05:00.000Z' },
+    { id: 'PROD-006__STOCK', producto_id: 'PROD-006', ubicacion_id: 'STOCK', cantidad: 3, actualizado_en: '2026-08-12T09:50:00.000Z' },
+    { id: 'PROD-007__STOCK', producto_id: 'PROD-007', ubicacion_id: 'STOCK', cantidad: 7, actualizado_en: '2026-08-13T08:15:00.000Z' },
+  ],
+  movimientos: [
+    { id: 'MOV-0001', tipo: 'ENTRADA', producto_id: 'PROD-001', cantidad: 38, desde_ubicacion_id: '', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-01T08:40:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: '', observacion: 'Recepción de pedido nº 2201.' },
+    { id: 'MOV-0002', tipo: 'CLASIFICACION_NO_CONFORME', producto_id: 'PROD-001', cantidad: 2, desde_ubicacion_id: '', hacia_ubicacion_id: 'NO_CONFORME', fecha: '2026-08-01T08:45:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: 'NC-00001', observacion: 'Golpes en el embalaje detectados en la recepción.' },
+    { id: 'MOV-0003', tipo: 'ENTRADA', producto_id: 'PROD-007', cantidad: 20, desde_ubicacion_id: '', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-01T09:10:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: '', observacion: '' },
+    { id: 'MOV-0004', tipo: 'ENTRADA', producto_id: 'PROD-003', cantidad: 15, desde_ubicacion_id: '', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-01T09:40:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: '', observacion: '' },
+    { id: 'MOV-0005', tipo: 'ENTRADA', producto_id: 'PROD-005', cantidad: 30, desde_ubicacion_id: '', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-02T10:00:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: '', observacion: '' },
+    { id: 'MOV-0006', tipo: 'ENTRADA', producto_id: 'PROD-004', cantidad: 7, desde_ubicacion_id: '', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-02T11:00:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: '', observacion: '' },
+    { id: 'MOV-0007', tipo: 'CLASIFICACION_NO_CONFORME', producto_id: 'PROD-004', cantidad: 3, desde_ubicacion_id: '', hacia_ubicacion_id: 'NO_CONFORME', fecha: '2026-08-02T11:05:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: 'NC-00004', observacion: 'Se detectaron bornes rotos al desembalar.' },
+    { id: 'MOV-0008', tipo: 'ENTRADA', producto_id: 'PROD-002', cantidad: 17, desde_ubicacion_id: '', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-03T09:20:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: '', observacion: '' },
+    { id: 'MOV-0009', tipo: 'CLASIFICACION_NO_CONFORME', producto_id: 'PROD-002', cantidad: 3, desde_ubicacion_id: '', hacia_ubicacion_id: 'NO_CONFORME', fecha: '2026-08-03T09:25:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: 'NC-00002', observacion: 'Faltan tornillos de fijación según lista de contenido.' },
+    { id: 'MOV-0010', tipo: 'ENTRADA', producto_id: 'PROD-006', cantidad: 9, desde_ubicacion_id: '', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-04T08:30:00.000Z', responsable: 'Pamela', origen: 'Entrada', referencia_id: '', observacion: '' },
+    { id: 'MOV-0011', tipo: 'DEVOLUCION_NO_CONFORME', producto_id: 'PROD-003', cantidad: 3, desde_ubicacion_id: '', hacia_ubicacion_id: 'NO_CONFORME', fecha: '2026-08-05T14:10:00.000Z', responsable: 'Fernando', origen: 'Devolución', referencia_id: 'NC-00003', observacion: 'No encienden luego de uso en tablero de prueba.' },
+    { id: 'MOV-0012', tipo: 'DEVOLUCION_NO_CONFORME', producto_id: 'PROD-005', cantidad: 8, desde_ubicacion_id: '', hacia_ubicacion_id: 'NO_CONFORME', fecha: '2026-08-06T10:50:00.000Z', responsable: 'Fernando', origen: 'Devolución', referencia_id: 'NC-00005', observacion: 'Tramo dañado por roce en obra.' },
+    { id: 'MOV-0013', tipo: 'BAJA', producto_id: 'PROD-004', cantidad: 3, desde_ubicacion_id: 'NO_CONFORME', hacia_ubicacion_id: 'BAJA', fecha: '2026-08-07T16:10:00.000Z', responsable: 'Carlos Ruiz', origen: 'Revisión', referencia_id: 'NC-00004', observacion: 'Falla interna no reparable.' },
+    { id: 'MOV-0014', tipo: 'SALIDA', producto_id: 'PROD-007', cantidad: 14, desde_ubicacion_id: 'STOCK', hacia_ubicacion_id: '', fecha: '2026-08-08T11:20:00.000Z', responsable: 'Fernando', origen: 'Salida', referencia_id: '', observacion: 'Obra 1' },
+    { id: 'MOV-0015', tipo: 'REINCORPORACION_A_STOCK', producto_id: 'PROD-003', cantidad: 3, desde_ubicacion_id: 'NO_CONFORME', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-09T09:30:00.000Z', responsable: 'Carlos Ruiz', origen: 'Revisión', referencia_id: 'NC-00003', observacion: 'Se reemplazó fusible interno y se probó carga.' },
+    { id: 'MOV-0016', tipo: 'SALIDA', producto_id: 'PROD-001', cantidad: 6, desde_ubicacion_id: 'STOCK', hacia_ubicacion_id: '', fecha: '2026-08-09T14:32:00.000Z', responsable: 'Fernando', origen: 'Salida', referencia_id: '', observacion: 'Obra 1' },
+    { id: 'MOV-0017', tipo: 'SALIDA', producto_id: 'PROD-002', cantidad: 5, desde_ubicacion_id: 'STOCK', hacia_ubicacion_id: '', fecha: '2026-08-10T15:40:00.000Z', responsable: 'Fernando', origen: 'Salida', referencia_id: '', observacion: 'Mantenimiento' },
+    { id: 'MOV-0018', tipo: 'REINCORPORACION_A_STOCK', producto_id: 'PROD-005', cantidad: 5, desde_ubicacion_id: 'NO_CONFORME', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-11T14:05:00.000Z', responsable: 'Carlos Ruiz', origen: 'Revisión', referencia_id: 'NC-00005', observacion: '5 tramos recuperados, 2 descartados, 1 requiere nueva revisión.' },
+    { id: 'MOV-0019', tipo: 'BAJA', producto_id: 'PROD-005', cantidad: 2, desde_ubicacion_id: 'NO_CONFORME', hacia_ubicacion_id: 'BAJA', fecha: '2026-08-11T14:05:00.000Z', responsable: 'Carlos Ruiz', origen: 'Revisión', referencia_id: 'NC-00005', observacion: '5 tramos recuperados, 2 descartados, 1 requiere nueva revisión.' },
+    { id: 'MOV-0020', tipo: 'SALIDA', producto_id: 'PROD-006', cantidad: 6, desde_ubicacion_id: 'STOCK', hacia_ubicacion_id: '', fecha: '2026-08-12T09:50:00.000Z', responsable: 'Fernando', origen: 'Salida', referencia_id: '', observacion: '' },
+    { id: 'MOV-0021', tipo: 'DEVOLUCION_CONFORME', producto_id: 'PROD-007', cantidad: 1, desde_ubicacion_id: '', hacia_ubicacion_id: 'STOCK', fecha: '2026-08-13T08:15:00.000Z', responsable: 'Fernando', origen: 'Devolución', referencia_id: '', observacion: 'Devolución de sobrante de obra.' },
+  ],
+  no_conformidades: [
+    { id_nc: 'NC-00001', producto_id: 'PROD-001', codigo_producto: 'TM-20A-2P', cantidad_inicial: 2, cantidad_actual: 2, fecha: '2026-08-01T08:45:00.000Z', origen: 'Entrada', motivo: 'Dañado / Roto', situacion: 'Esperando evaluación', estado_actual: 'ABIERTA', responsable: 'Pamela', observacion: 'Golpes en el embalaje detectados en la recepción.' },
+    { id_nc: 'NC-00002', producto_id: 'PROD-002', codigo_producto: 'CT-25A', cantidad_inicial: 3, cantidad_actual: 3, fecha: '2026-08-03T09:25:00.000Z', origen: 'Entrada', motivo: 'Incompleto', situacion: 'Pendiente', estado_actual: 'ABIERTA', responsable: 'Pamela', observacion: 'Faltan tornillos de fijación según lista de contenido.' },
+    { id_nc: 'NC-00003', producto_id: 'PROD-003', codigo_producto: 'F24V-100W', cantidad_inicial: 3, cantidad_actual: 0, fecha: '2026-08-05T14:10:00.000Z', origen: 'Devolución', motivo: 'No funciona', situacion: 'Cerrada', estado_actual: 'CERRADA', responsable: 'Fernando', observacion: 'No encienden luego de uso en tablero de prueba.' },
+    { id_nc: 'NC-00004', producto_id: 'PROD-004', codigo_producto: 'BF-25A', cantidad_inicial: 3, cantidad_actual: 0, fecha: '2026-08-02T11:05:00.000Z', origen: 'Entrada', motivo: 'Dañado / Roto', situacion: 'Cerrada', estado_actual: 'CERRADA', responsable: 'Pamela', observacion: 'Se detectaron bornes rotos al desembalar.' },
+    { id_nc: 'NC-00005', producto_id: 'PROD-005', codigo_producto: 'CM-2X05', cantidad_inicial: 8, cantidad_actual: 1, fecha: '2026-08-06T10:50:00.000Z', origen: 'Devolución', motivo: 'Deteriorado', situacion: 'Pendiente', estado_actual: 'ABIERTA', responsable: 'Fernando', observacion: 'Tramo dañado por roce en obra.' },
+  ],
+  historial_no_conformidades: [
+    { id: 'HNC-0001', id_nc: 'NC-00001', fecha: '2026-08-01T08:45:00.000Z', accion: 'CREACION', cantidad: 2, estado_anterior: '', estado_nuevo: 'Esperando evaluación', responsable: 'Pamela', diagnostico: '', observacion: 'Golpes en el embalaje detectados en la recepción.' },
+    { id: 'HNC-0002', id_nc: 'NC-00002', fecha: '2026-08-03T09:25:00.000Z', accion: 'CREACION', cantidad: 3, estado_anterior: '', estado_nuevo: 'En revisión', responsable: 'Pamela', diagnostico: '', observacion: 'Faltan tornillos de fijación según lista de contenido.' },
+    { id: 'HNC-0003', id_nc: 'NC-00002', fecha: '2026-08-06T10:15:00.000Z', accion: 'REVISION', cantidad: 3, estado_anterior: 'En revisión', estado_nuevo: 'Pendiente', responsable: 'Ana Silva', diagnostico: 'Falta prueba con carga.', observacion: 'Revisar mañana.' },
+    { id: 'HNC-0004', id_nc: 'NC-00003', fecha: '2026-08-05T14:10:00.000Z', accion: 'CREACION', cantidad: 3, estado_anterior: '', estado_nuevo: 'Para reparación', responsable: 'Fernando', diagnostico: '', observacion: 'No encienden luego de uso en tablero de prueba.' },
+    { id: 'HNC-0005', id_nc: 'NC-00003', fecha: '2026-08-09T09:30:00.000Z', accion: 'REVISION', cantidad: 3, estado_anterior: 'Para reparación', estado_nuevo: 'Cerrada', responsable: 'Carlos Ruiz', diagnostico: 'Se reemplazó fusible interno y se probó carga.', observacion: 'Liberadas para uso.' },
+    { id: 'HNC-0006', id_nc: 'NC-00004', fecha: '2026-08-02T11:05:00.000Z', accion: 'CREACION', cantidad: 3, estado_anterior: '', estado_nuevo: 'Para reparación', responsable: 'Pamela', diagnostico: '', observacion: 'Se detectaron bornes rotos al desembalar.' },
+    { id: 'HNC-0007', id_nc: 'NC-00004', fecha: '2026-08-07T16:10:00.000Z', accion: 'REVISION', cantidad: 3, estado_anterior: 'Para reparación', estado_nuevo: 'Cerrada', responsable: 'Carlos Ruiz', diagnostico: 'Falla interna no reparable.', observacion: 'Dar de baja.' },
+    { id: 'HNC-0008', id_nc: 'NC-00005', fecha: '2026-08-06T10:50:00.000Z', accion: 'CREACION', cantidad: 8, estado_anterior: '', estado_nuevo: 'Para reparación', responsable: 'Fernando', diagnostico: '', observacion: 'Tramo dañado por roce en obra.' },
+    { id: 'HNC-0009', id_nc: 'NC-00005', fecha: '2026-08-11T14:05:00.000Z', accion: 'REVISION', cantidad: 8, estado_anterior: 'Para reparación', estado_nuevo: 'Pendiente', responsable: 'Carlos Ruiz', diagnostico: '5 tramos recuperados, 2 descartados, 1 requiere nueva revisión.', observacion: 'Separar físicamente el tramo pendiente.' },
+  ],
+  revisiones_nc: [
+    { id: 'REV-0001', id_nc: 'NC-00002', fecha: '2026-08-06T10:15:00.000Z', responsable: 'Ana Silva', resultado: 'Pendiente', cantidad_a_stock: 0, cantidad_a_baja: 0, cantidad_pendiente: 3, diagnostico: 'Falta prueba con carga.', observacion: 'Revisar mañana.' },
+    { id: 'REV-0002', id_nc: 'NC-00003', fecha: '2026-08-09T09:30:00.000Z', responsable: 'Carlos Ruiz', resultado: 'Reparado → vuelve a stock', cantidad_a_stock: 3, cantidad_a_baja: 0, cantidad_pendiente: 0, diagnostico: 'Se reemplazó fusible interno y se probó carga.', observacion: 'Liberadas para uso.' },
+    { id: 'REV-0003', id_nc: 'NC-00004', fecha: '2026-08-07T16:10:00.000Z', responsable: 'Carlos Ruiz', resultado: 'No reparable → baja', cantidad_a_stock: 0, cantidad_a_baja: 3, cantidad_pendiente: 0, diagnostico: 'Falla interna no reparable.', observacion: 'Dar de baja.' },
+    { id: 'REV-0004', id_nc: 'NC-00005', fecha: '2026-08-11T14:05:00.000Z', responsable: 'Carlos Ruiz', resultado: 'Reparado parcialmente', cantidad_a_stock: 5, cantidad_a_baja: 2, cantidad_pendiente: 1, diagnostico: '5 tramos recuperados, 2 descartados, 1 requiere nueva revisión.', observacion: 'Separar físicamente el tramo pendiente.' },
+  ],
+  bajas: [
+    { id: 'BAJA-0001', producto_id: 'PROD-004', id_nc: 'NC-00004', cantidad: 3, fecha: '2026-08-07T16:10:00.000Z', responsable: 'Carlos Ruiz', motivo: 'No reparable → baja', observacion: 'Dar de baja.' },
+    { id: 'BAJA-0002', producto_id: 'PROD-005', id_nc: 'NC-00005', cantidad: 2, fecha: '2026-08-11T14:05:00.000Z', responsable: 'Carlos Ruiz', motivo: 'Reparado parcialmente', observacion: '5 tramos recuperados, 2 descartados, 1 requiere nueva revisión.' },
+  ],
+  auditoria_inventario: [],
+};
+function cloneDemoSeed() {
+  return JSON.parse(JSON.stringify(DEMO_SEED));
+}
+
+const InventoryData = (() => {
+  const NETWORK = location.pathname.split('/')[2];
+  const BASE = `/api/v1/networks/${encodeURIComponent(NETWORK)}/storages`;
+  const tables = ['productos','ubicaciones','existencias','movimientos','no_conformidades','historial_no_conformidades','revisiones_nc','bajas','auditoria_inventario'];
+
+  async function request(path, options = {}) {
+    const response = await fetch(`${BASE}${path}`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+      ...options
+    });
+    const data = await response.json().catch(() => null);
+    if (response.status === 401 || response.status === 403 || data?.error === 'Unauthorized') {
+      location.href = `/workspace/auth/login?redirect=${encodeURIComponent(location.pathname)}`;
+      return null;
+    }
+    if (!response.ok) throw new Error(data?.error || data?.message || `Error ${response.status}`);
+    return data;
+  }
+  const list = name => request(`/${name}`).then(data => data?.items || []);
+  const create = (name, record) => request(`/${name}`, { method: 'POST', body: JSON.stringify(record) });
+  const update = (name, id, patch) => request(`/${name}/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(patch) });
+  const get = (name, id) => request(`/${name}/${encodeURIComponent(id)}`);
+  async function loadAll() {
+    try {
+      const values = await Promise.all(tables.map(list));
+      const result = Object.fromEntries(tables.map((table, index) => [table, values[index]]));
+      const hasAny = tables.some(t => Array.isArray(result[t]) && result[t].length);
+      if (!hasAny) return { ...cloneDemoSeed(), __demo: true };
+      return result;
+    } catch (err) {
+      return { ...cloneDemoSeed(), __demo: true };
+    }
+  }
+  return { list, create, update, get, loadAll };
+})();
+
+const InventoryService = (() => {
+  const LOC = { STOCK: 'STOCK', NC: 'NO_CONFORME', BAJA: 'BAJA' };
+  const reasons = ['Incompleto','No funciona','Dañado / Roto','Deteriorado','Usado','Fuera de especificación','Otro'];
+  const situations = ['En revisión','Para reparación','Esperando evaluación','Esperando decisión','Para baja','Devolución a proveedor','Otro'];
+  const returnStates = ['Conforme','No conforme','Pendiente de revisión'];
+  const reviewResults = ['Reparado → vuelve a stock','Reparado parcialmente','Apto para uso','No apto para uso','No reparable → baja','Pendiente'];
+
+  function uid(prefix) {
+    const t = Date.now().toString(36).toUpperCase();
+    const r = Math.random().toString(36).slice(2, 7).toUpperCase();
+    return `${prefix}-${t}-${r}`;
+  }
+  function ncId(existing) {
+    const next = existing.reduce((max, row) => {
+      const n = Number(String(row.id_nc || '').replace('NC-', ''));
+      return Number.isFinite(n) ? Math.max(max, n) : max;
+    }, 0) + 1;
+    return `NC-${String(next).padStart(5, '0')}`;
+  }
+  function now() { return new Date().toISOString(); }
+  function number(value, name) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) throw new Error(`${name} debe ser mayor que cero.`);
+    return parsed;
+  }
+  function sum(rows, productId, locationId) {
+    return rows.filter(r => r.producto_id === productId && r.ubicacion_id === locationId).reduce((a, r) => a + Number(r.cantidad || 0), 0);
+  }
+  function findExistence(state, productId, locationId) {
+    return state.existencias.find(r => r.producto_id === productId && r.ubicacion_id === locationId);
+  }
+  async function setExistence(state, productId, locationId, quantity) {
+    if (quantity < -0.000001) throw new Error('La operación dejaría stock negativo.');
+    const rounded = Math.abs(quantity) < 0.000001 ? 0 : quantity;
+    const existing = findExistence(state, productId, locationId);
+    if (existing) {
+      await InventoryData.update('existencias', existing.id, { cantidad: rounded, actualizado_en: now() });
+      existing.cantidad = rounded;
+      return existing;
+    }
+    const record = { id: `${productId}__${locationId}`, producto_id: productId, ubicacion_id: locationId, cantidad: rounded, actualizado_en: now() };
+    await InventoryData.create('existencias', record);
+    state.existencias.push(record);
+    return record;
+  }
+  async function move(state, { tipo, producto_id, cantidad, desde, hacia, responsable, origen = '', referencia_id = '', observacion = '' }) {
+    const qty = number(cantidad, 'La cantidad');
+    if (desde) await setExistence(state, producto_id, desde, sum(state.existencias, producto_id, desde) - qty);
+    if (hacia) await setExistence(state, producto_id, hacia, sum(state.existencias, producto_id, hacia) + qty);
+    const movement = { id: uid('MOV'), tipo, producto_id, cantidad: qty, desde_ubicacion_id: desde || '', hacia_ubicacion_id: hacia || '', fecha: now(), responsable, origen, referencia_id, observacion };
+    await InventoryData.create('movimientos', movement);
+    state.movimientos.push(movement);
+    return movement;
+  }
+  async function audit(state, entidad, entidad_id, accion, antes, despues, usuario) {
+    const record = { id: uid('AUD'), entidad, entidad_id, accion, antes: JSON.stringify(antes || null), despues: JSON.stringify(despues || null), usuario, fecha: now() };
+    await InventoryData.create('auditoria_inventario', record);
+    state.auditoria_inventario.push(record);
+  }
+  async function ensureProduct(state, input) {
+    const codigo = String(input.codigo || '').trim();
+    const nombre = String(input.nombre || '').trim();
+    if (!codigo || !nombre) throw new Error('Material y código son obligatorios.');
+    const existing = state.productos.find(p => p.codigo.toLowerCase() === codigo.toLowerCase());
+    if (existing) return existing;
+    const product = { id: uid('PROD'), codigo, nombre, unidad: input.unidad || 'unidades', categoria: input.categoria || '', proveedor_id: input.proveedor_id || '', activo: 'SI' };
+    await InventoryData.create('productos', product);
+    state.productos.push(product);
+    await audit(state, 'PRODUCTO', product.id, 'CREAR_PRODUCTO', null, product, input.responsable || 'Sistema');
+    return product;
+  }
+  async function crearProducto(state, input) {
+    return ensureProduct(state, input);
+  }
+  async function addNc(state, product, input) {
+    const qty = number(input.cantidad, 'La cantidad no conforme');
+    const record = { id_nc: ncId(state.no_conformidades), producto_id: product.id, codigo_producto: product.codigo, cantidad_inicial: qty, cantidad_actual: qty, fecha: now(), origen: input.origen, motivo: input.motivo, situacion: input.situacion, estado_actual: 'ABIERTA', responsable: input.responsable, observacion: input.observacion || '' };
+    await InventoryData.create('no_conformidades', record);
+    state.no_conformidades.push(record);
+    const history = { id: uid('HNC'), id_nc: record.id_nc, fecha: now(), accion: 'CREACION', cantidad: qty, estado_anterior: '', estado_nuevo: record.situacion, responsable: input.responsable, diagnostico: '', observacion: record.observacion };
+    await InventoryData.create('historial_no_conformidades', history);
+    state.historial_no_conformidades.push(history);
+    return record;
+  }
+  function validateNcSplit(total, ncRows) {
+    const qty = number(total, 'La cantidad total');
+    const ncTotal = ncRows.reduce((a, r) => a + number(r.cantidad, 'Cada cantidad no conforme'), 0);
+    if (ncTotal > qty) throw new Error('La suma no conforme no puede superar la cantidad total.');
+    return { total: qty, ncTotal, conforming: qty - ncTotal };
+  }
+  async function registrarEntrada(state, input) {
+    const product = await ensureProduct(state, input);
+    const rows = input.noConformes || [];
+    const split = validateNcSplit(input.cantidad, rows);
+    if (split.conforming > 0) await move(state, { tipo: input.tipo === 'INVENTARIO_INICIAL' ? 'INVENTARIO_INICIAL' : 'ENTRADA', producto_id: product.id, cantidad: split.conforming, hacia: LOC.STOCK, responsable: input.responsable, origen: input.tipo || 'Entrada', observacion: input.observacion || '' });
+    for (const row of rows) {
+      const nc = await addNc(state, product, { ...row, origen: input.tipo === 'INVENTARIO_INICIAL' ? 'Inventario inicial' : 'Entrada', responsable: input.responsable });
+      await move(state, { tipo: 'CLASIFICACION_NO_CONFORME', producto_id: product.id, cantidad: row.cantidad, hacia: LOC.NC, responsable: input.responsable, origen: nc.origen, referencia_id: nc.id_nc, observacion: row.observacion || '' });
+    }
+    await audit(state, 'PRODUCTO', product.id, 'REGISTRAR_ENTRADA', null, input, input.responsable);
+  }
+  async function registrarSalida(state, input) {
+    const qty = number(input.cantidad, 'La cantidad');
+    const available = sum(state.existencias, input.producto_id, LOC.STOCK);
+    if (qty > available) throw new Error(`No hay stock disponible suficiente. Disponible: ${available}.`);
+    await move(state, { tipo: 'SALIDA', producto_id: input.producto_id, cantidad: qty, desde: LOC.STOCK, responsable: input.responsable, origen: 'Salida', observacion: input.observacion || '' });
+  }
+  async function registrarDevolucion(state, input) {
+    const product = state.productos.find(p => p.id === input.producto_id);
+    const rows = input.noConformes || [];
+    const split = validateNcSplit(input.cantidad, rows);
+    if (split.conforming > 0) await move(state, { tipo: 'DEVOLUCION_CONFORME', producto_id: product.id, cantidad: split.conforming, hacia: LOC.STOCK, responsable: input.responsable, origen: 'Devolución', observacion: input.observacion || '' });
+    for (const row of rows) {
+      const nc = await addNc(state, product, { ...row, origen: input.estado === 'Pendiente de revisión' ? 'Devolución pendiente' : 'Devolución', responsable: input.responsable });
+      await move(state, { tipo: 'DEVOLUCION_NO_CONFORME', producto_id: product.id, cantidad: row.cantidad, hacia: LOC.NC, responsable: input.responsable, origen: 'Devolución', referencia_id: nc.id_nc, observacion: row.observacion || '' });
+    }
+  }
+  async function pasarANoConforme(state, input) {
+    const product = state.productos.find(p => p.id === input.producto_id);
+    const qty = number(input.cantidad, 'La cantidad');
+    const available = sum(state.existencias, product.id, LOC.STOCK);
+    if (qty > available) throw new Error(`No se pueden pasar ${qty} unidades. Disponible: ${available}.`);
+    const nc = await addNc(state, product, { cantidad: qty, origen: 'Material que ya estaba en stock', motivo: input.motivo, situacion: input.situacion, responsable: input.responsable, observacion: input.observacion || '' });
+    await move(state, { tipo: 'PASA_A_NO_CONFORME', producto_id: product.id, cantidad: qty, desde: LOC.STOCK, hacia: LOC.NC, responsable: input.responsable, origen: nc.origen, referencia_id: nc.id_nc, observacion: input.observacion || '' });
+  }
+  async function revisarNoConformidad(state, input) {
+    const nc = state.no_conformidades.find(row => row.id_nc === input.id_nc);
+    if (!nc) throw new Error('No conformidad no encontrada.');
+    const toStock = Math.max(0, Number(input.cantidad_a_stock || 0));
+    const toBaja = Math.max(0, Number(input.cantidad_a_baja || 0));
+    const pending = Math.max(0, Number(input.cantidad_pendiente || 0));
+    const total = toStock + toBaja + pending;
+    if (total <= 0) throw new Error('La revisión debe asignar alguna cantidad.');
+    if (total > Number(nc.cantidad_actual || 0)) throw new Error(`La revisión supera la cantidad no conforme existente: ${nc.cantidad_actual}.`);
+    const before = { ...nc };
+    if (toStock > 0) await move(state, { tipo: 'REINCORPORACION_A_STOCK', producto_id: nc.producto_id, cantidad: toStock, desde: LOC.NC, hacia: LOC.STOCK, responsable: input.responsable, origen: 'Revisión', referencia_id: nc.id_nc, observacion: input.diagnostico || '' });
+    if (toBaja > 0) {
+      await move(state, { tipo: 'BAJA', producto_id: nc.producto_id, cantidad: toBaja, desde: LOC.NC, hacia: LOC.BAJA, responsable: input.responsable, origen: 'Revisión', referencia_id: nc.id_nc, observacion: input.diagnostico || '' });
+      const baja = { id: uid('BAJA'), producto_id: nc.producto_id, id_nc: nc.id_nc, cantidad: toBaja, fecha: now(), responsable: input.responsable, motivo: input.resultado, observacion: input.observacion || '' };
+      await InventoryData.create('bajas', baja); state.bajas.push(baja);
+    }
+    const newCurrent = Number(nc.cantidad_actual || 0) - toStock - toBaja;
+    const newState = newCurrent === 0 ? 'CERRADA' : 'ABIERTA';
+    const newSituation = pending > 0 || newCurrent > 0 ? 'Pendiente' : 'Cerrada';
+    await InventoryData.update('no_conformidades', nc.id_nc, { cantidad_actual: newCurrent, situacion: newSituation, estado_actual: newState });
+    Object.assign(nc, { cantidad_actual: newCurrent, situacion: newSituation, estado_actual: newState });
+    const review = { id: uid('REV'), id_nc: nc.id_nc, fecha: now(), responsable: input.responsable, resultado: input.resultado, cantidad_a_stock: toStock, cantidad_a_baja: toBaja, cantidad_pendiente: pending || newCurrent, diagnostico: input.diagnostico || '', observacion: input.observacion || '' };
+    await InventoryData.create('revisiones_nc', review); state.revisiones_nc.push(review);
+    const history = { id: uid('HNC'), id_nc: nc.id_nc, fecha: now(), accion: 'REVISION', cantidad: total, estado_anterior: before.situacion, estado_nuevo: newSituation, responsable: input.responsable, diagnostico: input.diagnostico || '', observacion: input.observacion || '' };
+    await InventoryData.create('historial_no_conformidades', history); state.historial_no_conformidades.push(history);
+    await audit(state, 'NO_CONFORMIDAD', nc.id_nc, 'REVISION', before, nc, input.responsable);
+  }
+  return { LOC, reasons, situations, returnStates, reviewResults, sum, crearProducto, registrarEntrada, registrarSalida, registrarDevolucion, pasarANoConforme, revisarNoConformidad };
+})();
+
+const InventoryUI = (() => {
+  let state = null;
+  let selectedProduct = null;
+  let currentView = 'dashboard';
+  const $ = id => document.getElementById(id);
+  function productName(id) { const p = state.productos.find(row => row.id === id); return p ? p.nombre : id; }
+  function productCode(id) { const p = state.productos.find(row => row.id === id); return p ? p.codigo : ''; }
+  function locName(id) { return id ? id.replace('_', ' ') : ''; }
+  function fmt(n) { return Number(n || 0).toLocaleString('es-AR'); }
+  function toast(message, isError = false) { const t = $('toast'); t.textContent = message; t.className = `toast show${isError ? ' error' : ''}`; setTimeout(() => t.className = 'toast', 3200); }
+  async function run(fn) { try { await fn(); await loadAll(); toast('Operación registrada.'); closeModal(); } catch (error) { toast(error.message || String(error), true); } }
+  async function loadAll() {
+    state = await InventoryData.loadAll();
+    const banner = document.getElementById('demoBanner');
+    if (banner) banner.classList.toggle('hidden', !state.__demo);
+    render();
+  }
+  function setView(view) { currentView = view; document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === view)); ['dashboard','nc','historial','indicadores'].forEach(id => $(`view-${id}`).classList.toggle('hidden', id !== view)); render(); }
+  function render() {
+    if (!state) return;
+    const totals = state.productos.reduce((acc, p) => {
+      acc.stock += InventoryService.sum(state.existencias, p.id, InventoryService.LOC.STOCK);
+      acc.nc += InventoryService.sum(state.existencias, p.id, InventoryService.LOC.NC);
+      acc.baja += InventoryService.sum(state.existencias, p.id, InventoryService.LOC.BAJA);
+      return acc;
+    }, { stock: 0, nc: 0, baja: 0 });
+    $('mStock').textContent = fmt(totals.stock); $('mNc').textContent = fmt(totals.nc); $('mBaja').textContent = fmt(totals.baja); $('mProductos').textContent = fmt(state.productos.length);
+    renderProducts(); renderNc(); renderMovements(); renderIndicators(); renderDetail();
+    if (window.lucide) lucide.createIcons();
+  }
+  function renderProducts() {
+    const q = ($('search')?.value || '').toLowerCase();
+    const rows = state.productos.filter(p => !q || `${p.nombre} ${p.codigo}`.toLowerCase().includes(q));
+    $('productRows').innerHTML = rows.map(p => {
+      const stock = InventoryService.sum(state.existencias, p.id, InventoryService.LOC.STOCK);
+      const nc = InventoryService.sum(state.existencias, p.id, InventoryService.LOC.NC);
+      const baja = InventoryService.sum(state.existencias, p.id, InventoryService.LOC.BAJA);
+      return `<tr><td><strong>${esc(p.nombre)}</strong><span class="muted small">${esc(p.unidad || 'unidades')}</span></td><td>${esc(p.codigo)}</td><td class="num"><span class="tag stock">${fmt(stock)}</span></td><td class="num"><span class="tag nc">${fmt(nc)}</span></td><td class="num"><span class="tag baja">${fmt(baja)}</span></td><td><button class="btn" onclick="InventoryUI.selectProduct('${p.id}')"><i data-lucide="panel-right-open"></i>Ver</button></td></tr>`;
+    }).join('') || `<tr><td colspan="6" class="muted">Todavía no hay productos cargados.</td></tr>`;
+  }
+  function renderDetail() {
+    const box = $('productDetail');
+    const p = state.productos.find(row => row.id === selectedProduct);
+    if (!p) { box.innerHTML = '<h2>Detalle del material</h2><p>Seleccioná un producto para ver opciones de entrada, salida, devolución, no conformidad e historial.</p>'; return; }
+    const stock = InventoryService.sum(state.existencias, p.id, InventoryService.LOC.STOCK);
+    const nc = InventoryService.sum(state.existencias, p.id, InventoryService.LOC.NC);
+    const productNc = state.no_conformidades.filter(row => row.producto_id === p.id && row.estado_actual !== 'CERRADA');
+    box.innerHTML = `<h2>${esc(p.nombre)}</h2><p><strong>Código:</strong> ${esc(p.codigo)}</p><div class="grid cols-2" style="margin-top:12px"><div class="panel metric stock"><div class="label">STOCK</div><div class="value">${fmt(stock)}</div></div><div class="panel metric nc"><div class="label">NO CONFORME</div><div class="value">${fmt(nc)}</div></div></div><div class="detail-actions"><button class="btn primary" onclick="InventoryUI.openMovementModal('entrada','${p.id}')"><i data-lucide="log-in"></i>Entrada</button><button class="btn" onclick="InventoryUI.openMovementModal('salida','${p.id}')"><i data-lucide="log-out"></i>Salida</button><button class="btn" onclick="InventoryUI.openMovementModal('devolucion','${p.id}')"><i data-lucide="rotate-ccw"></i>Devolución</button><button class="btn warn" onclick="InventoryUI.openPassNcModal('${p.id}')"><i data-lucide="alert-triangle"></i>Pasar a no conforme</button></div><h3 style="margin-top:16px">No conformidades abiertas</h3>${productNc.map(row => `<p class="small"><strong>${row.id_nc}</strong> · ${fmt(row.cantidad_actual)} · ${esc(row.motivo)} · ${esc(row.situacion)}</p>`).join('') || '<p class="small muted">Sin no conformidades abiertas.</p>'}`;
+  }
+  function renderNc() {
+    $('ncRows').innerHTML = state.no_conformidades.filter(row => row.estado_actual !== 'CERRADA').map(row => `<tr><td><strong>${row.id_nc}</strong></td><td>${esc(productName(row.producto_id))}<br><span class="muted small">${esc(row.codigo_producto)}</span></td><td class="num">${fmt(row.cantidad_actual)}</td><td>${esc(row.origen)}</td><td>${esc(row.motivo)}</td><td>${esc(row.situacion)}</td><td><button class="btn" onclick="InventoryUI.openNcDetail('${row.id_nc}')"><i data-lucide="clipboard-list"></i>Detalle</button></td></tr>`).join('') || '<tr><td colspan="7" class="muted">No hay no conformidades abiertas.</td></tr>';
+  }
+  function renderMovements() {
+    const rows = [...state.movimientos].sort((a,b) => String(b.fecha).localeCompare(String(a.fecha))).slice(0, 100);
+    $('movementRows').innerHTML = rows.map(m => `<tr><td>${new Date(m.fecha).toLocaleString('es-AR')}</td><td>${esc(m.tipo)}</td><td>${esc(productName(m.producto_id))}</td><td class="num">${fmt(m.cantidad)}</td><td>${esc(locName(m.desde_ubicacion_id))}</td><td>${esc(locName(m.hacia_ubicacion_id))}</td><td>${esc(m.responsable)}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Sin movimientos registrados.</td></tr>';
+  }
+  function renderIndicators() {
+    const open = state.no_conformidades.filter(row => row.estado_actual !== 'CERRADA');
+    $('kOpenNc').textContent = fmt(open.length);
+    $('kRecovered').textContent = fmt(state.revisiones_nc.reduce((a,r) => a + Number(r.cantidad_a_stock || 0), 0));
+    $('kScrapped').textContent = fmt(state.bajas.reduce((a,r) => a + Number(r.cantidad || 0), 0));
+    const byReason = state.no_conformidades.reduce((acc, row) => { acc[row.motivo] = (acc[row.motivo] || 0) + Number(row.cantidad_inicial || 0); return acc; }, {});
+    $('reasonStats').innerHTML = Object.entries(byReason).map(([reason, qty]) => `<div class="panel"><strong>${esc(reason)}</strong><p>${fmt(qty)} unidades registradas</p></div>`).join('') || '<p class="muted">Todavía no hay datos para indicadores.</p>';
+  }
+  function selectProduct(id) { selectedProduct = id; render(); }
+  function optionsProducts(selected = '') { return state.productos.map(p => `<option value="${p.id}" ${p.id === selected ? 'selected' : ''}>${esc(p.nombre)} · ${esc(p.codigo)}</option>`).join(''); }
+  function options(list) { return list.map(item => `<option value="${esc(item)}">${esc(item)}</option>`).join(''); }
+  function openModal(title, body, footer) { $('modalTitle').textContent = title; $('modalBody').innerHTML = body; $('modalFoot').innerHTML = footer; $('appModal').showModal(); if (window.lucide) lucide.createIcons(); }
+  function closeModal() { $('appModal').close(); }
+  function openProductModal() {
+    openModal('Nuevo producto', `<div class="form-grid"><label>Material<input id="pNombre" required></label><label>Código<input id="pCodigo" required></label><label>Unidad<input id="pUnidad" value="unidades"></label><label>Categoría<input id="pCategoria"></label></div>`, `<button class="btn" onclick="InventoryUI.closeModal()">Cancelar</button><button class="btn primary" onclick="InventoryUI.createProduct()">Guardar</button>`);
+  }
+  async function createProduct() { await run(() => InventoryService.crearProducto(state, { nombre: $('pNombre').value, codigo: $('pCodigo').value, unidad: $('pUnidad').value, categoria: $('pCategoria').value, responsable: 'Alta producto' })); }
+  function ncEditor(prefix = 'nc') { return `<div id="${prefix}Rows"><div class="nc-line"><div class="form-grid"><label>Cantidad no conforme<input type="number" min="0" step="0.01" class="${prefix}Qty"></label><label>Motivo<select class="${prefix}Motivo">${options(InventoryService.reasons)}</select></label><label>Situación<select class="${prefix}Situacion">${options(InventoryService.situations)}</select></label><label>Observación<input class="${prefix}Obs"></label></div></div></div><button class="btn" type="button" onclick="InventoryUI.addNcRow('${prefix}')"><i data-lucide="plus"></i>Agregar no conformidad</button>`; }
+  function addNcRow(prefix) { const first = document.querySelector(`#${prefix}Rows .nc-line`); $(''+prefix+'Rows').insertAdjacentHTML('beforeend', first.outerHTML); if (window.lucide) lucide.createIcons(); }
+  function collectNcRows(prefix, origen) { return [...document.querySelectorAll(`#${prefix}Rows .nc-line`)].map(line => ({ cantidad: line.querySelector(`.${prefix}Qty`).value, motivo: line.querySelector(`.${prefix}Motivo`).value, situacion: line.querySelector(`.${prefix}Situacion`).value, observacion: line.querySelector(`.${prefix}Obs`).value, origen })).filter(row => Number(row.cantidad) > 0); }
+  function openMovementModal(type, productId = '') {
+    const title = type === 'entrada' ? 'Registrar entrada' : type === 'salida' ? 'Registrar salida' : 'Registrar devolución';
+    const productFields = type === 'entrada' ? `<label>Material<input id="mvNombre" value="${productId ? esc(productName(productId)) : ''}"></label><label>Código<input id="mvCodigo" value="${productId ? esc(productCode(productId)) : ''}"></label><label>Unidad<input id="mvUnidad" value="unidades"></label>` : `<label class="full">Material<select id="mvProducto">${optionsProducts(productId)}</select></label>`;
+    const extra = type === 'entrada' ? `<label>Tipo<select id="mvTipo"><option>Entrada</option><option>Inventario inicial</option></select></label><label>¿Hay material no conforme?<select id="hasNc" onchange="InventoryUI.toggleNc('hasNc','ncBlock')"><option>No</option><option>Sí</option></select></label><div id="ncBlock" class="full hidden">${ncEditor('nc')}</div>` : type === 'devolucion' ? `<label>Estado de la devolución<select id="returnState" onchange="InventoryUI.toggleReturnNc()">${options(InventoryService.returnStates)}</select></label><div id="ncBlock" class="full hidden">${ncEditor('nc')}</div>` : '';
+    openModal(title, `<div class="form-grid">${productFields}<label>Cantidad total<input id="mvCantidad" type="number" min="0" step="0.01"></label><label>Responsable<input id="mvResponsable"></label>${extra}<label class="full">Observación<textarea id="mvObs"></textarea></label></div>`, `<button class="btn" onclick="InventoryUI.closeModal()">Cancelar</button><button class="btn primary" onclick="InventoryUI.submitMovement('${type}')">Registrar</button>`);
+  }
+  function toggleNc(selectId, blockId) { $(blockId).classList.toggle('hidden', $(selectId).value !== 'Sí'); }
+  function toggleReturnNc() { $('ncBlock').classList.toggle('hidden', $('returnState').value === 'Conforme'); }
+  async function submitMovement(type) {
+    await run(async () => {
+      if (type === 'entrada') await InventoryService.registrarEntrada(state, { tipo: $('mvTipo').value === 'Inventario inicial' ? 'INVENTARIO_INICIAL' : 'ENTRADA', nombre: $('mvNombre').value, codigo: $('mvCodigo').value, unidad: $('mvUnidad').value, cantidad: $('mvCantidad').value, responsable: $('mvResponsable').value || 'Sin responsable', observacion: $('mvObs').value, noConformes: $('hasNc').value === 'Sí' ? collectNcRows('nc') : [] });
+      if (type === 'salida') await InventoryService.registrarSalida(state, { producto_id: $('mvProducto').value, cantidad: $('mvCantidad').value, responsable: $('mvResponsable').value || 'Sin responsable', observacion: $('mvObs').value });
+      if (type === 'devolucion') await InventoryService.registrarDevolucion(state, { producto_id: $('mvProducto').value, cantidad: $('mvCantidad').value, responsable: $('mvResponsable').value || 'Sin responsable', observacion: $('mvObs').value, estado: $('returnState').value, noConformes: $('returnState').value === 'Conforme' ? [] : collectNcRows('nc') });
+    });
+  }
+  function openPassNcModal(productId) {
+    openModal('Pasar a no conforme', `<div class="form-grid"><label class="full">Material<select id="pnProducto">${optionsProducts(productId)}</select></label><label>Cantidad<input id="pnCantidad" type="number" min="0" step="0.01"></label><label>Responsable<input id="pnResponsable"></label><label>Motivo<select id="pnMotivo">${options(InventoryService.reasons)}</select></label><label>Situación<select id="pnSituacion">${options(InventoryService.situations)}</select></label><label class="full">Observación<textarea id="pnObs"></textarea></label></div>`, `<button class="btn" onclick="InventoryUI.closeModal()">Cancelar</button><button class="btn warn" onclick="InventoryUI.submitPassNc()">Pasar a no conforme</button>`);
+  }
+  async function submitPassNc() { await run(() => InventoryService.pasarANoConforme(state, { producto_id: $('pnProducto').value, cantidad: $('pnCantidad').value, responsable: $('pnResponsable').value || 'Sin responsable', motivo: $('pnMotivo').value, situacion: $('pnSituacion').value, observacion: $('pnObs').value })); }
+  function openNcDetail(id) {
+    const nc = state.no_conformidades.find(row => row.id_nc === id);
+    const hist = state.historial_no_conformidades.filter(row => row.id_nc === id);
+    openModal(id, `<div class="grid cols-2"><div><h3>Material</h3><p>${esc(productName(nc.producto_id))}</p></div><div><h3>Código</h3><p>${esc(nc.codigo_producto)}</p></div><div><h3>Cantidad actual</h3><p>${fmt(nc.cantidad_actual)}</p></div><div><h3>Origen</h3><p>${esc(nc.origen)}</p></div><div><h3>Motivo</h3><p>${esc(nc.motivo)}</p></div><div><h3>Situación</h3><p>${esc(nc.situacion)}</p></div><div class="full"><h3>Observación</h3><p>${esc(nc.observacion || '')}</p></div></div><hr><h3>Registrar revisión</h3><div class="form-grid"><label>Resultado<select id="rvResultado">${options(InventoryService.reviewResults)}</select></label><label>Responsable<input id="rvResponsable"></label><label>Cantidad a stock<input id="rvStock" type="number" min="0" step="0.01" value="0"></label><label>Cantidad a baja<input id="rvBaja" type="number" min="0" step="0.01" value="0"></label><label>Cantidad pendiente<input id="rvPend" type="number" min="0" step="0.01" value="0"></label><label class="full">Diagnóstico<textarea id="rvDiag"></textarea></label><label class="full">Observación<textarea id="rvObs"></textarea></label></div><hr><h3>Historial</h3>${hist.map(h => `<p class="small"><strong>${formatDate(h.fecha)}</strong> · ${esc(h.accion)} · ${fmt(h.cantidad)} · ${esc(h.estado_nuevo || '')}</p>`).join('') || '<p class="muted small">Sin historial.</p>'}`, `<button class="btn" onclick="InventoryUI.closeModal()">Cerrar</button><button class="btn" onclick="InventoryUI.printNcDetail('${id}')"><i data-lucide="printer"></i>Imprimir</button><button class="btn primary" onclick="InventoryUI.submitReview('${id}')">Guardar revisión</button>`);
+  }
+  async function submitReview(id) { await run(() => InventoryService.revisarNoConformidad(state, { id_nc: id, resultado: $('rvResultado').value, responsable: $('rvResponsable').value || 'Sin responsable', cantidad_a_stock: $('rvStock').value, cantidad_a_baja: $('rvBaja').value, cantidad_pendiente: $('rvPend').value, diagnostico: $('rvDiag').value, observacion: $('rvObs').value })); }
+  function printNcDetail(id) {
+    const nc = state.no_conformidades.find(row => row.id_nc === id);
+    if (!nc) return;
+    const reviews = state.revisiones_nc.filter(row => row.id_nc === id);
+    const hist = state.historial_no_conformidades.filter(row => row.id_nc === id);
+    let printArea = document.getElementById('printArea');
+    if (!printArea) {
+      printArea = document.createElement('section');
+      printArea.id = 'printArea';
+      printArea.className = 'print-area';
+      document.body.appendChild(printArea);
+    }
+    printArea.innerHTML = `<div class="print-document"><div class="print-head"><div><h1>Detalle de no conformidad</h1><p>Sistema de inventario y calidad</p></div><strong>${esc(nc.id_nc)}</strong></div><div class="print-grid"><div><span>Material</span><strong>${esc(productName(nc.producto_id))}</strong></div><div><span>Código</span><strong>${esc(nc.codigo_producto)}</strong></div><div><span>Fecha de origen</span><strong>${formatDate(nc.fecha)}</strong></div><div><span>Origen</span><strong>${esc(nc.origen)}</strong></div><div><span>Cantidad inicial</span><strong>${fmt(nc.cantidad_inicial)}</strong></div><div><span>Cantidad actual</span><strong>${fmt(nc.cantidad_actual)}</strong></div><div><span>Motivo</span><strong>${esc(nc.motivo)}</strong></div><div><span>Situación</span><strong>${esc(nc.situacion)}</strong></div><div><span>Estado</span><strong>${esc(nc.estado_actual)}</strong></div><div><span>Responsable</span><strong>${esc(nc.responsable)}</strong></div></div><h2>Observación inicial</h2><p>${esc(nc.observacion || 'Sin observación.')}</p><h2>Revisiones registradas</h2>${reviews.length ? `<table><thead><tr><th>Fecha</th><th>Resultado</th><th>Responsable</th><th class="num">A stock</th><th class="num">A baja</th><th class="num">Pendiente</th><th>Diagnóstico</th></tr></thead><tbody>${reviews.map(r => `<tr><td>${formatDate(r.fecha)}</td><td>${esc(r.resultado)}</td><td>${esc(r.responsable)}</td><td class="num">${fmt(r.cantidad_a_stock)}</td><td class="num">${fmt(r.cantidad_a_baja)}</td><td class="num">${fmt(r.cantidad_pendiente)}</td><td>${esc(r.diagnostico || '')}</td></tr>`).join('')}</tbody></table>` : '<p>Sin revisiones registradas.</p>'}<h2>Historial</h2>${hist.length ? `<table><thead><tr><th>Fecha</th><th>Acción</th><th class="num">Cantidad</th><th>Estado</th><th>Responsable</th><th>Observación</th></tr></thead><tbody>${hist.map(h => `<tr><td>${formatDate(h.fecha)}</td><td>${esc(h.accion)}</td><td class="num">${fmt(h.cantidad)}</td><td>${esc(h.estado_nuevo || '')}</td><td>${esc(h.responsable || '')}</td><td>${esc(h.observacion || '')}</td></tr>`).join('')}</tbody></table>` : '<p>Sin historial.</p>'}<div class="print-signatures"><div>Responsable de revisión</div><div>Control de calidad</div></div></div>`;
+    window.print();
+  }
+  function formatDate(value) {
+    if (!value) return '';
+    return new Date(value).toLocaleString('es-AR');
+  }
+  function esc(value) { return String(value ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+  return { loadAll, render, setView, selectProduct, openProductModal, createProduct, openMovementModal, submitMovement, toggleNc, toggleReturnNc, addNcRow, openPassNcModal, submitPassNc, openNcDetail, submitReview, printNcDetail, closeModal };
+})();
+
+document.addEventListener('DOMContentLoaded', () => { InventoryUI.loadAll().catch(error => { console.error(error); document.body.insertAdjacentHTML('beforeend', `<div class="toast show error">${error.message}</div>`); }); if (window.lucide) lucide.createIcons(); });
+
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"752856b75eff41b09fb434bda51535c8","r":1}' crossorigin="anonymous"></script>
+</body>
+</html>

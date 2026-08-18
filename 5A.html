@@ -3,35 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Depósito Cables — RPM</title>
+<title>Depósito 5A — RPM</title>
 <style>
 /* ============================================================
    1.1 RESET Y VARIABLES BASE
    ============================================================ */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+/* El documento nunca scrollea; solo scrollean .stock-scroll / .form-scroll.
+   Esto evita que position:fixed se rompa cuando la página se embebe en un
+   iframe de Google Sites que se ajusta al alto del contenido. */
 html, body { height: 100%; overflow: hidden; }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: #0f172a;
 }
 
 /* ============================================================
-   1.2 LAYOUT GENERAL
+   1.2 LAYOUT GENERAL (.screen, .topbar)
    ============================================================ */
-.screen { position: fixed; inset: 0; display: none; flex-direction: column; overflow: hidden; }
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
 .screen.active { display: flex; }
 
-.topbar { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 54px; z-index: 10; }
-.topbar-back { background: none; border: none; color: #3b82f6; font-size: 26px; cursor: pointer; line-height: 1; padding: 0 4px 0 0; flex-shrink: 0; }
+.topbar {
+  flex-shrink: 0; display: flex; align-items: center;
+  gap: 10px; padding: 0 16px; height: 54px; z-index: 10;
+}
+.topbar-back {
+  background: none; border: none; color: #3b82f6;
+  font-size: 26px; cursor: pointer; line-height: 1; padding: 0 4px 0 0; flex-shrink: 0;
+}
 .topbar-title { font-size: 15px; font-weight: 700; color: #f1f5f9; flex: 1; }
-.topbar-badge { font-size: 11px; font-weight: 600; color: #475569; background: #1e293b; padding: 3px 9px; border-radius: 20px; flex-shrink: 0; }
+.topbar-badge {
+  font-size: 11px; font-weight: 600; color: #475569;
+  background: #1e293b; padding: 3px 9px; border-radius: 20px; flex-shrink: 0;
+}
 
 /* ============================================================
    1.3 PANTALLA HOME
    ============================================================ */
-#screen-home { background: #0f172a; align-items: center; justify-content: center; padding: 32px 24px; gap: 0; }
-.home-eyebrow { font-size: 11px; font-weight: 700; color: #334155; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; text-align: center; }
-.home-zone { font-size: 28px; font-weight: 800; color: #f1f5f9; text-align: center; line-height: 1.15; margin-bottom: 6px; letter-spacing: -0.5px; }
+#screen-home {
+  background: #0f172a;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  gap: 0;
+}
+.home-eyebrow {
+  font-size: 11px; font-weight: 700; color: #334155;
+  letter-spacing: 3px; text-transform: uppercase;
+  margin-bottom: 12px; text-align: center;
+}
+.home-zone {
+  font-size: 28px; font-weight: 800; color: #f1f5f9;
+  text-align: center; line-height: 1.15;
+  margin-bottom: 6px; letter-spacing: -0.5px;
+}
 .home-zone span { color: #3b82f6; }
 .home-sub { font-size: 13px; color: #475569; text-align: center; margin-bottom: 52px; }
 
@@ -74,24 +108,40 @@ body {
 .home-btn-back-text { flex: 1; font-size: 13px; font-weight: 700; color: #cbd5e1; }
 .home-btn-back-arrow { font-size: 15px; color: #334155; }
 
+
 /* ============================================================
-   1.4 PANTALLA STOCK
+   1.4 PANTALLA STOCK (búsqueda, filtros, tarjetas, detalle)
    ============================================================ */
 #screen-stock { background: #0f172a; }
 #screen-stock .topbar { background: #0f172a; border-bottom: 1px solid #1e293b; }
 
 .stock-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; overflow-anchor: none; }
 
-.stock-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 80px 24px; color: #475569; font-size: 13px; }
-.spinner { width: 32px; height: 32px; border: 3px solid #1e293b; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.stock-loading {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 16px; padding: 80px 24px;
+  color: #475569; font-size: 13px;
+}
+.spinner {
+  width: 32px; height: 32px; border: 3px solid #1e293b;
+  border-top-color: #3b82f6; border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.stock-error { display: none; background: #1e293b; border-radius: 16px; padding: 32px 24px; text-align: center; margin: 24px 0; }
+.stock-error {
+  display: none; background: #1e293b; border-radius: 16px;
+  padding: 32px 24px; text-align: center; margin: 24px 0;
+}
 .stock-error.show { display: block; }
 .stock-error-icon  { font-size: 36px; margin-bottom: 10px; }
 .stock-error-title { font-size: 16px; font-weight: 700; color: #f87171; margin-bottom: 8px; }
 .stock-error-msg   { font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 16px; }
-.btn-retry { background: #1d4ed8; color: white; border: none; border-radius: 10px; padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-retry {
+  background: #1d4ed8; color: white; border: none;
+  border-radius: 10px; padding: 10px 24px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
 
 .stock-content { display: none; }
 .stock-content.show { display: block; }
@@ -103,69 +153,135 @@ body {
 .sum-box.ok  .sum-num { color: #4ade80; }
 .sum-box.low .sum-num { color: #f87171; }
 
-.stock-search { display: flex; align-items: center; gap: 10px; background: #1e293b; border-radius: 12px; padding: 0 14px; margin-bottom: 10px; border: 1.5px solid transparent; transition: border-color 0.15s; }
+.stock-search {
+  display: flex; align-items: center; gap: 10px;
+  background: #1e293b; border-radius: 12px; padding: 0 14px;
+  margin-bottom: 10px; border: 1.5px solid transparent; transition: border-color 0.15s;
+}
 .stock-search:focus-within { border-color: #3b82f6; }
 .stock-search-icon { font-size: 16px; color: #475569; flex-shrink: 0; }
-.stock-search input { flex: 1; border: none; outline: none; background-color: #1e293b !important; color: #f1f5f9 !important; caret-color: #3b82f6; font-size: 14px; padding: 11px 0; font-family: inherit; color-scheme: dark; }
+.stock-search input {
+  flex: 1; border: none; outline: none;
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+  caret-color: #3b82f6;
+  font-size: 14px; padding: 11px 0; font-family: inherit;
+  color-scheme: dark;
+}
 .stock-search input::placeholder { color: #475569; }
-.stock-search input:-webkit-autofill, .stock-search input:-webkit-autofill:hover, .stock-search input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #f1f5f9 !important; -webkit-box-shadow: 0 0 0px 1000px #1e293b inset !important; transition: background-color 9999s ease-in-out 0s;
+
+.stock-search input:-webkit-autofill,
+.stock-search input:-webkit-autofill:hover,
+.stock-search input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f1f5f9 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #1e293b inset !important;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 .filter-panel { background: #1e293b; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
-.filter-panel-title { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.filter-panel-title {
+  font-size: 10px; font-weight: 700; color: #475569;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+}
 .filter-row { display: flex; flex-direction: column; gap: 8px; }
-.filter-select { width: 100%; background: #0f172a; border: 1.5px solid #334155; border-radius: 9px; color: #f1f5f9; font-size: 13px; padding: 9px 12px; appearance: none; -webkit-appearance: none; font-family: inherit; cursor: pointer; transition: border-color 0.15s; }
+
+.filter-select {
+  width: 100%; background: #0f172a; border: 1.5px solid #334155;
+  border-radius: 9px; color: #f1f5f9; font-size: 13px;
+  padding: 9px 12px; appearance: none; -webkit-appearance: none;
+  font-family: inherit; cursor: pointer; transition: border-color 0.15s;
+}
 .filter-select:focus { outline: none; border-color: #3b82f6; background-color: #0f172a; color: #f1f5f9; }
 .filter-select option { background: #1e293b; color: #f1f5f9; }
+
 .filter-chips { display: none; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .filter-chips.show { display: flex; }
-.filter-chip { background: #0f172a; border: 1.5px solid #334155; border-radius: 20px; color: #94a3b8; font-size: 12px; font-weight: 600; padding: 5px 12px; cursor: pointer; transition: all 0.12s; font-family: inherit; }
+
+.filter-chip {
+  background: #0f172a; border: 1.5px solid #334155; border-radius: 20px;
+  color: #94a3b8; font-size: 12px; font-weight: 600; padding: 5px 12px;
+  cursor: pointer; transition: all 0.12s; font-family: inherit;
+}
 .filter-chip.active { background: #1d4ed8; border-color: #3b82f6; color: white; }
-.filter-chip-label { width: 100%; font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .8px; margin: 8px 0 4px; }
-.filter-clear { display: none; background: none; border: none; color: #f87171; font-size: 11px; font-weight: 700; cursor: pointer; padding: 4px 0; font-family: inherit; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
+
+.filter-chip-label {
+  width: 100%; font-size: 10px; font-weight: 700; color: #475569;
+  text-transform: uppercase; letter-spacing: .8px; margin: 8px 0 4px;
+}
+
+.filter-clear {
+  display: none; background: none; border: none; color: #f87171;
+  font-size: 11px; font-weight: 700; cursor: pointer; padding: 4px 0;
+  font-family: inherit; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px;
+}
 .filter-clear.show { display: block; }
 
-.filtro-ubic-toggle { font-size: 12px; font-weight: 700; color: #60a5fa; cursor: pointer; margin-top: 10px; user-select: none; display: flex; align-items: center; gap: 4px; }
+.filtro-ubic-toggle {
+  font-size: 12px; font-weight: 700; color: #60a5fa; cursor: pointer;
+  margin-top: 10px; user-select: none; display: flex; align-items: center; gap: 4px;
+}
 .filtro-ubic-flecha { display: inline-block; transition: transform 0.2s; font-size: 11px; }
 .filtro-ubic-panel { display: none; margin-top: 10px; background: #0f172a; border-radius: 10px; padding: 10px; }
 .filtro-ubic-panel.show { display: block; }
 .filtro-ubic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .filtro-ubic-grid label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; display: block; }
-.filtro-ubic-limpiar { width: 100%; margin-top: 8px; padding: 8px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; font-size: 11px; font-weight: 700; color: #94a3b8; cursor: pointer; font-family: inherit; }
+.filtro-ubic-limpiar {
+  width: 100%; margin-top: 8px; padding: 8px; background: #1e293b; border: 1px solid #334155;
+  border-radius: 8px; font-size: 11px; font-weight: 700; color: #94a3b8; cursor: pointer; font-family: inherit;
+}
 
 .stock-list { display: flex; flex-direction: column; gap: 8px; }
-.fam-header { font-size: 14px; font-weight: 700; color: #f8fafc; text-align: center; text-transform: uppercase; letter-spacing: 1px; padding: 20px 4px 10px; border-bottom: 1px solid #334155; margin-bottom: 12px; }
+.fam-header {
+  font-size: 14px; font-weight: 700; color: #f8fafc;
+  text-align: center; text-transform: uppercase; letter-spacing: 1px;
+  padding: 20px 4px 10px; border-bottom: 1px solid #334155; margin-bottom: 12px;
+}
 
 .stock-card { background: #1e293b; border-radius: 14px; padding: 14px 16px; cursor: pointer; transition: background 0.12s; }
 .stock-card:active { background: #263147; }
+
 .sc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 8px; }
 .sc-family { font-size: 12px; font-weight: 700; color: #FCD34D; text-transform: uppercase; letter-spacing: 0.8px; flex: 1; }
 .sc-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
 .sc-status.ok      { background: #052e16; color: #4ade80; }
 .sc-status.reponer { background: #2d0b0b; color: #f87171; }
-.sc-icon-btn { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: #0f172a; color: #93c5fd; border: 1px solid #334155; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; touch-action: manipulation; }
+
+.sc-icon-btn {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  background: #0f172a; color: #93c5fd; border: 1px solid #334155;
+  font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  line-height: 1; padding: 0;
+}
 .sc-icon-btn:disabled { opacity: 0.6; cursor: wait; }
 .sc-icon-btn.loc-btn { color: #fbbf24; }
+
 .sc-desc  { font-size: 14px; font-weight: 600; color: #f8fafc; line-height: 1.3; margin-bottom: 2px; }
+
 .sc-info-line { font-size: 12px; color: #94a3b8; margin-bottom: 4px; line-height: 1.4; }
 .sc-info-line strong { color: #cbd5e1; font-weight: 700; }
+
 .sc-bottom { display: flex; justify-content: space-between; align-items: center; }
 .sc-id  { font-size: 11px; color: #334155; }
 .sc-qty { font-size: 20px; font-weight: 800; }
 .sc-qty.ok      { color: #4ade80; }
 .sc-qty.reponer { color: #f87171; }
 .sc-qty.zero    { color: #dc2626; }
-.link-editar-obs{font-size:11px;font-weight:700;color:#60a5fa;cursor:pointer;margin-left:8px;text-decoration:underline}
 
 .stock-empty { display: none; text-align: center; padding: 40px 24px; color: #475569; font-size: 13px; }
 .stock-empty.show { display: block; }
 .stock-empty-icon { font-size: 32px; margin-bottom: 8px; }
+
 .stock-footer { text-align: center; font-size: 11px; color: #334155; margin-top: 24px; padding-bottom: 24px; }
 
-.detail-overlay { position: absolute; inset: 0; background: #0f172a; display: none; flex-direction: column; z-index: 20; }
+.detail-overlay {
+  position: absolute; inset: 0; background: #0f172a;
+  display: none; flex-direction: column; z-index: 20;
+}
 .detail-overlay.show { display: flex; }
-.detail-topbar { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 54px; border-bottom: 1px solid #1e293b; }
+.detail-topbar {
+  flex-shrink: 0; display: flex; align-items: center; gap: 10px;
+  padding: 0 16px; height: 54px; border-bottom: 1px solid #1e293b;
+}
 .detail-topbar-back { background: none; border: none; color: #3b82f6; font-size: 26px; cursor: pointer; line-height: 1; padding: 0 4px 0 0; }
 .detail-topbar-title { font-size: 14px; font-weight: 600; color: #64748b; }
 .detail-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
@@ -195,7 +311,10 @@ body {
 .detail-last strong { color: #f1f5f9; }
 
 .detail-actions { display: flex; gap: 8px; margin-bottom: 10px; }
-.detail-actions button { flex: 1; padding: 12px; border-radius: 12px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.detail-actions button {
+  flex: 1; padding: 12px; border-radius: 12px; border: none; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
 .detail-actions .btn-foto-detail { background: #1e3a5f; color: #93c5fd; }
 .detail-actions .btn-loc-detail  { background: #3f2d0f; color: #fbbf24; }
 
@@ -203,7 +322,7 @@ body {
 .detail-img-preview img { flex: 1; max-width: 48%; border-radius: 10px; cursor: zoom-in; border: 1px solid #334155; }
 
 /* ============================================================
-   1.5 PANTALLA FORMULARIO
+   1.5 PANTALLA FORMULARIO (acordeones, campos, ubicación, fotos)
    ============================================================ */
 #screen-form { background: #f0f2f5; }
 #screen-form .topbar { background: #1a1a2e; border-bottom: 1px solid #0f0f1e; }
@@ -221,60 +340,76 @@ label { display: block; font-size: 12px; font-weight: 700; color: #555; margin-b
 label .req { color: #dc2626; margin-left: 2px; }
 label .opc { color: #9ca3af; font-weight: 400; text-transform: none; margin-left: 4px; }
 
-select, input[type="text"], input[type="number"], input[type="file"], textarea {
-  width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 9px; font-size: 15px; color: #1f2937; background: #f9fafb; margin-bottom: 14px; appearance: none; -webkit-appearance: none; font-family: inherit;
+select,
+input[type="text"],
+input[type="number"],
+input[type="file"],
+textarea {
+  width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb;
+  border-radius: 9px; font-size: 15px; color: #1f2937; background: #f9fafb;
+  margin-bottom: 14px; appearance: none; -webkit-appearance: none; font-family: inherit;
 }
 option { color: #1f2937; background: #ffffff; }
 select:focus, input:focus, textarea:focus { outline: none; border-color: #3b82f6; background: white; }
 select.err, input.err { border-color: #dc2626; background: #fff5f5; margin-bottom: 4px; }
 
-.f-err-msg { display: none; font-size: 11px; color: #dc2626; font-weight: 700; background: #fee2e2; border-left: 3px solid #dc2626; border-radius: 5px; padding: 4px 8px; margin-bottom: 10px; }
+.f-err-msg {
+  display: none; font-size: 11px; color: #dc2626; font-weight: 700;
+  background: #fee2e2; border-left: 3px solid #dc2626; border-radius: 5px;
+  padding: 4px 8px; margin-bottom: 10px;
+}
 .f-err-msg.show { display: block; }
 
 .campo-otro { display: none; margin-top: -10px; }
 .campo-otro-item { display: none; margin-top: -10px; margin-bottom: 14px; }
 .campo-otro-item.err { border-color: #dc2626; background: #fff5f5; }
-.acordeon-btn { width: 100%; background: #1a1a2e; color: white; border: none; border-radius: 10px; padding: 14px 16px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; transition: background 0.15s; font-family: inherit; }
+.acordeon-btn {
+
+  width: 100%; background: #1a1a2e; color: white; border: none;
+  border-radius: 10px; padding: 14px 16px; font-size: 14px; font-weight: 600;
+  cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 4px; transition: background 0.15s; font-family: inherit;
+}
 .acordeon-btn:hover   { background: #2d2d4e; }
 .acordeon-btn.open    { background: #2563eb; border-radius: 10px 10px 0 0; margin-bottom: 0; }
 .acordeon-btn.has-err { background: #dc2626 !important; }
 .acordeon-arrow { font-size: 16px; transition: transform 0.25s; }
 .acordeon-btn.open .acordeon-arrow { transform: rotate(180deg); }
-.acordeon-body { display: none; background: white; border: 1.5px solid #2563eb; border-top: none; border-radius: 0 0 10px 10px; padding: 14px; margin-bottom: 10px; }
+
+.acordeon-body {
+  display: none; background: white; border: 1.5px solid #2563eb;
+  border-top: none; border-radius: 0 0 10px 10px; padding: 14px; margin-bottom: 10px;
+}
 .acordeon-body.open { display: block; }
+
+.sub-tab-bar { display: flex; gap: 6px; margin-bottom: 14px; }
+.sub-tab-btn {
+  flex: 1; padding: 8px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px;
+  background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center;
+}
+.sub-tab-btn.active { background: #2563eb; border-color: #2563eb; color: white; }
+.sub-tab-panel { display: none; }
+.sub-tab-panel.active { display: block; }
 
 .item-block { background: #f8f9ff; border: 1px solid #e0e4f0; border-radius: 9px; padding: 12px; margin-bottom: 10px; }
 .item-block-title { font-size: 11px; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
-.btn-add { width: 100%; padding: 10px; background: #f0f4ff; border: 1.5px dashed #2563eb; border-radius: 8px; color: #2563eb; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; font-family: inherit; }
+
+.btn-add {
+  width: 100%; padding: 10px; background: #f0f4ff;
+  border: 1.5px dashed #2563eb; border-radius: 8px;
+  color: #2563eb; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s; font-family: inherit;
+}
 .btn-add:hover { background: #dbeafe; }
+
 .btn-del { float: right; background: none; border: none; color: #dc2626; font-size: 17px; cursor: pointer; line-height: 1; padding: 0 0 6px 8px; }
+
 .qty-unit { display: flex; gap: 8px; margin-bottom: 14px; }
 .qty-unit input[type="number"] { flex: 1; margin-bottom: 0; }
 .qty-unit select { flex: 0 0 86px; margin-bottom: 0; font-size: 13px; }
 
-.nota-info{font-size:12px;color:#1e40af;background:#dbeafe;border-radius:6px;padding:6px 10px;margin-top:-10px;margin-bottom:10px;border-left:3px solid #2563eb}
-.nota-warn { display: none; font-size: 11px; color: #92400e; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 5px; padding: 5px 9px; margin-top: -10px; margin-bottom: 10px; }
-.nota-warn.show { display: block; }
-
-.color-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.color-chip{padding:7px 12px;border-radius:20px;border:2px solid #ddd;font-size:13px;font-weight:600;cursor:pointer;color:#333;transition:all .15s;background:#fafafa;font-family:inherit}
-.color-chip.sel{border-color:#0f172a;box-shadow:0 0 0 2px #2563eb}
-.cc-azul{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
-.cc-azul.sel{border-color:#1e40af;box-shadow:0 0 0 2px #1e40af}
-.cc-bicolor{background:linear-gradient(135deg,#fef08a 50%,#86efac 50%);color:#333;border-color:#aaa}
-.cc-bicolor.sel{box-shadow:0 0 0 2px #0f172a}
-.cc-blanco{background:#f8fafc;color:#555;border-color:#cbd5e1}
-.cc-blanco.sel{border-color:#64748b;box-shadow:0 0 0 2px #64748b}
-.cc-celeste{background:#e0f2fe;color:#0369a1;border-color:#7dd3fc}
-.cc-celeste.sel{border-color:#0369a1;box-shadow:0 0 0 2px #0369a1}
-.cc-marron{background:#fef3e2;color:#92400e;border-color:#fbbf24}
-.cc-marron.sel{border-color:#92400e;box-shadow:0 0 0 2px #92400e}
-.cc-negro{background:#1e293b;color:#f1f5f9;border-color:#475569}
-.cc-negro.sel{border-color:#0f172a;box-shadow:0 0 0 2px #0f172a}
-.cc-rojo{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
-.cc-rojo.sel{border-color:#991b1b;box-shadow:0 0 0 2px #991b1b}
-.cc-verde{background:#dcfce7;color:#166534;border-color:#86efac}
-.cc-verde.sel{border-color:#166534;box-shadow:0 0 0 2px #166534}
+.kit-hint { display: none; font-size: 11px; color: #92400e; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 5px; padding: 5px 9px; margin-top: -10px; margin-bottom: 10px; }
 
 .badge-new { display: inline-block; background: #fef3c7; color: #92400e; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .3px; }
 
@@ -285,27 +420,40 @@ select.err, input.err { border-color: #dc2626; background: #fff5f5; margin-botto
 .f-err-banner ul li { font-size: 12px; color: #7f1d1d; padding: 2px 0 2px 14px; position: relative; }
 .f-err-banner ul li::before { content: "⚠"; position: absolute; left: 0; color: #dc2626; }
 
-.btn-submit { width: 100%; padding: 16px; background: #16a34a; color: white; border: none; border-radius: 13px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background 0.15s; font-family: inherit; letter-spacing: 0.3px; }
+.btn-submit {
+  width: 100%; padding: 16px; background: #16a34a; color: white;
+  border: none; border-radius: 13px; font-size: 16px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: background 0.15s;
+  font-family: inherit; letter-spacing: 0.3px;
+}
 .btn-submit:hover    { background: #15803d; }
 .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
 
-.form-overlay { display: none; position: fixed; inset: 0; z-index: 999; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; }
+.form-overlay {
+  display: none; position: fixed; inset: 0; z-index: 999;
+  flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px; text-align: center;
+}
 .form-overlay.show   { display: flex; }
 .form-overlay-ok  { background: #f0fdf4; }
 .form-overlay-err { background: #fff5f5; }
+
 .ov-icon { font-size: 70px; margin-bottom: 16px; animation: pop 0.45s ease; }
 @keyframes pop { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
 .ov-title-ok  { font-size: 24px; font-weight: 800; color: #15803d; margin-bottom: 8px; }
 .ov-title-err { font-size: 24px; font-weight: 800; color: #dc2626; margin-bottom: 8px; }
 .ov-sub       { font-size: 15px; color: #555; margin-bottom: 20px; line-height: 1.5; }
+
 .ov-err-list { list-style: none; padding: 0; margin-bottom: 24px; width: 100%; max-width: 340px; text-align: left; }
 .ov-err-list li { font-size: 13px; font-weight: 600; color: #7f1d1d; background: #fee2e2; border-left: 4px solid #dc2626; border-radius: 6px; padding: 7px 12px; margin-bottom: 8px; }
+
 .ov-btn { padding: 14px 28px; border: none; border-radius: 13px; font-size: 16px; font-weight: 700; cursor: pointer; color: white; transition: background 0.15s; font-family: inherit; }
 .ov-btn-ok  { background: #2563eb; }
 .ov-btn-ok:hover  { background: #1d4ed8; }
 .ov-btn-err { background: #dc2626; }
 .ov-btn-err:hover { background: #b91c1c; }
 
+/* ── Ubicación por ítem (formulario) ── */
 .ubic-bloque { display: none; margin-top: 4px; background: #f0f7ff; border: 1px solid #dbeafe; border-radius: 9px; padding: 12px; margin-bottom: 4px; }
 .ubic-bloque.activa { display: block; }
 .ubic-bloque .f-section-title { color: #2563eb; margin-bottom: 8px; }
@@ -317,13 +465,14 @@ select.err, input.err { border-color: #dc2626; background: #fff5f5; margin-botto
 .info-ubicacion.ok  { background: #dcfce7; color: #166534; }
 .info-ubicacion.err { background: #fee2e2; color: #991b1b; }
 
+/* ── Foto por ítem (formulario) ── */
 .foto-bloque { margin-top: 4px; }
-.foto-preview-gestion { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 
 /* ============================================================
-   1.6 CARRITO RÁPIDO / BARRA FLOTANTE
+   1.6 CARRITO RÁPIDO / BARRA FLOTANTE (y acciones rápidas de stock)
    ============================================================ */
 button, .sc-icon-btn, .btn-mov { outline: none; }
+.link-editar-obs{font-size:11px;font-weight:700;color:#60a5fa;cursor:pointer;margin-left:8px;text-decoration:underline}
 .btn-mov{width:100%;height:36px;padding:0 14px;border-radius:10px;color:white;border:none;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;background:#2563eb;white-space:nowrap;margin-top:10px}
 .btn-mov:hover{background:#1d4ed8}
 .mini-confirm{margin-top:8px;padding:10px;background:#0f172a;border:1.5px solid #334155;border-radius:8px}
@@ -344,8 +493,9 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
 .mini-confirm-acciones .btn-mini-ok{background:#2563eb;color:white}
 .mini-confirm-acciones .btn-mini-cancel{background:#334155;color:#cbd5e1}
 
-.barra-carrito{display:none;flex-shrink:0;width:100%;background:#020617;color:white;padding:12px 16px;align-items:center;justify-content:space-between;box-shadow:0 4px 12px rgba(0,0,0,.4);position:relative;z-index:5}
-.barra-carrito.visible{display:flex}
+/* Barra de carrito rápido: ahora es un ítem más del flex-column de
+   #screen-stock (ver HTML), NO position:fixed. Ver nota en html,body arriba. */
+.barra-carrito{display:none;flex-shrink:0;width:100%;background:#020617;color:white;padding:12px 16px;align-items:center;justify-content:space-between;box-shadow:0 4px 12px rgba(0,0,0,.4);position:relative;z-index:5}.barra-carrito.visible{display:flex}
 .barra-carrito.tipo-salida{background:#7f1d1d}
 .barra-carrito-texto{font-size:14px;font-weight:700}
 .barra-carrito-btns{display:flex;gap:8px}
@@ -355,14 +505,15 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
 .badge-carrito{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;vertical-align:middle}
 .badge-carrito-entrada{background:#052e16;color:#4ade80}
 .badge-carrito-salida{background:#3b1414;color:#fca5a5}
+.badge-foto{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;vertical-align:middle;background:#1e3a5f;color:#93c5fd}
 .stock-card.en-carrito-entrada{border-left:4px solid #16a34a}
 .stock-card.en-carrito-salida{border-left:4px solid #dc2626}
 
 /* ============================================================
-   1.7 OVERLAYS Y MODALES
+   1.7 OVERLAYS Y MODALES (zoom, confirmación, toasts)
    ============================================================ */
+/* ── Toast, modales, zoom (stock) ── */
 .toast-dep { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); color: white; padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 1002; max-width: 90%; text-align: center; transition: top 0.3s ease; }
-.badge-foto{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;vertical-align:middle;background:#1e3a5f;color:#93c5fd}
 .zoom-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; cursor: zoom-out; padding: 24px; }
 .zoom-overlay img { max-width: 100%; max-height: 100%; border-radius: 8px; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1001; padding: 24px; }
@@ -376,12 +527,22 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
 .modal-btn.cancel { background: transparent; color: #94a3b8; }
 .modal-ubic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; text-align: left; }
 .modal-ubic-grid label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; display: block; }
-.modal-ubic-grid select { width: 100%; background: #0f172a; border: 1.5px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 13px; padding: 8px 10px; margin-bottom: 0; font-family: inherit; }
+.modal-ubic-grid select {
+  width: 100%; background: #0f172a; border: 1.5px solid #334155; border-radius: 8px;
+  color: #f1f5f9; font-size: 13px; padding: 8px 10px; margin-bottom: 0; font-family: inherit;
+}
 
+/* ── Gestión de fotos (agregar/eliminar) ── */
+.sc-icon-btn { touch-action: manipulation; }
 .modal-imgs-gestion { flex-wrap: wrap; }
 .foto-slot { position: relative; width: 80px; }
 .foto-slot img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #334155; cursor: zoom-in; }
-.foto-slot-del { position: absolute; top: -6px; right: -6px; width: 26px; height: 26px; border-radius: 50%; background: #dc2626; color: white; border: 2px solid #1e293b; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; touch-action: manipulation; }
+.foto-slot-del {
+  position: absolute; top: -6px; right: -6px; width: 26px; height: 26px;
+  border-radius: 50%; background: #dc2626; color: white; border: 2px solid #1e293b;
+  font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; touch-action: manipulation;
+}
 </style>
 </head>
 <body>
@@ -391,14 +552,14 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
      ============================================================ -->
 <div id="screen-home" class="screen active">
   <div class="home-eyebrow">RPM Construcciones</div>
-  <div class="home-zone">🔵 Cables</div>
+  <div class="home-zone">📦 Depósito 5A</div>
   <div class="home-sub">¿Qué querés hacer?</div>
 
   <button class="home-btn home-btn-stock" onclick="goStock()">
     <div class="home-btn-icon">📋</div>
     <div class="home-btn-text">
       <div class="home-btn-title">Ver stock</div>
-      <div class="home-btn-desc">Inventario actual de cables</div>
+      <div class="home-btn-desc">Inventario actual de esta zona</div>
     </div>
     <span class="home-btn-arrow">›</span>
   </button>
@@ -412,7 +573,7 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
     <span class="home-btn-arrow">›</span>
   </button>
 
-  <a href="https://sites.google.com/view/depositomaestro/inicio" target="_blank" class="home-btn-back">
+  <a href="https://sites.google.com/view/depositomaestro/inicio" class="home-btn-back">
     <div class="home-btn-back-icon">🔍</div>
     <div class="home-btn-back-text">Volver al buscador general</div>
     <span class="home-btn-back-arrow">›</span>
@@ -424,21 +585,20 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
      2.2 PANTALLA STOCK
      ============================================================ -->
 <div id="screen-stock" class="screen" style="position:fixed;">
-    <div class="topbar">
-        <button class="topbar-back" onclick="goHome()">‹</button>
-        <span class="topbar-title">Stock actual</span>
-        <span class="topbar-badge">📍 Cables</span>
+  <div class="topbar">
+    <button class="topbar-back" onclick="goHome()">‹</button>
+    <span class="topbar-title">Stock actual</span>
+    <span class="topbar-badge">📍 Dep. 5A</span>
+  </div>
+  <div class="barra-carrito" id="barra_carrito">
+    <div class="barra-carrito-texto" id="barra_carrito_texto"></div>
+    <div class="barra-carrito-btns">
+      <button class="btn-carrito-vaciar" onclick="vaciarCarritoRapido()">Vaciar</button>
+      <button class="btn-carrito-confirmar" onclick="abrirModalConfirmarCarrito()">Confirmar</button>
     </div>
+  </div>
 
-    <div class="barra-carrito" id="barra_carrito">
-        <div class="barra-carrito-texto" id="barra_carrito_texto"></div>
-        <div class="barra-carrito-btns">
-        <button class="btn-carrito-vaciar" onclick="vaciarCarritoRapido()">Vaciar</button>
-        <button class="btn-carrito-confirmar" onclick="abrirModalConfirmarCarrito()">Confirmar</button>
-        </div>
-    </div>
-
-  <div class="stock-scroll">
+    <div class="stock-scroll">
     <div id="stock-loading" class="stock-loading">
       <div class="spinner"></div>
       <span>Cargando inventario...</span>
@@ -453,12 +613,18 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
 
     <div id="stock-content" class="stock-content">
       <div class="stock-summary">
-        <div class="sum-box ok"><div class="sum-num" id="sum-ok">—</div><div class="sum-label">OK</div></div>
-        <div class="sum-box low"><div class="sum-num" id="sum-low">—</div><div class="sum-label">Reponer</div></div>
+        <div class="sum-box ok">
+          <div class="sum-num" id="sum-ok">—</div>
+          <div class="sum-label">OK</div>
+        </div>
+        <div class="sum-box low">
+          <div class="sum-num" id="sum-low">—</div>
+          <div class="sum-label">Reponer</div>
+        </div>
       </div>
       <div class="stock-search">
         <span class="stock-search-icon">🔍</span>
-        <input type="search" id="search-input" placeholder="Buscar cable, sección, marca..." oninput="applyFilters()">
+        <input type="search" id="search-input" placeholder="Buscar producto, marca..." oninput="applyFilters()">
       </div>
 
       <div class="filter-panel">
@@ -476,17 +642,32 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
         </div>
         <div class="filtro-ubic-panel" id="filtro-ubic-panel">
           <div class="filtro-ubic-grid">
-            <div><label>Depósito</label><select class="filter-select" id="filtro-ubic-deposito" onchange="applyFilters()"><option value="">— Todos —</option></select></div>
-            <div><label>Estante</label><select class="filter-select" id="filtro-ubic-estante" onchange="applyFilters()"><option value="">— Todos —</option></select></div>
-            <div><label>Columna</label><select class="filter-select" id="filtro-ubic-columna" onchange="applyFilters()"><option value="">— Todos —</option></select></div>
-            <div><label>Fila</label><select class="filter-select" id="filtro-ubic-fila" onchange="applyFilters()"><option value="">— Todos —</option></select></div>
+            <div>
+              <label>Depósito</label>
+              <select class="filter-select" id="filtro-ubic-deposito" onchange="applyFilters()"><option value="">— Todos —</option></select>
+            </div>
+            <div>
+              <label>Estante</label>
+              <select class="filter-select" id="filtro-ubic-estante" onchange="applyFilters()"><option value="">— Todos —</option></select>
+            </div>
+            <div>
+              <label>Columna</label>
+              <select class="filter-select" id="filtro-ubic-columna" onchange="applyFilters()"><option value="">— Todos —</option></select>
+            </div>
+            <div>
+              <label>Fila</label>
+              <select class="filter-select" id="filtro-ubic-fila" onchange="applyFilters()"><option value="">— Todos —</option></select>
+            </div>
           </div>
           <button class="filtro-ubic-limpiar" onclick="limpiarFiltroUbicacion()">Limpiar filtro de ubicación</button>
         </div>
       </div>
 
       <div class="stock-list" id="stock-list"></div>
-      <div class="stock-empty" id="stock-empty"><div class="stock-empty-icon">🔎</div>Sin resultados para esa búsqueda</div>
+      <div class="stock-empty" id="stock-empty">
+        <div class="stock-empty-icon">🔎</div>
+        Sin resultados para esa búsqueda
+      </div>
       <div class="stock-footer" id="stock-footer"></div>
     </div>
   </div>
@@ -508,7 +689,7 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
   <div class="topbar">
     <button class="topbar-back" onclick="goHome()">‹</button>
     <span class="topbar-title">Registrar movimiento</span>
-    <span class="topbar-badge">📍 Cables</span>
+    <span class="topbar-badge">📍 Dep. 5A</span>
   </div>
 
   <div class="form-scroll">
@@ -538,72 +719,187 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
     </div>
 
     <div class="f-card">
-      <div class="f-section-title">Cables a registrar</div>
+      <div class="f-section-title">Productos a registrar</div>
       <p style="font-size:12px;color:#9ca3af;margin-bottom:8px;">Tocá la familia para desplegar. Podés cargar varias en un mismo envío. La ubicación se pide en ENTRADA y DEVOLUCIÓN; en SALIDA no hace falta.</p>
       <div id="borrador_estado" class="borrador-estado">Borrador guardado automáticamente en este navegador.</div>
 
-      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_unipolar')">🔵 Cable Unipolar <span class="acordeon-arrow">▾</span></button>
-      <div id="bloque_unipolar" class="acordeon-body"><div id="items_unipolar"></div><button class="btn-add" onclick="addItem('unipolar')">+ Agregar cable unipolar</button></div>
+      <!-- TÉRMICA -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_termicas')">
+        🔌 Interruptor Termomagnético <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_termicas" class="acordeon-body">
+        <div id="items_termicas"></div>
+        <button class="btn-add" onclick="addItem('termicas')">+ Agregar térmica</button>
+      </div>
 
-      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_ttr')" style="margin-top:8px">🟤 Cable Tipo Taller (TTR) <span class="acordeon-arrow">▾</span></button>
-      <div id="bloque_ttr" class="acordeon-body"><div id="items_ttr"></div><button class="btn-add" onclick="addItem('ttr')">+ Agregar cable TTR</button></div>
+      <!-- DISYUNTOR -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_disyuntores')" style="margin-top:8px">
+        ⚡ Disyuntor Diferencial <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_disyuntores" class="acordeon-body">
+        <div id="items_disyuntores"></div>
+        <button class="btn-add" onclick="addItem('disyuntores')">+ Agregar disyuntor</button>
+      </div>
 
-      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_subterraneo')" style="margin-top:8px">🟡 Cable Subterráneo <span class="acordeon-arrow">▾</span></button>
-      <div id="bloque_subterraneo" class="acordeon-body"><div id="items_subterraneo"></div><button class="btn-add" onclick="addItem('subterraneo')">+ Agregar cable subterráneo</button></div>
+      <!-- GUARDAMOTOR -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_guardamotores')" style="margin-top:8px">
+        ⚙️ Guardamotor <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_guardamotores" class="acordeon-body">
+        <div id="items_guardamotores"></div>
+        <button class="btn-add" onclick="addItem('guardamotores')">+ Agregar guardamotor</button>
+      </div>
 
-      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_preen')" style="margin-top:8px">🟣 Cable Preensamblado de Aluminio (Aéreo) <span class="acordeon-arrow">▾</span></button>
-      <div id="bloque_preen" class="acordeon-body"><div id="items_preen"></div><button class="btn-add" onclick="addItem('preen')">+ Agregar cable preensamblado</button></div>
+      <!-- BORNERAS -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_borneras')" style="margin-top:8px">
+        🔗 Bornera <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_borneras" class="acordeon-body">
+        <div class="sub-tab-bar">
+          <button class="sub-tab-btn active" onclick="switchSubTab('borneras','fija',this)">Fija</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('borneras','barra',this)">Barra (Distribución)</button>
+        </div>
+        <div id="subtab_borneras_fija" class="sub-tab-panel active">
+          <div id="items_borneras"></div>
+          <button class="btn-add" onclick="addItem('borneras')">+ Agregar bornera fija</button>
+        </div>
+        <div id="subtab_borneras_barra" class="sub-tab-panel">
+          <div id="items_borneras_barra"></div>
+          <button class="btn-add" onclick="addItem('borneras_barra')">+ Agregar bornera de barra</button>
+        </div>
+      </div>
 
-      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_conc')" style="margin-top:8px">🟠 Cable Concéntrico (Antihurto) <span class="acordeon-arrow">▾</span></button>
-      <div id="bloque_conc" class="acordeon-body"><div id="items_conc"></div><button class="btn-add" onclick="addItem('conc')">+ Agregar cable concéntrico</button></div>
+      <!-- FUSIBLES -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_fusibles')" style="margin-top:8px">
+        🔥 Fusible <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_fusibles" class="acordeon-body">
+        <div id="items_fusibles"></div>
+        <button class="btn-add" onclick="addItem('fusibles')">+ Agregar fusible</button>
+      </div>
 
-      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_desnudo')" style="margin-top:8px">⚫ Cable Desnudo <span class="acordeon-arrow">▾</span></button>
-      <div id="bloque_desnudo" class="acordeon-body"><div id="items_desnudo"></div><button class="btn-add" onclick="addItem('desnudo')">+ Agregar cable desnudo</button></div>
+      <!-- PORTAFUSIBLES -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_portafusibles')" style="margin-top:8px">
+        📦 Portafusible <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_portafusibles" class="acordeon-body">
+        <div id="items_portafusibles"></div>
+        <button class="btn-add" onclick="addItem('portafusibles')">+ Agregar portafusible</button>
+      </div>
 
-      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_especial')" style="margin-top:8px">🟢 Cables Especiales (UTP, Rienda, DMX) <span class="acordeon-arrow">▾</span></button>
-      <div id="bloque_especial" class="acordeon-body"><div id="items_especial"></div><button class="btn-add" onclick="addItem('especial')">+ Agregar cable especial</button></div>
+      <!-- FUENTES — con sub-solapas: Estándar / LED Lineal -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_fuentes')" style="margin-top:8px">
+        🔋 Fuente de Alimentación <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_fuentes" class="acordeon-body">
+        <div class="sub-tab-bar">
+          <button class="sub-tab-btn active" onclick="switchSubTab('fuentes','estandar',this)">Estándar</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('fuentes','led',this)">Especial LED Lineal</button>
+        </div>
+        <div id="subtab_fuentes_estandar" class="sub-tab-panel active">
+          <div id="items_fuentes"></div>
+          <button class="btn-add" onclick="addItem('fuentes')">+ Agregar fuente estándar</button>
+        </div>
+        <div id="subtab_fuentes_led" class="sub-tab-panel">
+          <div id="items_fuentes_led"></div>
+          <button class="btn-add" onclick="addItem('fuentes_led')">+ Agregar fuente LED lineal</button>
+        </div>
+      </div>
 
-      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_nuevo')" style="margin-top:8px">➕ Cable no listado <span class="acordeon-arrow">▾</span></button>
+      <!-- DMX -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_dmx')" style="margin-top:8px">
+        🎛️ Decodificador DMX RGB <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_dmx" class="acordeon-body">
+        <div id="items_dmx"></div>
+        <button class="btn-add" onclick="addItem('dmx')">+ Agregar decodificador</button>
+      </div>
+
+      <!-- CONTACTORES -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_contactores')" style="margin-top:8px">
+        🔄 Contactor <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_contactores" class="acordeon-body">
+        <div id="items_contactores"></div>
+        <button class="btn-add" onclick="addItem('contactores')">+ Agregar contactor</button>
+      </div>
+
+      <!-- PULSADORES -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_pulsadores')" style="margin-top:8px">
+        🔘 Pulsador <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_pulsadores" class="acordeon-body">
+        <div id="items_pulsadores"></div>
+        <button class="btn-add" onclick="addItem('pulsadores')">+ Agregar pulsador</button>
+      </div>
+
+      <!-- OJOS DE BUEY -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_ojosbuey')" style="margin-top:8px">
+        💡 Ojo de Buey <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_ojosbuey" class="acordeon-body">
+        <div id="items_ojosbuey"></div>
+        <button class="btn-add" onclick="addItem('ojosbuey')">+ Agregar ojo de buey</button>
+      </div>
+
+      <!-- BLOQUE AUXILIAR -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_bloqueaux')" style="margin-top:8px">
+        🔌 Bloque de Contacto Auxiliar <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_bloqueaux" class="acordeon-body">
+        <div id="items_bloqueaux"></div>
+        <button class="btn-add" onclick="addItem('bloqueaux')">+ Agregar bloque auxiliar</button>
+      </div>
+
+      <!-- TERMINALES / CONECTORES -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_terminales')" style="margin-top:8px">
+        🔧 Terminal / Conector <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_terminales" class="acordeon-body">
+        <div id="items_terminales"></div>
+        <button class="btn-add" onclick="addItem('terminales')">+ Agregar terminal</button>
+      </div>
+
+      <!-- PRODUCTO NO LISTADO -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_nuevo')" style="margin-top:8px">
+        ➕ Producto no listado <span class="acordeon-arrow">▾</span>
+      </button>
       <div id="bloque_nuevo" class="acordeon-body">
         <div class="badge-new">⚠ Temporal — agregar luego a la lista fija</div>
         <label>Descripción <span class="req">*</span></label>
-        <input type="text" id="nuevo_descripcion" placeholder="Ej: Cable apantallado 2x1.5mm²">
+        <input type="text" id="nuevo_descripcion" placeholder="Ej: Contactor 40A Schneider">
         <label>Cantidad <span class="req">*</span></label>
         <div class="qty-unit">
           <input type="number" id="nuevo_cantidad" min="1" placeholder="0">
-          <select id="nuevo_unidad"><option value="m">m</option><option value="bobina">bobina</option><option value="un">un</option></select>
-        </div>
-        <label>Presentación por rollo (m) <span class="opc">(opcional)</span></label>
-        <select id="nuevo_presentacion" onchange="togglePresentacionCable(this,'nuevo')">
-          <option value="">— Seleccioná presentación —</option>
-          <option value="100">100</option>
-          <option value="150">150</option>
-          <option value="200">200</option>
-          <option value="300">300</option>
-          <option value="500">500</option>
-          <option value="Bobina (peso variable)">Bobina (peso variable)</option>
-          <option value="OTRO">Otro (especificar metros)…</option>
-        </select>
-        <div id="pesobob_nuevo" style="display:none">
-          <label>Peso de bobina (kg) <span class="req">*</span></label>
-          <input type="number" id="nuevo_peso_bobina" data-campo="peso_bobina" min="0" step="0.1" placeholder="Ej: 25">
-          <div class="nota-warn show">⚖️ Viene en bobina (no en rollo de largo fijo) — indicá el peso, es obligatorio.</div>
-        </div>
-        <div id="otropres_nuevo" style="display:none">
-          <label>Metros por rollo <span class="req">*</span></label>
-          <input type="number" id="nuevo_presentacion_otro" data-campo="presentacion_otro" min="1" placeholder="Ej: 250">
+          <select id="nuevo_unidad">
+            <option value="un">un</option><option value="par">par</option>
+            <option value="m">m</option><option value="rollo">rollo</option>
+            <option value="caja">caja</option><option value="kit">kit</option>
+          </select>
         </div>
         <label>Observación <span class="opc">(opcional)</span></label>
-        <input type="text" id="nuevo_observacion" placeholder="Sección, marca, N° bobina...">
+        <input type="text" id="nuevo_observacion" placeholder="Aclaraciones sobre el ítem">
 
         <div id="ubicacion_bloque_nuevo" class="ubic-bloque">
           <div class="f-section-title">Ubicación</div>
           <div class="ubic-bloque-help">Se completa sola en devolución; en entrada la cargás manualmente.</div>
           <div class="ubic-grid">
-            <div><label>Depósito</label><select id="nuevo_deposito"><option value="">— Seleccioná —</option><option value="4">4</option></select></div>
-            <div><label>Estante</label><select id="nuevo_estante"><option value="">— Seleccioná —</option></select></div>
-            <div><label>Columna</label><select id="nuevo_columna"><option value="">— Seleccioná —</option></select></div>
-            <div><label>Fila</label><select id="nuevo_fila"><option value="">— Seleccioná —</option></select></div>
+            <div>
+              <label>Depósito</label>
+              <select id="nuevo_deposito"><option value="">— Seleccioná —</option><option value="5A">5A</option></select>
+            </div>
+            <div>
+              <label>Estante</label>
+              <select id="nuevo_estante"><option value="">— Seleccioná —</option></select>
+            </div>
+            <div>
+              <label>Columna</label>
+              <select id="nuevo_columna"><option value="">— Seleccioná —</option></select>
+            </div>
+            <div>
+              <label>Fila</label>
+              <select id="nuevo_fila"><option value="">— Seleccioná —</option></select>
+            </div>
           </div>
           <div id="info_ubic_nuevo" class="info-ubicacion"></div>
         </div>
@@ -624,6 +920,7 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
   </div>
 </div>
 
+<!-- Overlays formulario -->
 <div class="form-overlay form-overlay-ok" id="ov-ok">
   <div class="ov-icon">✅</div>
   <div class="ov-title-ok">¡Movimiento registrado!</div>
@@ -640,24 +937,27 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
 
 
 <script>
+
 // ============================================================
-// 3.1 CONFIG
+// 3.1 CONFIG — único lugar a tocar para adaptar este formulario
+// a otro depósito. El resto del script es genérico.
 // ============================================================
 const CONFIG = {
-  zona: "Cables",
+  zona: "Depósito 5A",
   appsScriptUrl: "https://script.google.com/macros/s/AKfycbzQVmgnoPG86r8LKnkdMn0yP17FGvoLj02LSNz8BC_mhZzEmJZgV_jgpLFArInlgUOx/exec",
-  storageKey: "rpm_borrador_deposito_cables",
+  storageKey: "rpm_borrador_deposito_5a",
   pollingIntervalMs: 25000,
   ubicacion: {
-    depositos: ['4'],
+    depositos: ['5A'],
     estantes:  ['1','2','3','4','5','6','7','8'],
     columnas:  Array.from({length:20}, (_,i)=>String(i+1)),
-    filas:     ['A','B','C','D','E','F'],
+    filas:     ['A','B','C','D','E','F','G','H'],
   },
   responsables: ['Fernando','Pamela'],
-  obras:        ['Depósito','Obra 1','Obra 2','Mantenimiento'],
+  obras:        ['Depósito','Obra 1','Obra 2'],
 };
 
+// Alias de compatibilidad — el resto del script usa estos nombres.
 const APPS_SCRIPT_URL   = CONFIG.appsScriptUrl;
 const ZONA_FIJA          = CONFIG.zona;
 const UBIC_DEPOSITO_OPTS = CONFIG.ubicacion.depositos;
@@ -684,6 +984,17 @@ function goStock() {
 // ============================================================
 // 3.3 UTILIDADES COMUNES
 // ============================================================
+
+// ── Sub-solapas (ej. Bornera Fija/Barra, Fuente Estándar/LED) ──
+function switchSubTab(fam, tab, btn) {
+  const body = document.getElementById('bloque_' + fam);
+  body.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  body.querySelectorAll('.sub-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('subtab_' + fam + '_' + tab).classList.add('active');
+}
+
+// ── Helpers de tipo de movimiento ──
 function normalizarTipoMovimiento(tipo) {
   const texto = String(tipo || '').trim().toUpperCase();
   if (texto === 'DEVOLUCION' || texto === 'DEVOLUCIÓN') return 'DEVOLUCION';
@@ -695,6 +1006,8 @@ function esMovimientoConUbicacion(tipo) {
   return t === 'ENTRADA' || t === 'DEVOLUCION';
 }
 
+// Fuerza mayúsculas en vivo en cualquier campo de texto libre.
+// Estándar del proyecto: todo texto libre (no selects) va en mayúsculas.
 function forzarMayusculas(input) {
   if (!input || input._mayusculas) return;
   input._mayusculas = true;
@@ -713,9 +1026,12 @@ function toastDep(mensaje, tipo = 'info') {
   toast.className = 'toast-dep';
   toast.style.background = tipo === 'error' ? '#dc2626' : (tipo === 'ok' ? '#16a34a' : '#1a1a2e');
   toast.textContent = mensaje;
+  
+  // Posición dinámica: 65px esquiva la barra superior. 115px esquiva la barra superior + barra del carrito.
   const barra = document.getElementById('barra_carrito');
   const barraVisible = barra && barra.classList.contains('visible');
   toast.style.top = barraVisible ? '115px' : '65px';
+  
   document.body.appendChild(toast);
   setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3200);
 }
@@ -747,7 +1063,7 @@ function parsearImagenes(campo) {
 }
 
 // ============================================================
-// 3.4 MÓDULO: STOCK
+// 3.4 MÓDULO: STOCK (carga, filtros, render, detalle, fotos, ubicación)
 // ============================================================
 let stockLoaded   = false;
 let stockData     = [];
@@ -772,6 +1088,7 @@ async function loadStock(silencioso = false) {
     document.getElementById('stock-error').classList.remove('show');
     document.getElementById('stock-content').classList.remove('show');
   }
+
   try {
     const url  = `${APPS_SCRIPT_URL}?action=json&zona=${encodeURIComponent(ZONA_FIJA)}`;
     const resp = await fetch(url);
@@ -780,6 +1097,9 @@ async function loadStock(silencioso = false) {
     if (!data.ok) throw new Error(data.error || 'Error del servidor');
 
     const nuevos = data.productos || [];
+    // En modo silencioso (polling automático) no repintamos si no cambió
+    // nada — evita el parpadeo/reseteo de filtros cuando en realidad no
+    // pasó nada nuevo.
     const huboCambios = JSON.stringify(nuevos) !== JSON.stringify(stockData);
     if (silencioso && !huboCambios) return;
 
@@ -790,6 +1110,7 @@ async function loadStock(silencioso = false) {
     applyFilters();
 
     if (silencioso && huboCambios) toastDep('🔄 Se detectaron cambios en el stock', 'info');
+
   } catch (err) {
     if (!silencioso) {
       document.getElementById('stock-loading').style.display = 'none';
@@ -812,6 +1133,7 @@ function buildFamiliaSelect() {
   if (familias.includes(valorActual)) sel.value = valorActual;
 }
 
+// ── Filtro por ubicación en Ver Stock ──
 function toggleFiltroUbicacion() {
   const panel  = document.getElementById('filtro-ubic-panel');
   const flecha = document.getElementById('filtro-ubic-flecha');
@@ -844,11 +1166,71 @@ function limpiarFiltroUbicacion() {
   applyFilters();
 }
 
-// Chips por familia — se completan automáticamente con la Marca real de cada
-// cable en stock. Si querés chips técnicos fijos (por ej. Sección para
-// "Cable Unipolar"), agregalos acá con el nombre EXACTO de familia que
-// devuelve tu Apps Script.
-const CHIPS_CONFIG = {};
+const CHIPS_CONFIG = {
+  'Térmica': {
+    'Amperaje': ['5A','6A','10A','16A','20A','25A','32A','40A','50A','63A','80A','100A'],
+    'Polos':    ['1P','2P','3P','4P'],
+    'Curva':    ['Curva B','Curva C','Curva D'],
+  },
+  'Disyuntor Diferencial': {
+    'Polos':        ['2P','4P'],
+    'Amperaje':     ['16A','25A','40A','63A','80A','100A'],
+    'Sensibilidad': ['10mA','30mA','100mA','300mA'],
+  },
+  'Guardamotor': {
+    'Rango': ['0,63–1A','1–1,6A','2,5–4A','4–6,3A','6,3–10A','10–16A'],
+  },
+  'Bornera Fija': {
+    'Tipo':     ['Unipolar','Bipolar','Tetrapolar'],
+    'Corriente':['10A','16A','25A','32A','60A'],
+  },
+  'Bornera de Barra': {
+    'Tipo':     ['Unipolar','Bipolar','Tetrapolar'],
+    'Corriente':['10A','16A','25A','32A','60A'],
+  },
+  'Fusible': {
+    'Tipo':     ['Fusible NH00','Fusible NH1','Fusible NH2','Cilíndrico 10×38','Cilíndrico 14×51'],
+    'Amperaje': ['16A','25A','63A','100A','160A','200A','250A'],
+    'Tensión':  ['250V','500V','690V'],
+  },
+  'Portafusible': {
+    'Tipo':            ['Portafusible NH00','Portafusible NH1','Portafusible NH2','Portafusible cilíndrico 10×38'],
+    'Amperaje máximo': ['63A','100A','160A','250A','400A'],
+    'Montaje':         ['Riel DIN','Panel','Superficie'],
+  },
+  'Fuente de Alimentación': {
+    'Tipo':           ['Switching estándar','Switching tipo slim','Toroidal','Lineal','Driver LED (CC)','Driver LED (CV)'],
+    'Tensión salida': ['5V','12V','24V','48V'],
+    'Potencia':       ['30W','60W','100W','120W','150W','200W','240W'],
+    'IP':             ['IP20','IP44','IP65','IP67'],
+  },
+  'Fuente Especial LED Lineal': {
+    'Tipo':           ['Switching estándar','Switching tipo slim','Toroidal','Lineal','Driver LED (CC)','Driver LED (CV)'],
+    'Tensión salida': ['5V','12V','24V','48V'],
+    'Potencia':       ['30W','60W','100W','120W','150W','200W','240W'],
+    'IP':             ['IP20','IP44','IP65','IP67'],
+  },
+  'Decodificador DMX': {
+    'Tensión':  ['12-24VDC','5-24VDC'],
+    'Potencia': ['192-384W','384-768W'],
+  },
+  'Contactor': {
+    'Polos':         ['2P','3P','4P'],
+    'Tensión bobina':['24V AC','110V AC','220V AC','380V AC'],
+  },
+  'Pulsador': {
+    'Tipo':     ['Normal','Emergencia (seta)'],
+    'Color':    ['Rojo','Verde','Amarillo','Azul','Negro'],
+    'Contacto': ['NA','NC','1NA+1NC'],
+  },
+  'Ojo de Buey': {
+    'Color':   ['Rojo','Verde','Amarillo','Blanco'],
+    'Tensión': ['24V AC/DC','110V AC','220V AC'],
+  },
+  'Bloque de Contacto Auxiliar': {
+    'Tipo': ['NA','NC','1NA+1NC'],
+  },
+};
 
 function onFamiliaChange() {
   activeFamilia = document.getElementById('filter-familia').value;
@@ -978,7 +1360,7 @@ function renderStock(list) {
           <span class="link-editar-obs" onclick="event.stopPropagation(); iniciarEditarObservacion('${p.id}')">(Editar)</span>
         </div>
         <div id="obs_edit_${p.id}" onclick="event.stopPropagation()"></div>
-   <div class="sc-bottom"><span class="sc-id">${p.id}</span><span class="sc-qty ${qtyClass}">${p.stock_actual} ${p.unidad || 'u.'}</span></div>
+        <div class="sc-bottom"><span class="sc-id">${p.id}</span><span class="sc-qty ${qtyClass}">${p.stock_actual} u.</span></div>
         <button class="btn-mov" onclick="event.stopPropagation(); iniciarAjusteRapido('${p.id}')">↕ Movimiento</button>
         <div id="mini_confirm_${p.id}" onclick="event.stopPropagation()"></div>
       </div>`;
@@ -1022,7 +1404,7 @@ function openDetail(idx) {
     <div class="detail-stock-card">
       <div class="detail-stock-label">Stock actual</div>
       <div class="detail-stock-num" style="color:${colNum}">${p.stock_actual}</div>
-      <div class="detail-stock-unit">${p.unidad || 'unidades'}</div>
+      <div class="detail-stock-unit">unidades</div>
       <div class="detail-state-badge" style="background:${bgBadge};color:${colBadge}">${p.estado}</div>
       ${p.stock_minimo > 0 ? `<div class="detail-min">Mínimo: ${p.stock_minimo} u.</div>` : ''}
     </div>
@@ -1044,7 +1426,9 @@ function openDetail(idx) {
 
 function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); }
 
-// ─── FOTOS DE PRODUCTOS EN STOCK ─────────────────────────
+// ─────────────────────────────────────────
+// FOTOS DE PRODUCTOS EN STOCK (agregar/reemplazar/eliminar)
+// ─────────────────────────────────────────
 function abrirModalFotos(idProducto) {
   const producto = stockData.find(p => p.id === idProducto);
   const links = parsearImagenes(producto ? producto.imagen : '');
@@ -1170,6 +1554,7 @@ function comprimirImagenGenericaFallback(archivo, callback) {
   lector.readAsDataURL(archivo);
 }
 
+
 function setEstadoBotonImagen(idProducto, estado) {
   const btn = document.getElementById(`btn_foto_${idProducto}`);
   if (!btn) return;
@@ -1187,7 +1572,11 @@ async function enviarActualizarImagen(idProducto, base64, modo) {
       body: JSON.stringify({ accion: 'actualizar-imagen', id: idProducto, foto_base64: base64, modo })
     });
     const resultado = await resp.json();
-    if (!resultado.ok) { toastDep(`❌ Error del servidor: ${resultado.error}`, 'error'); setEstadoBotonImagen(idProducto, 'normal'); return; }
+    if (!resultado.ok) {
+      toastDep(`❌ Error del servidor: ${resultado.error}`, 'error');
+      setEstadoBotonImagen(idProducto, 'normal');
+      return;
+    }
     const producto = stockData.find(p => p.id === idProducto);
     if (producto) producto.imagen = resultado.imagen || '';
     applyFilters();
@@ -1212,7 +1601,11 @@ async function enviarEliminarImagen(idProducto, slot) {
       body: JSON.stringify({ accion: 'eliminar-imagen', id: idProducto, slot })
     });
     const resultado = await resp.json();
-    if (!resultado.ok) { toastDep(`❌ Error del servidor: ${resultado.error}`, 'error'); setEstadoBotonImagen(idProducto, 'normal'); return; }
+    if (!resultado.ok) {
+      toastDep(`❌ Error del servidor: ${resultado.error}`, 'error');
+      setEstadoBotonImagen(idProducto, 'normal');
+      return;
+    }
     const producto = stockData.find(p => p.id === idProducto);
     if (producto) producto.imagen = resultado.imagen || '';
     applyFilters();
@@ -1228,7 +1621,9 @@ async function enviarEliminarImagen(idProducto, slot) {
   }
 }
 
-// ─── UBICACIÓN DE PRODUCTOS EN STOCK ─────────────────────
+// ─────────────────────────────────────────
+// UBICACIÓN DE PRODUCTOS EN STOCK (botón 📍 en cada tarjeta)
+// ─────────────────────────────────────────
 function abrirModalUbicacion(idx) {
   const p = stockData[idx];
   if (!p) return;
@@ -1276,7 +1671,10 @@ async function guardarUbicacionProducto(idProducto, ubicacion) {
       body: JSON.stringify({ accion: 'actualizar-ubicacion', id: idProducto, ...ubicacion })
     });
     const resultado = await resp.json();
-    if (!resultado.ok) { toastDep(`❌ Error del servidor: ${resultado.error}`, 'error'); return; }
+    if (!resultado.ok) {
+      toastDep(`❌ Error del servidor: ${resultado.error}`, 'error');
+      return;
+    }
     const producto = stockData.find(p => p.id === idProducto);
     if (producto) {
       producto.ubicacion_deposito = ubicacion.deposito || '';
@@ -1410,13 +1808,14 @@ function cerrarMiniConfirm(idProducto){
   const cont=document.getElementById(`mini_confirm_${idProducto}`);
   if(cont)cont.innerHTML="";
 }
-
 function volverATipoMovimiento(idProducto){
+  // Si ya hay ítems en el carrito, no se puede cambiar el tipo de movimiento global
   if(carritoRapido.items.length > 0){
     toastDep("⚠ Vaciá el carrito para cambiar el tipo de movimiento","error");
     cerrarMiniConfirm(idProducto);
     return;
   }
+  // Se limpia la selección y se vuelve a mostrar el menú de opciones
   tipoMovimientoStockGlobal = null;
   carritoRapido.tipo = null;
   iniciarAjusteRapido(idProducto);
@@ -1431,14 +1830,14 @@ function confirmarAgregarCarrito(idProducto){
   const existente=carritoRapido.items.find(it=>it.id===idProducto);
   if(existente)existente.cantidad+=cantidad;
   else carritoRapido.items.push({
-    id:idProducto,
-    familia:producto.familia,
-    marca:producto.marca,
-    descripcion:producto.descripcion,
-    unidad:producto.unidad||"un",
-    cantidad,
-    ubicacion:[producto.ubicacion_deposito,producto.ubicacion_estante,producto.ubicacion_columna,producto.ubicacion_fila].filter(Boolean).join(' / ')||'Sin ubicación'
-  });
+  id:idProducto,
+  familia:producto.familia,
+  marca:producto.marca,
+  descripcion:producto.descripcion,
+  unidad:producto.unidad||"un",
+  cantidad,
+  ubicacion:[producto.ubicacion_deposito,producto.ubicacion_estante,producto.ubicacion_columna,producto.ubicacion_fila].filter(Boolean).join(' / ')||'Sin ubicación'
+});
   cerrarMiniConfirm(idProducto);
   actualizarBarraCarrito();
   applyFilters();
@@ -1465,12 +1864,12 @@ function abrirModalConfirmarCarrito(){
   const overlay=document.createElement("div");
   overlay.className="modal-overlay";
   const listaHtml=carritoRapido.items.map(it=>
-    '<div style="text-align:left;font-size:13px;padding:6px 0;border-bottom:1px solid #334155;color:#f8fafc;">' +
-      '<div style="font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.5px;">' + it.familia + '</div>' +
-      it.descripcion + (it.marca && it.marca !== 'No especificado' ? ' — <span style="color:#94a3b8;">' + it.marca + '</span>' : '') + ' — <strong>' + it.cantidad + ' ' + it.unidad + '</strong>' +
-      '<div style="font-size:11px;color:#64748b;margin-top:2px;">📍 ' + it.ubicacion + '</div>' +
-    '</div>'
-  ).join("");
+  `<div style="text-align:left;font-size:13px;padding:6px 0;border-bottom:1px solid #334155;color:#f8fafc;">
+    <div style="font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.5px;">${it.familia}</div>
+    ${it.descripcion} ${it.marca && it.marca !== 'No especificado' ? `— <span style="color:#94a3b8;">${it.marca}</span>` : ''} — <strong>${it.cantidad} ${it.unidad}</strong>
+    <div style="font-size:11px;color:#64748b;margin-top:2px;">📍 ${it.ubicacion}</div>
+  </div>`
+).join("");
   const optsResp = CONFIG.responsables.map(r=>`<option>${r}</option>`).join('') + `<option value="OTRO">Otro...</option>`;
   const optsObra = CONFIG.obras.map(o=>`<option>${o}</option>`).join('') + `<option value="OTRO">Otra obra...</option>`;
   overlay.innerHTML=`
@@ -1533,43 +1932,62 @@ async function enviarCarritoRapido(overlay){
 }
 
 // ============================================================
-// 3.6 MÓDULO: FORMULARIO (familias de Cables)
+// 3.6 MÓDULO: FORMULARIO
 // ============================================================
 
-const counters = { unipolar:0, ttr:0, subterraneo:0, preen:0, conc:0, desnudo:0, especial:0 };
+const counters = {
+  termicas:0, disyuntores:0, guardamotores:0, borneras:0, borneras_barra:0,
+  fusibles:0, portafusibles:0, fuentes:0, fuentes_led:0,
+  dmx:0, contactores:0, pulsadores:0, ojosbuey:0, bloqueaux:0, terminales:0
+};
 const FAMILIES = Object.keys(counters);
 
 const REQUIRED = {
-  unipolar:     [['seccion','Sección mm²'],['version','Versión'],['color','Color de aislación'],['presentacion','Presentación por rollo'],['cantidad','Cantidad']],
-  ttr:          [['conductores','N° de conductores'],['seccion','Sección por conductor'],['presentacion','Presentación por rollo'],['cantidad','Cantidad']],
-  subterraneo:  [['material','Material'],['configuracion','Configuración'],['seccion','Sección'],['presentacion','Presentación por rollo'],['cantidad','Cantidad']],
-  preen:        [['config','Configuración'],['seccion','Sección'],['presentacion','Presentación por rollo'],['cantidad','Cantidad']],
-  conc:         [['material','Material'],['config','Configuración'],['presentacion','Presentación por rollo'],['cantidad','Cantidad']],
-  desnudo:      [['material','Material'],['seccion','Sección'],['presentacion','Presentación por rollo'],['cantidad','Cantidad']],
-  especial:     [['tipo','Tipo de cable'],['presentacion','Presentación por rollo'],['cantidad','Cantidad']],
+  termicas:     [['marca','Marca'],['amperaje','Amperaje'],['polos','Polos'],['curva','Curva'],['cantidad','Cantidad']],
+  disyuntores:  [['marca','Marca'],['polos','Polos'],['amperaje','Amperaje'],['sensibilidad','Sensibilidad'],['cantidad','Cantidad']],
+  guardamotores:[['marca','Marca'],['rango','Rango'],['cantidad','Cantidad']],
+  borneras:      [['marca','Marca'],['tipo','Tipo'],['corriente','Corriente/Amperaje'],['cantidad','Cantidad']],
+borneras_barra:[['marca','Marca'],['tipo','Tipo'],['puntos','Cantidad de puntos/bornes'],['corriente','Corriente/Amperaje'],['cantidad','Cantidad']],
+  fusibles:     [['marca','Marca'],['tipo','Tipo'],['amperaje','Amperaje'],['tension','Tensión'],['cantidad','Cantidad']],
+  portafusibles:[['marca','Marca'],['fusible','Tipo de portafusible'],['amperaje_max','Amperaje máximo'],['montaje','Montaje'],['cantidad','Cantidad']],
+  fuentes:      [['marca','Marca'],['tension_salida','Tensión salida'],['potencia','Potencia'],['ip','IP'],['cantidad','Cantidad']],
+  fuentes_led:  [['marca','Marca'],['tension_salida','Tensión salida'],['potencia','Potencia'],['ip','IP'],['cantidad','Cantidad']],
+  dmx:          [['marca','Marca'],['tension','Tensión'],['corriente','Corriente máxima'],['potencia','Potencia'],['cantidad','Cantidad']],
+  contactores:  [['marca','Marca'],['polos','Polos'],['bobina','Tensión de bobina'],['cantidad','Cantidad']],
+  pulsadores:   [['marca','Marca'],['tipo','Tipo'],['color','Color'],['contacto','Contacto'],['cantidad','Cantidad']],
+  ojosbuey:     [['marca','Marca'],['color','Color'],['tension','Tensión'],['diametro','Diámetro'],['cantidad','Cantidad']],
+  bloqueaux:    [['marca','Marca'],['tipo','Tipo'],['cantidad','Cantidad']],
+  terminales:   [['material','Material'],['medida','Medida/Calibre'],['cantidad','Cantidad']],
 };
 
 const UNITS = {
-  unipolar:['m','bobina'], ttr:['m','bobina'], subterraneo:['m','bobina'],
-  preen:['m','bobina'], conc:['m','bobina'], desnudo:['m','bobina'],
-  especial:['m','un','rollo'],
+  termicas:['un','par'], disyuntores:['un','par'], guardamotores:['un'],
+  borneras:['un','caja','tira','kit'], borneras_barra:['un','caja','tira','kit'], fusibles:['un','caja','pack','kit'],
+  portafusibles:['un','kit'], fuentes:['un'], fuentes_led:['un'], dmx:['un'],
+  contactores:['un'], pulsadores:['un'], ojosbuey:['un'], bloqueaux:['un'],
+  terminales:['un','par','bolsa','caja'],
 };
 
 const FAM_NAMES = {
-  unipolar:    '🔵 Cable Unipolar',
-  ttr:         '🟤 Cable TTR',
-  subterraneo: '🟡 Cable Subterráneo',
-  preen:       '🟣 Cable Preensamblado',
-  conc:        '🟠 Cable Concéntrico',
-  desnudo:     '⚫ Cable Desnudo',
-  especial:    '🟢 Cable Especial',
+  termicas:     '🔌 Térmica',
+  disyuntores:  '⚡ Disyuntor',
+  guardamotores:'⚙️ Guardamotor',
+  borneras:      '🔗 Bornera Fija',
+borneras_barra:'🔗 Bornera de Barra',
+  fusibles:     '🔥 Fusible',
+  portafusibles:'📦 Portafusible',
+  fuentes:      '🔋 Fuente',
+  fuentes_led:  '🔋 Fuente LED Lineal',
+  dmx:          '🎛️ DMX',
+  contactores:  '🔄 Contactor',
+  pulsadores:   '🔘 Pulsador',
+  ojosbuey:     '💡 Ojo de Buey',
+  bloqueaux:    '🔌 Bloque Auxiliar',
+  terminales:   '🔧 Terminal / Conector',
 };
 
-const MARCAS_CABLE = ['Prysmian','Cimet','Marlew','Argenplas','IMSA','Fonseca','Kalop','EME','MH','Otro','No especificado'];
-
-function uOpts(fam) { return (UNITS[fam]||['m']).map(u=>`<option value="${u}">${u}</option>`).join(''); }
+function uOpts(fam) { return (UNITS[fam]||['un']).map(u=>`<option value="${u}">${u}</option>`).join(''); }
 function opts(arr)  { return arr.map(v=>`<option value="${v}">${v}</option>`).join(''); }
-function optsMM2(arr){ return arr.map(v=>`<option value="${v} mm²">${v} mm²</option>`).join(''); }
 
 function lbl(fam, campo, texto) {
   const req = (REQUIRED[fam]||[]).some(([c])=>c===campo);
@@ -1578,7 +1996,14 @@ function lbl(fam, campo, texto) {
   return `<label>${texto}${ast}</label>${err}`;
 }
 
-// ── Foto por ítem (opcional, igual que el resto de los formularios RPM) ──
+function kitHint(fam, n) {
+  const hasKit = (UNITS[fam]||[]).includes('kit');
+  const id = `kit_${fam}_${n}`;
+  const oc = hasKit ? `onchange="document.getElementById('${id}').style.display=this.value==='kit'?'block':'none'"` : '';
+  return { oc, hint: hasKit ? `<div class="kit-hint" id="${id}">⚠ Anotá en Observaciones cuántas unidades trae el kit.</div>` : '' };
+}
+
+// ── Bloque de foto genérico por ítem (mismo patrón que iluminación) ──
 const fotosPendientes = {};
 
 function bloqueFotoItem(fam, n) {
@@ -1590,21 +2015,30 @@ function bloqueFotoItem(fam, n) {
       <button type="button" class="btn-add" id="${fam}_foto_btn_${n}" onclick="document.getElementById('${fam}_foto_input_${n}').click()">+ Agregar foto</button>
     </div>`;
 }
+
 function manejarSeleccionFotoItem(input, fam, n) {
   const archivo = input.files[0];
   input.value = '';
   if (!archivo) return;
   const key = `${fam}_${n}`;
   if (!fotosPendientes[key]) fotosPendientes[key] = [];
-  if (fotosPendientes[key].length >= 2) { toastDep('⚠ Máximo 2 fotos por producto', 'error'); return; }
-  comprimirImagenGenerica(archivo, base64 => { fotosPendientes[key].push(base64); renderFotosItem(fam, n); });
+  if (fotosPendientes[key].length >= 2) {
+    toastDep('⚠ Máximo 2 fotos por producto', 'error');
+    return;
+  }
+  comprimirImagenGenerica(archivo, base64 => {
+    fotosPendientes[key].push(base64);
+    renderFotosItem(fam, n);
+  });
 }
+
 function eliminarFotoItem(fam, n, indice) {
   const key = `${fam}_${n}`;
   if (!fotosPendientes[key]) return;
   fotosPendientes[key].splice(indice, 1);
   renderFotosItem(fam, n);
 }
+
 function renderFotosItem(fam, n) {
   const key = `${fam}_${n}`;
   const fotos = fotosPendientes[key] || [];
@@ -1619,7 +2053,7 @@ function renderFotosItem(fam, n) {
   if (btn) btn.style.display = fotos.length >= 2 ? 'none' : 'block';
 }
 
-// ── Ubicación por ítem ──
+// ── Bloque de ubicación genérico por ítem ──
 function bloqueUbicacionItem(fam, n) {
   const optsEst = UBIC_ESTANTE_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
   const optsCol = UBIC_COLUMNA_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
@@ -1630,16 +2064,28 @@ function bloqueUbicacionItem(fam, n) {
       <div class="f-section-title">Ubicación</div>
       <div class="ubic-bloque-help">Se completa sola en devolución (busca en el stock); en entrada la cargás manualmente.</div>
       <div class="ubic-grid">
-        <div><label>Depósito</label><select name="${fam}_deposito_${n}" data-fam="${fam}" data-campo="deposito"><option value="">— —</option>${optsDep}</select></div>
-        <div><label>Estante</label><select name="${fam}_estante_${n}" data-fam="${fam}" data-campo="estante"><option value="">— —</option>${optsEst}</select></div>
-        <div><label>Columna</label><select name="${fam}_columna_${n}" data-fam="${fam}" data-campo="columna"><option value="">— —</option>${optsCol}</select></div>
-        <div><label>Fila</label><select name="${fam}_fila_${n}" data-fam="${fam}" data-campo="fila"><option value="">— —</option>${optsFil}</select></div>
+        <div>
+          <label>Depósito</label>
+          <select name="${fam}_deposito_${n}" data-fam="${fam}" data-campo="deposito"><option value="">— —</option>${optsDep}</select>
+        </div>
+        <div>
+          <label>Estante</label>
+          <select name="${fam}_estante_${n}" data-fam="${fam}" data-campo="estante"><option value="">— —</option>${optsEst}</select>
+        </div>
+        <div>
+          <label>Columna</label>
+          <select name="${fam}_columna_${n}" data-fam="${fam}" data-campo="columna"><option value="">— —</option>${optsCol}</select>
+        </div>
+        <div>
+          <label>Fila</label>
+          <select name="${fam}_fila_${n}" data-fam="${fam}" data-campo="fila"><option value="">— —</option>${optsFil}</select>
+        </div>
       </div>
       <div id="info_ubic_${fam}_${n}" class="info-ubicacion"></div>
     </div>`;
 }
 
-// ── Campo "Otro" automático para selects que incluyan la opción 'Otro' (ej: marca) ──
+// ── Campo de texto para "Otro" en selects de ítems (marca, amperaje, etc.) ──
 function agregarCamposOtro(bloque, fam) {
   bloque.querySelectorAll(`select[data-fam="${fam}"][data-campo]`).forEach(select => {
     const campo = select.dataset.campo;
@@ -1656,7 +2102,7 @@ function agregarCamposOtro(bloque, fam) {
     select.insertAdjacentElement('afterend', otroInput);
     forzarMayusculas(otroInput);
 
-    select.addEventListener('change', () => {
+select.addEventListener('change', () => {
       const esOtro = select.value === 'Otro';
       otroInput.style.display = esOtro ? 'block' : 'none';
       if (!esOtro) { otroInput.value = ''; otroInput.classList.remove('err'); }
@@ -1664,10 +2110,18 @@ function agregarCamposOtro(bloque, fam) {
   });
 }
 
+// ── Normaliza los campos "Otro" al momento de enviar: agrega la unidad
+//    automática al amperaje si corresponde (las mayúsculas ya se aplican
+//    en vivo con forzarMayusculas, no hace falta repetirlas acá). ──
 function normalizarCamposOtroAlEnviar() {
   document.querySelectorAll('.campo-otro, .campo-otro-item').forEach(input => {
     if (!input.value || !input.value.trim()) return;
-    input.value = input.value.trim();
+    let valor = input.value.trim();
+    const campoBase = (input.dataset.campo || input.id || '').replace(/_otro$/, '');
+    if (campoBase.includes('amperaje') && /^\d+([.,]\d+)?$/.test(valor)) {
+      valor = valor + 'A';
+    }
+    input.value = valor;
   });
 }
 
@@ -1685,7 +2139,11 @@ function limpiarUbicacionItem(fam, n) {
 function actualizarVisibilidadUbicacionItem(fam, n, tipoMov) {
   const bloque = document.getElementById(`ubicacion_bloque_${fam}_${n}`);
   if (!bloque) return;
-  if (!esMovimientoConUbicacion(tipoMov)) { bloque.classList.remove('activa'); limpiarUbicacionItem(fam, n); return; }
+  if (!esMovimientoConUbicacion(tipoMov)) {
+    bloque.classList.remove('activa');
+    limpiarUbicacionItem(fam, n);
+    return;
+  }
   bloque.classList.add('activa');
   if (esMovimientoDevolucion(tipoMov)) buscarUbicacionSiCorresponde(fam, n);
 }
@@ -1699,11 +2157,17 @@ function aplicarUbicacionItem(fam, n, ubicacion) {
     if (el) el.value = String(ubicacion?.[campo] || '').trim();
   });
   const texto = [ubicacion?.deposito, ubicacion?.estante, ubicacion?.columna, ubicacion?.fila].filter(Boolean).join(' / ');
-  if (!texto) { info.textContent = 'No se encontró ubicación registrada para este producto'; info.className = 'info-ubicacion err'; }
-  else { info.textContent = `Ubicación encontrada en stock: ${texto}`; info.className = 'info-ubicacion ok'; }
+  if (!texto) {
+    info.textContent = 'No se encontró ubicación registrada para este producto';
+    info.className = 'info-ubicacion err';
+  } else {
+    info.textContent = `Ubicación encontrada en stock: ${texto}`;
+    info.className = 'info-ubicacion ok';
+  }
   info.style.display = 'block';
 }
 
+// Arma una descripción aproximada del ítem (marca + campos técnicos elegidos) para buscar en stock
 function armarDescripcionItemGenerico(fam, n) {
   const bloque = document.getElementById(`item_${fam}_${n}`);
   if (!bloque) return '';
@@ -1711,8 +2175,8 @@ function armarDescripcionItemGenerico(fam, n) {
   bloque.querySelectorAll('[data-fam][data-campo]').forEach(el => {
     if (el.dataset.fam !== fam) return;
     const campo = el.dataset.campo;
-    if (['cantidad','unidad','deposito','estante','columna','fila','peso_bobina','presentacion_otro','observaciones'].includes(campo)) return;
-    if (el.value && el.value !== 'OTRO' && el.value !== 'Otro') partes.push(el.value.trim());
+    if (['cantidad','deposito','estante','columna','fila'].includes(campo)) return;
+    if (el.value && el.value !== 'Otro' && el.value !== 'OTRO') partes.push(el.value.trim());
   });
   return partes.join('|');
 }
@@ -1720,19 +2184,24 @@ function armarDescripcionItemGenerico(fam, n) {
 async function buscarUbicacionSiCorresponde(fam, n) {
   const tipoMov = document.getElementById('tipo_movimiento').value;
   if (!esMovimientoDevolucion(tipoMov)) return;
+
   const descripcion = armarDescripcionItemGenerico(fam, n);
   if (!descripcion) { limpiarUbicacionItem(fam, n); return; }
+
   const params = new URLSearchParams({ action: 'lookup-ubicacion', zona: ZONA_FIJA, marca: descripcion, descripcion });
   try {
     const resp = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, { method: 'GET', headers: { Accept: 'application/json' } });
     const data = await resp.json();
-    if (data && data.ok && data.encontrada) { aplicarUbicacionItem(fam, n, data.ubicacion || {}); }
-    else {
+    if (data && data.ok && data.encontrada) {
+      aplicarUbicacionItem(fam, n, data.ubicacion || {});
+    } else {
       limpiarUbicacionItem(fam, n);
       const info = document.getElementById(`info_ubic_${fam}_${n}`);
       if (info) { info.textContent = 'No se encontró ubicación registrada para este producto'; info.className = 'info-ubicacion err'; info.style.display = 'block'; }
     }
-  } catch (e) { limpiarUbicacionItem(fam, n); }
+  } catch (e) {
+    limpiarUbicacionItem(fam, n);
+  }
 }
 
 async function buscarUbicacionSiCorrespondeNuevo() {
@@ -1753,7 +2222,9 @@ async function buscarUbicacionSiCorrespondeNuevo() {
       const texto = [data.ubicacion?.deposito, data.ubicacion?.estante, data.ubicacion?.columna, data.ubicacion?.fila].filter(Boolean).join(' / ');
       if (info) { info.textContent = texto ? `Ubicación encontrada en stock: ${texto}` : 'No se encontró ubicación registrada'; info.className = texto ? 'info-ubicacion ok' : 'info-ubicacion err'; info.style.display = 'block'; }
     } else if (info) {
-      info.textContent = 'No se encontró ubicación registrada para este producto'; info.className = 'info-ubicacion err'; info.style.display = 'block';
+      info.textContent = 'No se encontró ubicación registrada para este producto';
+      info.className = 'info-ubicacion err';
+      info.style.display = 'block';
     }
   } catch (e) {}
 }
@@ -1767,7 +2238,21 @@ function toggleAcordeon(btn, bodyId) {
     body.classList.add('open');
     btn.classList.add('open');
     const fam = bodyId.replace('bloque_','');
-    if (fam === 'nuevo') { actualizarVisibilidadUbicacionNuevo(document.getElementById('tipo_movimiento').value); return; }
+
+    if (fam === 'fuentes') {
+      const contE = document.getElementById('items_fuentes');
+      if (contE && contE.children.length === 0) addItem('fuentes');
+      return;
+    }
+    if (fam === 'borneras') {
+      const contB = document.getElementById('items_borneras');
+      if (contB && contB.children.length === 0) addItem('borneras');
+      return;
+    }
+    if (fam === 'nuevo') {
+      actualizarVisibilidadUbicacionNuevo(document.getElementById('tipo_movimiento').value);
+      return;
+    }
     const cont = document.getElementById('items_' + fam);
     if (cont && cont.children.length === 0) addItem(fam);
   }
@@ -1793,259 +2278,337 @@ function showOther(sel, otherId) {
   if (sel.value !== 'OTRO') el.value = '';
 }
 
-// ── Presentación por rollo: incluye "Bobina (peso variable)" y "Otro" ──
-function presentacionField(fam, n) {
-  return `${lbl(fam,'presentacion','Presentación por rollo (m)')}
-    <select name="${fam}_presentacion_${n}" data-fam="${fam}" data-campo="presentacion" onchange="togglePresentacionCable(this,'${fam}_${n}')">
-      <option value="">— Seleccioná presentación —</option>
-      ${opts(['100','150','200','300','500'])}
-      <option value="Bobina (peso variable)">Bobina (peso variable)</option>
-      <option value="OTRO">Otro (especificar metros)…</option>
-    </select>
-    <div id="pesobob_${fam}_${n}" style="display:none">
-      <label>Peso de bobina (kg) <span class="req">*</span></label>
-      <input type="number" name="${fam}_peso_${n}" data-fam="${fam}" data-campo="peso_bobina" min="0" step="0.1" placeholder="Ej: 25">
-      <div class="nota-warn show">⚖️ Viene en bobina (no en rollo de largo fijo) — indicá el peso, es obligatorio.</div>
-    </div>
-    <div id="otropres_${fam}_${n}" style="display:none">
-      <label>Metros por rollo <span class="req">*</span></label>
-      <input type="number" name="${fam}_presentacion_otro_${n}" data-fam="${fam}" data-campo="presentacion_otro" min="1" placeholder="Ej: 250">
-    </div>`;
-}
-function togglePresentacionCable(sel, key) {
-  const divPeso = document.getElementById(`pesobob_${key}`);
-  const divOtro = document.getElementById(`otropres_${key}`);
-  const esBobina = sel.value === 'Bobina (peso variable)';
-  const esOtro   = sel.value === 'OTRO';
-  if (divPeso) {
-    divPeso.style.display = esBobina ? 'block' : 'none';
-    if (!esBobina) { const inp = divPeso.querySelector('[data-campo="peso_bobina"]'); if (inp) { inp.value=''; inp.classList.remove('err'); } }
-  }
-  if (divOtro) {
-    divOtro.style.display = esOtro ? 'block' : 'none';
-    if (!esOtro) { const inp = divOtro.querySelector('[data-campo="presentacion_otro"]'); if (inp) { inp.value=''; inp.classList.remove('err'); } }
-  }
-}
-
-// ── Color chips (solo cable unipolar) ──
-function colorChipsField(fam, n) {
-  const colores = [
-    {v:"Azul",c:"azul",e:"🔵"},{v:"Bicolor (am/vd)",c:"bicolor",e:"🟡"},{v:"Blanco",c:"blanco",e:"⚪"},
-    {v:"Celeste",c:"celeste",e:"🩵"},{v:"Marrón",c:"marron",e:"🟫"},{v:"Negro",c:"negro",e:"⚫"},
-    {v:"Rojo",c:"rojo",e:"🔴"},{v:"Verde",c:"verde",e:"🟢"}
-  ];
-  return `${lbl(fam,'color','Color de aislación')}
-    <div class="color-chips" id="colchips_${fam}_${n}">
-      ${colores.map(x=>`<button type="button" class="color-chip cc-${x.c}" data-color="${x.v}" onclick="selColorCable(this,'${fam}_${n}')">${x.e} ${x.v}</button>`).join('')}
-    </div>
-    <input type="hidden" name="${fam}_color_${n}" data-fam="${fam}" data-campo="color" id="colorval_${fam}_${n}">`;
-}
-function selColorCable(btn, key) {
-  btn.parentElement.querySelectorAll('.color-chip').forEach(c=>c.classList.remove('sel'));
-  btn.classList.add('sel');
-  const input = document.getElementById(`colorval_${key}`);
-  input.value = btn.dataset.color;
-  input.classList.remove('err');
-  const errEl = document.querySelector(`[data-err$="_color"]`);
-}
-
-function marcaField(fam, n) {
-  return `<label>Marca <span class="opc">(opcional)</span></label>
-    <select name="${fam}_marca_${n}" data-fam="${fam}" data-campo="marca">
-      <option value="">— Seleccioná marca —</option>${opts(MARCAS_CABLE)}
-    </select>`;
-}
-
 function addItem(fam) {
   counters[fam]++;
-  const n = counters[fam];
-  const cont = document.getElementById('items_' + fam);
+  const n    = counters[fam];
+  const cont = document.getElementById('items_'+fam);
   if (!cont) return;
+  const { oc, hint } = kitHint(fam, n);
 
   const qtyRow = `<div class="qty-unit">
     <input type="number" name="${fam}_cantidad_${n}" data-fam="${fam}" data-campo="cantidad" min="1" placeholder="0">
-    <select name="${fam}_unidad_${n}" data-fam="${fam}" data-campo="unidad">${uOpts(fam)}</select>
-  </div>`;
+    <select name="${fam}_unidad_${n}" ${oc}>${uOpts(fam)}</select>
+  </div>${hint}`;
 
-  let campos = '';
+  const MARCAS_FUENTE = ['Candil','Scled','Mean Well','PowerSwitch','Ltech','Ledvance','Sun Power','Energy Supply','Mayorled','Genérica China','Genérica','Aries','Otro','No especificado'];
 
-  if (fam === 'unipolar') {
-    campos = `
-      ${lbl('unipolar','seccion','Sección mm²')}
-      <select name="unipolar_seccion_${n}" data-fam="unipolar" data-campo="seccion"><option value="">— Seleccioná sección —</option>${optsMM2(['1','1,5','2,5','4','6','10','16','25','50','70'])}</select>
-      ${lbl('unipolar','version','Versión')}
-      <select name="unipolar_version_${n}" data-fam="unipolar" data-campo="version"><option value="">— Estandarizado o No estandarizado —</option>${opts(['Estandarizado','No estandarizado'])}</select>
-      ${colorChipsField('unipolar', n)}
-      ${marcaField('unipolar', n)}
-      ${presentacionField('unipolar', n)}
-      ${lbl('unipolar','cantidad','Cantidad (metros)')}${qtyRow}
-      <label>Observación <span class="opc">(opcional)</span></label>
-      <input type="text" name="unipolar_observaciones_${n}" placeholder="Ej: Bobina 312, estado: nueva...">`;
-  }
-  else if (fam === 'ttr') {
-    campos = `
-      <div class="nota-info">📋 TTR = Tipo Taller. Se compone de varios conductores juntos. Indicá cantidad de hilos y sección de cada uno.</div>
-      ${lbl('ttr','conductores','N° de conductores (hilos)')}
-      <select name="ttr_conductores_${n}" data-fam="ttr" data-campo="conductores"><option value="">— Seleccioná —</option>${opts(['2 conductores','3 conductores','4 conductores','7 conductores'])}</select>
-      ${lbl('ttr','seccion','Sección por conductor mm²')}
-      <select name="ttr_seccion_${n}" data-fam="ttr" data-campo="seccion"><option value="">— Seleccioná sección —</option>${optsMM2(['1,5','2,5','4','6','10','16'])}</select>
-      ${marcaField('ttr', n)}
-      ${presentacionField('ttr', n)}
-      ${lbl('ttr','cantidad','Cantidad (metros)')}${qtyRow}
-      <label>Observación <span class="opc">(opcional)</span></label>
-      <input type="text" name="ttr_observaciones_${n}" placeholder="Ej: nueva / 50% / N° bobina...">`;
-  }
-  else if (fam === 'subterraneo') {
-    const SECCION_SUB = {
-      "1 conductor (Unipolar)": ["1,5","2,5","4","6","10","16","25","35","50","70","95","120","150","185","240","300"],
-      "1 conductor (Media Tensión 13,2 kV)": ["50","70","95","120","150","185","240","300"],
-      "2 conductores": ["1,5","2,5","4","6","10","16","25"],
-      "3 conductores": ["1,5","2,5","4","6","10","16","25","35"],
-      "3 conductores (Media Tensión 13,2 kV)": ["95/35","95/50","120/50","120/70","185/50","185/95"],
-      "4 conductores": ["1,5","2,5","4","6","10","16","25","35"],
-      "Trifásico con neutro reducido": ["25/16","35/16","50/25","70/35","95/50","120/70","150/70","185/95","240/120"],
-      "Comando / Multipar": ["5x1,5","7x1,5","10x1,5","12x1,5"]
-    };
-    window.SECCION_SUB = SECCION_SUB;
-    campos = `
-      ${lbl('subterraneo','material','Material')}
-      <select name="subterraneo_material_${n}" data-fam="subterraneo" data-campo="material"><option value="">— Seleccioná material —</option>${opts(['Cobre','Aluminio'])}</select>
-      ${lbl('subterraneo','configuracion','Configuración (N° de conductores)')}
-      <select name="subterraneo_configuracion_${n}" data-fam="subterraneo" data-campo="configuracion" onchange="actualizarSubterraneoCable(${n})"><option value="">— Seleccioná —</option>${opts(Object.keys(SECCION_SUB))}</select>
-      ${lbl('subterraneo','seccion','Sección mm²')}
-      <select name="subterraneo_seccion_${n}" data-fam="subterraneo" data-campo="seccion"><option value="">— Elegí configuración primero —</option></select>
-      ${marcaField('subterraneo', n)}
-      ${presentacionField('subterraneo', n)}
-      ${lbl('subterraneo','cantidad','Cantidad (metros)')}${qtyRow}
-      <label>Observación <span class="opc">(opcional)</span></label>
-      <input type="text" name="subterraneo_observaciones_${n}" placeholder="N° bobina, estado...">`;
-  }
-  else if (fam === 'preen') {
-    campos = `
-      <div class="nota-info">📡 Uso en líneas aéreas. Cada bobina tiene número único de identificación.</div>
-      ${lbl('preen','config','Configuración')}
-      <select name="preen_config_${n}" data-fam="preen" data-campo="config"><option value="">— Seleccioná —</option>${opts(['1 conductor','3 conductores'])}</select>
-      ${lbl('preen','seccion','Sección fase / neutro mm²')}
-      <select name="preen_seccion_${n}" data-fam="preen" data-campo="seccion"><option value="">— Seleccioná sección —</option>${opts(['16/16','25/25','25/50','35/35','35/50','50/50','50/70','70/50','95/16','95/50','95/70'])}</select>
-      ${marcaField('preen', n)}
-      ${presentacionField('preen', n)}
-      ${lbl('preen','cantidad','Cantidad (metros)')}${qtyRow}
-      <label>Observación <span class="opc">(opcional)</span></label>
-      <input type="text" name="preen_observaciones_${n}" placeholder="N° bobina (obligatorio para trazabilidad)">`;
-  }
-  else if (fam === 'conc') {
-    campos = `
-      ${lbl('conc','material','Material del conductor')}
-      <select name="conc_material_${n}" data-fam="conc" data-campo="material"><option value="">— Seleccioná material —</option>${opts(['Aluminio (AL)','Cobre (CU)','Sin especificar'])}</select>
-      ${lbl('conc','config','Configuración fase / neutro')}
-      <select name="conc_config_${n}" data-fam="conc" data-campo="config"><option value="">— Seleccioná configuración —</option>${opts(['1X4/4','1X6/6','1X6+6'])}</select>
-      ${marcaField('conc', n)}
-      ${presentacionField('conc', n)}
-      ${lbl('conc','cantidad','Cantidad (metros)')}${qtyRow}
-      <label>Observación <span class="opc">(opcional)</span></label>
-      <input type="text" name="conc_observaciones_${n}" placeholder="N° bobina, estado...">`;
-  }
-  else if (fam === 'desnudo') {
-    campos = `
-      ${lbl('desnudo','material','Material')}
-      <select name="desnudo_material_${n}" data-fam="desnudo" data-campo="material"><option value="">— Seleccioná material —</option>${opts(['Cobre','Aluminio','Acerado recubierto de Cobre'])}</select>
-      ${lbl('desnudo','seccion','Sección mm²')}
-      <select name="desnudo_seccion_${n}" data-fam="desnudo" data-campo="seccion"><option value="">— Seleccioná sección —</option>${optsMM2(['10','16','25','35','50','70'])}</select>
-      ${marcaField('desnudo', n)}
-      ${presentacionField('desnudo', n)}
-      ${lbl('desnudo','cantidad','Cantidad (metros)')}${qtyRow}
-      <label>Observación <span class="opc">(opcional)</span></label>
-      <input type="text" name="desnudo_observaciones_${n}" placeholder="nueva / sin indicar / N° bobina...">`;
-  }
-  else if (fam === 'especial') {
-    campos = `
-      ${lbl('especial','tipo','Tipo de cable')}
-      <select name="especial_tipo_${n}" data-fam="especial" data-campo="tipo"><option value="">— Seleccioná tipo —</option>${opts(['Cable para rienda MN 100','Cable UTP Categoría 5E','Cable de micrófono XLR-DMX 3mt'])}</select>
-      ${marcaField('especial', n)}
-      ${presentacionField('especial', n)}
-      ${lbl('especial','cantidad','Cantidad')}${qtyRow}
-      <label>Observación <span class="opc">(opcional)</span></label>
-      <input type="text" name="especial_observaciones_${n}" placeholder="Marca, estado, aclaración...">`;
-  }
+  const TEMPLATES = {
+    termicas: `
+      ${lbl('termicas','marca','Marca')}
+      <select name="termicas_marca_${n}" data-fam="termicas" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Schneider','ABB','Siemens','Legrand','BTicino','Chint','Sica','BAW','Steck','Genérica','Otro','No especificado'])}</select>
+      ${lbl('termicas','amperaje','Amperaje')}
+      <select name="termicas_amperaje_${n}" data-fam="termicas" data-campo="amperaje">
+        <option value="">— Seleccioná —</option>${opts(['5A','6A','10A','16A','20A','25A','32A','40A','50A','63A','80A','100A','Otro','No especificado'])}</select>
+      ${lbl('termicas','polos','Polos')}
+      <select name="termicas_polos_${n}" data-fam="termicas" data-campo="polos">
+        <option value="">— Seleccioná —</option>${opts(['1P','2P','3P','4P','Otro','No especificado'])}</select>
+      ${lbl('termicas','curva','Curva de disparo')}
+      <select name="termicas_curva_${n}" data-fam="termicas" data-campo="curva">
+        <option value="">— Seleccioná —</option>${opts(['Curva B','Curva C','Curva D','Otro','No especificado'])}</select>
+      ${lbl('termicas','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="termicas_observaciones_${n}" placeholder="Opcional">`,
 
+    disyuntores: `
+      ${lbl('disyuntores','marca','Marca')}
+      <select name="disyuntores_marca_${n}" data-fam="disyuntores" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Schneider','ABB','Siemens','Legrand','BTicino','Chint','Sica','BAW','Genérica','Otro','No especificado'])}</select>
+      ${lbl('disyuntores','polos','Polos')}
+      <select name="disyuntores_polos_${n}" data-fam="disyuntores" data-campo="polos">
+        <option value="">— Seleccioná —</option>${opts(['2P','4P','Otro','No especificado'])}</select>
+      ${lbl('disyuntores','amperaje','Amperaje')}
+      <select name="disyuntores_amperaje_${n}" data-fam="disyuntores" data-campo="amperaje">
+        <option value="">— Seleccioná —</option>${opts(['16A','25A','40A','63A','80A','100A','Otro','No especificado'])}</select>
+      ${lbl('disyuntores','sensibilidad','Sensibilidad')}
+      <select name="disyuntores_sensibilidad_${n}" data-fam="disyuntores" data-campo="sensibilidad">
+        <option value="">— Seleccioná —</option>${opts(['10mA','30mA','100mA','300mA','500mA','Otro','No especificado'])}</select>
+      ${lbl('disyuntores','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="disyuntores_observaciones_${n}" placeholder="Opcional">`,
+
+    guardamotores: `
+      ${lbl('guardamotores','marca','Marca')}
+      <select name="guardamotores_marca_${n}" data-fam="guardamotores" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Schneider','Siemens','ABB','Lovato','WEG','Genérica','Otro','No especificado'])}</select>
+      ${lbl('guardamotores','rango','Rango de ajuste')}
+      <select name="guardamotores_rango_${n}" data-fam="guardamotores" data-campo="rango">
+        <option value="">— Seleccioná —</option>${opts(['0,63–1A','1–1,6A','1,6-2,5A','2,5–4A','4–6,3A','6,3–10A','10–16A','9–14A','13–18A','20–25A','Otro','No especificado'])}</select>
+      ${lbl('guardamotores','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="guardamotores_observaciones_${n}" placeholder="Opcional">`,
+
+    borneras: `
+      ${lbl('borneras','marca','Marca')}
+      <select name="borneras_marca_${n}" data-fam="borneras" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Keland','Elent S.R.L','Phoenix Contact','Weidmüller','Genérica','Otro','No especificado'])}</select>
+      ${lbl('borneras','tipo','Tipo')}
+      <select name="borneras_tipo_${n}" data-fam="borneras" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Unipolar (1 borne)','Bipolar (2 bornes)','Tripolar (3 bornes)','Tetrapolar (4 bornes)','Otro','No especificado'])}</select>
+      ${lbl('borneras','corriente','Corriente / Amperaje')}
+      <select name="borneras_corriente_${n}" data-fam="borneras" data-campo="corriente">
+        <option value="">— Seleccioná —</option>${opts(['10A','16A','25A','32A','60A','100A','200A','250A','300A','Otro','No especificado'])}</select>
+      ${lbl('borneras','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="borneras_observaciones_${n}" placeholder="Opcional">`,
+
+    borneras_barra: `
+      ${lbl('borneras_barra','marca','Marca')}
+      <select name="borneras_barra_marca_${n}" data-fam="borneras_barra" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Keland','Elent S.R.L','Phoenix Contact','Weidmüller','Genérica','Otro','No especificado'])}</select>
+      ${lbl('borneras_barra','tipo','Tipo')}
+      <select name="borneras_barra_tipo_${n}" data-fam="borneras_barra" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Unipolar (1)','Bipolar (2)','Tetrapolar (4)','Otro','No especificado'])}</select>
+      ${lbl('borneras_barra','puntos','Cantidad de puntos / bornes')}
+      <select name="borneras_barra_puntos_${n}" data-fam="borneras_barra" data-campo="puntos">
+        <option value="">— Seleccioná —</option>${opts(['1 punto','2 puntos','3 puntos','4 puntos','5 puntos','6 puntos','7 puntos','8 puntos','9 puntos','10 puntos','11 puntos','12 puntos','13 puntos','14 puntos','15 puntos','16 puntos','17 puntos','18 puntos','19 puntos','20 puntos','21 puntos','22 puntos','23 puntos','24 puntos','30 puntos','45 puntos','52 puntos','62 puntos','Otro','No especificado'])}</select>
+      ${lbl('borneras_barra','corriente','Corriente / Amperaje')}
+      <select name="borneras_barra_corriente_${n}" data-fam="borneras_barra" data-campo="corriente">
+        <option value="">— Seleccioná —</option>${opts(['10A','16A','25A','32A','60A','100A','125A','160A','200A','250A','300A','400A','630A','800A','Otro','No especificado'])}</select>
+      ${lbl('borneras_barra','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="borneras_barra_observaciones_${n}" placeholder="Opcional">`,
+
+    fusibles: `
+      ${lbl('fusibles','marca','Marca')}
+      <select name="fusibles_marca_${n}" data-fam="fusibles" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['SICA','Schneider','ABB','Siemens','Legrand','Genérica','Otro','No especificado'])}</select>
+      ${lbl('fusibles','tipo','Tipo')}
+      <select name="fusibles_tipo_${n}" data-fam="fusibles" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Fusible NH000','Fusible NH00','Fusible NH0','Fusible NH1','Fusible NH2','Fusible NH3','Fusible NH4','Fusible NH4A','Cilíndrico 10×38','Cilíndrico 14×51','Cuchilla / Blade automotriz','Otro','No especificado'])}</select>
+      ${lbl('fusibles','amperaje','Amperaje')}
+      <select name="fusibles_amperaje_${n}" data-fam="fusibles" data-campo="amperaje">
+        <option value="">— Seleccioná —</option>${opts(['2A','4A','6A','10A','16A','20A','25A','32A','40A','50A','63A','80A','100A','125A','160A','200A','250A','315A','400A','Otro','No especificado'])}</select>
+      ${lbl('fusibles','tension','Tensión nominal')}
+      <select name="fusibles_tension_${n}" data-fam="fusibles" data-campo="tension">
+        <option value="">— Seleccioná —</option>${opts(['250V','500V','690V','Otro','No especificado'])}</select>
+      ${lbl('fusibles','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="fusibles_observaciones_${n}" placeholder="Opcional">`,
+
+    portafusibles: `
+      ${lbl('portafusibles','marca','Marca')}
+      <select name="portafusibles_marca_${n}" data-fam="portafusibles" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['SICA','Schneider','ABB','Siemens','Legrand','Genérica','Otro','No especificado'])}</select>
+      ${lbl('portafusibles','fusible','Tipo de portafusible')}
+      <select name="portafusibles_fusible_${n}" data-fam="portafusibles" data-campo="fusible">
+        <option value="">— Seleccioná —</option>${opts(['Portafusible NH00','Portafusible NH1','Portafusible NH2','Portafusible NH3','Portafusible cilíndrico 10×38','Portafusible cilíndrico 14×51','Otro','No especificado'])}</select>
+      ${lbl('portafusibles','amperaje_max','Amperaje máximo')}
+      <select name="portafusibles_amperaje_max_${n}" data-fam="portafusibles" data-campo="amperaje_max">
+        <option value="">— Seleccioná —</option>${opts(['63A','100A','125A','160A','200A','250A','315A','400A','630A','Otro','No especificado'])}</select>
+      ${lbl('portafusibles','montaje','Montaje')}
+      <select name="portafusibles_montaje_${n}" data-fam="portafusibles" data-campo="montaje">
+        <option value="">— Seleccioná —</option>${opts(['Riel DIN','Panel','Superficie','Otro','No especificado'])}</select>
+      ${lbl('portafusibles','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="portafusibles_observaciones_${n}" placeholder="Opcional">`,
+
+    fuentes: `
+      ${lbl('fuentes','marca','Marca')}
+      <select name="fuentes_marca_${n}" data-fam="fuentes" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(MARCAS_FUENTE)}</select>
+      <label>Tipo de fuente <span class="opc">(opcional)</span></label>
+      <select name="fuentes_tipo_${n}" data-fam="fuentes" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Switching estándar','Switching tipo slim','Toroidal','Lineal','Driver LED (CC)','Driver LED (CV)','Otro','No especificado'])}</select>
+      ${lbl('fuentes','tension_salida','Tensión de salida')}
+      <select name="fuentes_tension_salida_${n}" data-fam="fuentes" data-campo="tension_salida">
+        <option value="">— Seleccioná —</option>${opts(['5V','12V','24V','36V','48V','5–12V','12–24V','Otro','No especificado'])}</select>
+      ${lbl('fuentes','potencia','Potencia')}
+      <select name="fuentes_potencia_${n}" data-fam="fuentes" data-campo="potencia">
+        <option value="">— Seleccioná —</option>${opts(['30W','60W','75W','100W','120W','150W','200W','240W','350W','500W','Otro','No especificado'])}</select>
+      ${lbl('fuentes','ip','Grado IP')}
+      <select name="fuentes_ip_${n}" data-fam="fuentes" data-campo="ip">
+        <option value="">— Seleccioná —</option>${opts(['IP20','IP44','IP65','IP67','IP68','Otro','No especificado'])}</select>
+      ${lbl('fuentes','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="fuentes_observaciones_${n}" placeholder="Opcional">`,
+
+    fuentes_led: `
+      ${lbl('fuentes_led','marca','Marca')}
+      <select name="fuentes_led_marca_${n}" data-fam="fuentes_led" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(MARCAS_FUENTE)}</select>
+      <label>Tipo de fuente <span class="opc">(opcional)</span></label>
+      <select name="fuentes_led_tipo_${n}" data-fam="fuentes_led" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Switching estándar','Switching tipo slim','Toroidal','Lineal','Driver LED (CC)','Driver LED (CV)','Otro','No especificado'])}</select>
+      ${lbl('fuentes_led','tension_salida','Tensión de salida')}
+      <select name="fuentes_led_tension_salida_${n}" data-fam="fuentes_led" data-campo="tension_salida">
+        <option value="">— Seleccioná —</option>${opts(['5V','12V','24V','36V','48V','5–12V','12–24V','Otro','No especificado'])}</select>
+      ${lbl('fuentes_led','potencia','Potencia')}
+      <select name="fuentes_led_potencia_${n}" data-fam="fuentes_led" data-campo="potencia">
+        <option value="">— Seleccioná —</option>${opts(['30W','60W','75W','100W','120W','150W','200W','240W','350W','500W','Otro','No especificado'])}</select>
+      ${lbl('fuentes_led','ip','Grado IP')}
+      <select name="fuentes_led_ip_${n}" data-fam="fuentes_led" data-campo="ip">
+        <option value="">— Seleccioná —</option>${opts(['IP20','IP44','IP65','IP67','IP68','Otro','No especificado'])}</select>
+      ${lbl('fuentes_led','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="fuentes_led_observaciones_${n}" placeholder="Opcional">`,
+
+    dmx: `
+      ${lbl('dmx','marca','Marca')}
+      <select name="dmx_marca_${n}" data-fam="dmx" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Demasled','Duaitek','Sunite-Nicolaudie','MiBoxer','Mean Well','Genérica','Otro','No especificado'])}</select>
+      ${lbl('dmx','tension','Tensión de entrada')}
+      <select name="dmx_tension_${n}" data-fam="dmx" data-campo="tension">
+        <option value="">— Seleccioná —</option>${opts(['12-24VDC','5-12VDC','5-24VDC','24-48VDC','Otro','No especificado'])}</select>
+      ${lbl('dmx','corriente','Corriente máxima')}
+      <select name="dmx_corriente_${n}" data-fam="dmx" data-campo="corriente">
+        <option value="">— Seleccioná —</option>${opts(['8A','16A','20A','32A','48A','Otro','No especificado'])}</select>
+      ${lbl('dmx','potencia','Potencia')}
+      <select name="dmx_potencia_${n}" data-fam="dmx" data-campo="potencia">
+        <option value="">— Seleccioná —</option>${opts(['96-192W','192-384W','288-576W','384-768W','Otro','No especificado'])}</select>
+      ${lbl('dmx','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="dmx_observaciones_${n}" placeholder="Opcional">`,
+
+    contactores: `
+      ${lbl('contactores','marca','Marca')}
+      <select name="contactores_marca_${n}" data-fam="contactores" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Chint','Schneider Electric','Siemens','ABB','WEG','LS Electric','Lovato','BAW','Montero','Genérica','Steck','Otro','No especificado'])}</select>
+      ${lbl('contactores','polos','Cantidad de polos')}
+      <select name="contactores_polos_${n}" data-fam="contactores" data-campo="polos">
+        <option value="">— Seleccioná —</option>${opts(['2P','3P','4P','Otro','No especificado'])}</select>
+      ${lbl('contactores','bobina','Tensión de bobina')}
+      <select name="contactores_bobina_${n}" data-fam="contactores" data-campo="bobina">
+        <option value="">— Seleccioná —</option>${opts(['24V AC','24V DC','110V AC','110V DC','220V AC','220V DC','380V AC','Otro','No especificado'])}</select>
+      ${lbl('contactores','corriente','Corriente nominal (opcional)')}
+      <select name="contactores_corriente_${n}" data-fam="contactores" data-campo="corriente">
+        <option value="">— No especificado —</option>${opts(['9A','12A','16A','18A','25A','32A','38A','40A','45A','50A','63A','80A','95A','115A','Otro'])}</select>
+      ${lbl('contactores','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="contactores_observaciones_${n}" placeholder="Opcional">`,
+
+    pulsadores: `
+      ${lbl('pulsadores','marca','Marca')}
+      <select name="pulsadores_marca_${n}" data-fam="pulsadores" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['BAW','Schneider Electric','Siemens','ABB','Lovato','WEG','Elibet','Genérica','Otro','No especificado'])}</select>
+      ${lbl('pulsadores','tipo','Tipo')}
+      <select name="pulsadores_tipo_${n}" data-fam="pulsadores" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['Normal','Emergencia (seta)','Otro','No especificado'])}</select>
+      ${lbl('pulsadores','color','Color')}
+      <select name="pulsadores_color_${n}" data-fam="pulsadores" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Rojo','Verde','Amarillo','Azul','Negro','Blanco','Otro','No especificado'])}</select>
+      ${lbl('pulsadores','contacto','Contacto')}
+      <select name="pulsadores_contacto_${n}" data-fam="pulsadores" data-campo="contacto">
+        <option value="">— Seleccioná —</option>${opts(['NA (Normalmente Abierto)','NC (Normalmente Cerrado)','1NA+1NC','Otro','No especificado'])}</select>
+      ${lbl('pulsadores','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="pulsadores_observaciones_${n}" placeholder="Opcional">`,
+
+    ojosbuey: `
+      ${lbl('ojosbuey','marca','Marca')}
+      <select name="ojosbuey_marca_${n}" data-fam="ojosbuey" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Schneider Electric','Elibet','Zurich','Siemens','ABB','Genérica','Otro','No especificado'])}</select>
+      ${lbl('ojosbuey','color','Color')}
+      <select name="ojosbuey_color_${n}" data-fam="ojosbuey" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Rojo','Verde','Amarillo','Blanco','Azul','Otro','No especificado'])}</select>
+      ${lbl('ojosbuey','tension','Tensión')}
+      <select name="ojosbuey_tension_${n}" data-fam="ojosbuey" data-campo="tension">
+        <option value="">— Seleccioná —</option>${opts(['24V AC/DC','110V AC','220V AC','380V AC','Otro','No especificado'])}</select>
+      ${lbl('ojosbuey','diametro','Diámetro')}
+      <select name="ojosbuey_diametro_${n}" data-fam="ojosbuey" data-campo="diametro">
+        <option value="">— Seleccioná —</option>${opts(['22mm','30mm','Otro','No especificado'])}</select>
+      ${lbl('ojosbuey','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="ojosbuey_observaciones_${n}" placeholder="Opcional">`,
+
+    bloqueaux: `
+      ${lbl('bloqueaux','marca','Marca')}
+      <select name="bloqueaux_marca_${n}" data-fam="bloqueaux" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['WEG','Schneider Electric','Siemens','ABB','Chint','LS Electric','Genérica','Otro','No especificado'])}</select>
+      ${lbl('bloqueaux','tipo','Tipo de contacto')}
+      <select name="bloqueaux_tipo_${n}" data-fam="bloqueaux" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['NA (Normalmente Abierto)','NC (Normalmente Cerrado)','1NA+1NC','Otro','No especificado'])}</select>
+      ${lbl('bloqueaux','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="bloqueaux_observaciones_${n}" placeholder="Opcional">`,
+
+    terminales: `
+      ${lbl('terminales','material','Material')}
+      <select name="terminales_material_${n}" data-fam="terminales" data-campo="material">
+        <option value="">— Seleccioná —</option>${opts(['Cobre','Aluminio','Cobre estañado','Bronce','Otro','No especificado'])}</select>
+      ${lbl('terminales','medida','Medida / Calibre')}
+      <select name="terminales_medida_${n}" data-fam="terminales" data-campo="medida">
+        <option value="">— Seleccioná —</option>${opts(['1 AWG','2 AWG','4 AWG','6 AWG','8 AWG','10 AWG','12 AWG','14 AWG','16 AWG','2/0 AWG','1/0 AWG','0,5mm²','0,75mm²','1mm²','1,5mm²','2,5mm²','4mm²','6mm²','10mm²','16mm²','25mm²','35mm²','50mm²','70mm²','95mm²','120mm²','Otro','No especificado'])}</select>
+      <label>Tipo de ojal (opcional)</label>
+      <select name="terminales_ojal_${n}" data-fam="terminales" data-campo="ojal">
+        <option value="">— Seleccioná —</option>${opts(['Ojal chico','Ojal grande','Ojal redondo','Ojal oval','Pala','Tubo aislado','Aislado','No especificado'])}</select>
+      <label>Marca (opcional)</label>
+      <select name="terminales_marca_${n}" data-fam="terminales" data-campo="marca">
+        <option value="">— Seleccioná —</option>${opts(['Lewden','IUSA','Condumex','Electrocobre','Pirelli','Siemens','Schneider','Nexans','Genérica','Otro','No especificado'])}</select>
+      ${lbl('terminales','cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="terminales_observaciones_${n}" placeholder="Opcional">`,
+  };
+
+  const famLabel = FAM_NAMES[fam] ? FAM_NAMES[fam].split(' ').slice(1).join(' ') : fam;
   const html = `<div class="item-block" id="item_${fam}_${n}">
     <button class="btn-del" onclick="removeItem('item_${fam}_${n}')">✕</button>
-    <div class="item-block-title">${FAM_NAMES[fam].split(' ').slice(1).join(' ')} #${n}</div>
-    ${campos}
+    <div class="item-block-title">${famLabel} #${n}</div>
+    ${TEMPLATES[fam] || ''}
     ${bloqueFotoItem(fam, n)}
   </div>`;
 
   cont.insertAdjacentHTML('beforeend', html);
 
+  // Ubicación se agrega aparte (adentro del mismo bloque, antes del cierre) — mismo patrón que iluminación
   const bloque = document.getElementById(`item_${fam}_${n}`);
   if (bloque) {
     agregarCamposOtro(bloque, fam);
     bloque.insertAdjacentHTML('beforeend', bloqueUbicacionItem(fam, n));
+    // Mayúsculas forzadas en TODO campo de texto libre del bloque (estándar del proyecto)
     bloque.querySelectorAll('input[type="text"]').forEach(inp => forzarMayusculas(inp));
+    // Al cambiar cualquier campo técnico, si es DEVOLUCIÓN, re-buscar ubicación
     bloque.querySelectorAll('[data-fam][data-campo]').forEach(el => {
       if (el.dataset.fam !== fam) return;
-      if (['cantidad','unidad','deposito','estante','columna','fila','peso_bobina','presentacion_otro'].includes(el.dataset.campo)) return;
+      if (['cantidad','deposito','estante','columna','fila'].includes(el.dataset.campo)) return;
       el.addEventListener('change', () => buscarUbicacionSiCorresponde(fam, n));
     });
+
     actualizarVisibilidadUbicacionItem(fam, n, document.getElementById('tipo_movimiento').value);
   }
 }
 
-function actualizarSubterraneoCable(n) {
-  const configSel  = document.querySelector(`[name='subterraneo_configuracion_${n}']`);
-  const seccionSel = document.querySelector(`[name='subterraneo_seccion_${n}']`);
-  const seccionActual = seccionSel.value;
-  const secciones = (window.SECCION_SUB && window.SECCION_SUB[configSel.value]) || [];
-  seccionSel.innerHTML = '<option value="">— Seleccioná —</option>' + optsMM2(secciones);
-  if (secciones.includes(seccionActual)) seccionSel.value = seccionActual;
+function removeItem(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
 }
-
-function removeItem(id) { const el = document.getElementById(id); if (el) el.remove(); }
 
 function validateBlock(fam, block) {
   const errs = [];
   (REQUIRED[fam]||[]).forEach(([campo, label]) => {
-    const el = block.querySelector(`[data-campo="${campo}"]`);
+    const el    = block.querySelector(`[data-campo="${campo}"]`);
     if (!el) return;
-    let val = el.value ? el.value.trim() : '';
+    let val      = el.value ? el.value.trim() : '';
     const errEl  = block.querySelector(`[data-err="${fam}_${campo}"]`);
     const otroEl = block.querySelector(`[data-campo="${campo}_otro"]`);
-    if ((val === 'Otro') && otroEl) {
+
+    if (val === 'Otro' && otroEl) {
       val = otroEl.value ? otroEl.value.trim() : '';
       if (!val) { otroEl.classList.add('err'); } else { otroEl.classList.remove('err'); }
     }
-    if (!val) { el.classList.add('err'); if (errEl) errEl.classList.add('show'); errs.push(label); }
-    else { el.classList.remove('err'); if (errEl) errEl.classList.remove('show'); }
+
+    if (!val) {
+      el.classList.add('err');
+      if (errEl) errEl.classList.add('show');
+      errs.push(label);
+    } else {
+      el.classList.remove('err');
+      if (errEl) errEl.classList.remove('show');
+    }
   });
 
-  // Presentación en Bobina: peso obligatorio
-  const pesoEl = block.querySelector('[data-campo="peso_bobina"]');
-  if (pesoEl) {
-    const pesoDiv = pesoEl.closest('div[id^="pesobob_"]');
-    if (pesoDiv && pesoDiv.style.display === 'block') {
-      const v = pesoEl.value ? pesoEl.value.trim() : '';
-      if (!v) { pesoEl.classList.add('err'); errs.push('Peso de bobina (kg)'); } else { pesoEl.classList.remove('err'); }
-    }
-  }
-  // Presentación "Otro": metros obligatorios
-  const otroPresEl = block.querySelector('[data-campo="presentacion_otro"]');
-  if (otroPresEl) {
-    const otroDiv = otroPresEl.closest('div[id^="otropres_"]');
-    if (otroDiv && otroDiv.style.display === 'block') {
-      const v = otroPresEl.value ? otroPresEl.value.trim() : '';
-      if (!v) { otroPresEl.classList.add('err'); errs.push('Metros por rollo (Otro)'); } else { otroPresEl.classList.remove('err'); }
-    }
-  }
-
+  // Ubicación: obligatoria solo si el movimiento es ENTRADA o DEVOLUCIÓN
   const tipoMov = document.getElementById('tipo_movimiento').value;
   if (esMovimientoConUbicacion(tipoMov)) {
     ['deposito','estante','columna','fila'].forEach(campo => {
       const el = block.querySelector(`[data-fam="${fam}"][data-campo="${campo}"]`);
       if (!el) return;
       const val = el.value ? el.value.trim() : '';
-      if (!val) { el.classList.add('err'); errs.push(`Ubicación → ${campo}`); } else { el.classList.remove('err'); }
+      if (!val) { el.classList.add('err'); errs.push(`Ubicación → ${campo}`); }
+      else { el.classList.remove('err'); }
     });
   }
+
   return errs;
 }
 
@@ -2062,16 +2625,12 @@ function collectItems(fam) {
       if (campo) data[campo] = el.value;
     });
     block.querySelectorAll('input[type="text"]').forEach(el => {
-      if (el.name && el.name.includes('_observaciones_')) data['observaciones'] = el.value;
+      if (el.name && el.name.includes('_observaciones_')) {
+        data['observaciones'] = el.value;
+      }
     });
-    // Presentación "OTRO" -> metros reales; marca "Otro" -> texto escrito
-    if (data.presentacion === 'OTRO' && data.presentacion_otro) data.presentacion = data.presentacion_otro + ' (otro)';
-    delete data.presentacion_otro;
-    if (data.marca === 'Otro' && data.marca_otro) data.marca = data.marca_otro;
-    delete data.marca_otro;
-
-    const fotosItem = n && fotosPendientes[`${fam}_${n}`];
-    if (fotosItem && fotosItem.length) data.fotos_base64 = fotosItem;
+    const fotosItem = fotosPendientes[`${fam}_${n}`];
+    if (n && fotosItem && fotosItem.length) data.fotos_base64 = fotosItem;
     return Object.values(data).some(v => v) ? data : null;
   }).filter(Boolean);
 }
@@ -2081,9 +2640,13 @@ function closeErrOverlay() {
   document.querySelector('.acordeon-btn.has-err')?.scrollIntoView({ behavior:'smooth', block:'center' });
 }
 
-// ── Borrador automático en localStorage ──
+// ── (dentro de 3.6) Borrador automático en localStorage — estándar del proyecto ──
 let draftTimer = null;
-function actualizarEstadoBorrador(texto) { const el = document.getElementById('borrador_estado'); if (el) el.textContent = texto; }
+
+function actualizarEstadoBorrador(texto) {
+  const el = document.getElementById('borrador_estado');
+  if (el) el.textContent = texto;
+}
 
 function guardarBorrador() {
   const estado = {
@@ -2096,9 +2659,6 @@ function guardarBorrador() {
     nuevo_descripcion: document.getElementById('nuevo_descripcion').value,
     nuevo_cantidad: document.getElementById('nuevo_cantidad').value,
     nuevo_unidad: document.getElementById('nuevo_unidad').value,
-    nuevo_presentacion: document.getElementById('nuevo_presentacion').value,
-    nuevo_peso_bobina: document.getElementById('nuevo_peso_bobina').value,
-    nuevo_presentacion_otro: document.getElementById('nuevo_presentacion_otro').value,
     nuevo_observacion: document.getElementById('nuevo_observacion').value,
     nuevo_deposito: document.getElementById('nuevo_deposito').value,
     nuevo_estante: document.getElementById('nuevo_estante').value,
@@ -2106,6 +2666,7 @@ function guardarBorrador() {
     nuevo_fila: document.getElementById('nuevo_fila').value,
     items: {}
   };
+
   FAMILIES.forEach(fam => {
     const cont = document.getElementById('items_' + fam);
     if (!cont) return;
@@ -2118,15 +2679,28 @@ function guardarBorrador() {
       estado.items[fam].push(item);
     });
   });
-  try { localStorage.setItem(CONFIG.storageKey, JSON.stringify(estado)); actualizarEstadoBorrador('Borrador guardado automáticamente'); }
-  catch (e) {}
+
+  try {
+    localStorage.setItem(CONFIG.storageKey, JSON.stringify(estado));
+    actualizarEstadoBorrador('Borrador guardado automáticamente');
+  } catch (e) {
+    // localStorage puede fallar (modo incógnito, cuota llena, etc.) — no es crítico
+  }
 }
-function programarGuardado() { clearTimeout(draftTimer); draftTimer = setTimeout(guardarBorrador, 250); }
+
+function programarGuardado() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(guardarBorrador, 250);
+}
 
 function restaurarBorrador() {
   let raw;
   try { raw = localStorage.getItem(CONFIG.storageKey); } catch (e) { raw = null; }
-  if (!raw) { actualizarEstadoBorrador('Borrador guardado automáticamente en este navegador.'); return; }
+  if (!raw) {
+    actualizarEstadoBorrador('Borrador guardado automáticamente en este navegador.');
+    return;
+  }
+
   let estado;
   try { estado = JSON.parse(raw); } catch { actualizarEstadoBorrador('No se pudo restaurar el borrador.'); return; }
   if (!estado) return;
@@ -2141,11 +2715,7 @@ function restaurarBorrador() {
   document.getElementById('observaciones').value = estado.observaciones || '';
   document.getElementById('nuevo_descripcion').value = estado.nuevo_descripcion || '';
   document.getElementById('nuevo_cantidad').value = estado.nuevo_cantidad || '';
-  document.getElementById('nuevo_unidad').value = estado.nuevo_unidad || 'm';
-  document.getElementById('nuevo_presentacion').value = estado.nuevo_presentacion || '';
-  document.getElementById('nuevo_peso_bobina').value = estado.nuevo_peso_bobina || '';
-  document.getElementById('nuevo_presentacion_otro').value = estado.nuevo_presentacion_otro || '';
-  togglePresentacionCable(document.getElementById('nuevo_presentacion'), 'nuevo');
+  document.getElementById('nuevo_unidad').value = estado.nuevo_unidad || 'un';
   document.getElementById('nuevo_observacion').value = estado.nuevo_observacion || '';
   document.getElementById('nuevo_deposito').value = estado.nuevo_deposito || '';
   document.getElementById('nuevo_estante').value = estado.nuevo_estante || '';
@@ -2164,21 +2734,17 @@ function restaurarBorrador() {
         const campo = bloque.querySelector(`[name="${name}"]`);
         if (!campo) return;
         campo.value = value;
-        if (name.includes('_presentacion_') && !name.includes('_otro')) togglePresentacionCable(campo, `${fam}_${bloque.id.split('_').pop()}`);
       });
+      // Mostrar los campos "Otro" que correspondan tras restaurar los valores
       bloque.querySelectorAll('select[data-campo]').forEach(sel => {
         if (sel.value === 'Otro') {
           const otro = sel.nextElementSibling;
           if (otro && otro.classList.contains('campo-otro-item')) otro.style.display = 'block';
         }
       });
-      const colorInput = bloque.querySelector('[data-campo="color"]');
-      if (colorInput && colorInput.value) {
-        const chip = bloque.querySelector(`.color-chip[data-color="${colorInput.value}"]`);
-        if (chip) chip.classList.add('sel');
-      }
     });
   });
+
   actualizarEstadoBorrador('Borrador restaurado');
 }
 
@@ -2187,17 +2753,23 @@ function resetForm(limpiarBorrador = true) {
   document.getElementById('tipo_movimiento').value = '';
   document.getElementById('responsable').value     = '';
   document.getElementById('obra').value            = '';
-  ['responsable_otro','obra_otro'].forEach(id => { document.getElementById(id).style.display = 'none'; document.getElementById(id).value = ''; });
-  FAMILIES.forEach(f => { const c = document.getElementById('items_'+f); if (c) c.innerHTML = ''; counters[f] = 0; });
+  ['responsable_otro','obra_otro'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+    document.getElementById(id).value = '';
+  });
+  FAMILIES.forEach(f => {
+    const c = document.getElementById('items_'+f);
+    if (c) c.innerHTML = '';
+    counters[f] = 0;
+  });
   Object.keys(fotosPendientes).forEach(k => delete fotosPendientes[k]);
-  ['nuevo_descripcion','nuevo_cantidad','nuevo_observacion'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  document.getElementById('nuevo_unidad').value = 'm';
-  document.getElementById('nuevo_presentacion').value = '';
-  document.getElementById('nuevo_peso_bobina').value = '';
-  document.getElementById('nuevo_presentacion_otro').value = '';
-  document.getElementById('pesobob_nuevo').style.display = 'none';
-  document.getElementById('otropres_nuevo').style.display = 'none';
-  ['nuevo_deposito','nuevo_estante','nuevo_columna','nuevo_fila'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['nuevo_descripcion','nuevo_cantidad','nuevo_observacion'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('nuevo_unidad').value = 'un';
+  ['nuevo_deposito','nuevo_estante','nuevo_columna','nuevo_fila'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
   const infoNuevo = document.getElementById('info_ubic_nuevo');
   if (infoNuevo) { infoNuevo.style.display = 'none'; infoNuevo.textContent = ''; }
   document.getElementById('observaciones').value = '';
@@ -2209,6 +2781,16 @@ function resetForm(limpiarBorrador = true) {
   document.getElementById('f-err-list').innerHTML = '';
   document.getElementById('ov-ok').classList.remove('show');
   document.getElementById('ov-err').classList.remove('show');
+  const bloqueFuentes = document.getElementById('bloque_fuentes');
+  if (bloqueFuentes) {
+    bloqueFuentes.querySelectorAll('.sub-tab-btn').forEach((b,i)  => b.classList.toggle('active', i===0));
+    bloqueFuentes.querySelectorAll('.sub-tab-panel').forEach((p,i) => p.classList.toggle('active', i===0));
+  }
+  const bloqueBorneras = document.getElementById('bloque_borneras');
+  if (bloqueBorneras) {
+    bloqueBorneras.querySelectorAll('.sub-tab-btn').forEach((b,i)  => b.classList.toggle('active', i===0));
+    bloqueBorneras.querySelectorAll('.sub-tab-panel').forEach((p,i) => p.classList.toggle('active', i===0));
+  }
   const btn = document.getElementById('btn-submit');
   btn.style.display = 'block'; btn.disabled = false; btn.textContent = 'Registrar movimiento';
   stockLoaded = false;
@@ -2257,25 +2839,33 @@ async function submitForm() {
       const errs = validateBlock(fam, block);
       if (errs.length) {
         hasError = true; famErr = true; famErrors.add(FAM_NAMES[fam]);
-        errs.forEach(e => { const li = document.createElement('li'); li.textContent = `${FAM_NAMES[fam]} #${i+1} → ${e}`; errList.appendChild(li); });
+        errs.forEach(e => {
+          const li = document.createElement('li');
+          li.textContent = `${FAM_NAMES[fam]} #${i+1} → ${e}`;
+          errList.appendChild(li);
+        });
       }
     });
     if (famErr) {
-      const body = document.getElementById('bloque_' + fam);
+      const bloqueId = (fam === 'fuentes_led') ? 'bloque_fuentes' : (fam === 'borneras_barra' ? 'bloque_borneras' : 'bloque_' + fam);
+      const body = document.getElementById(bloqueId);
       const btn  = body?.previousElementSibling;
       if (body) body.classList.add('open');
       if (btn)  { btn.classList.add('open'); btn.classList.add('has-err'); }
     }
   });
 
-  const hasProducts = FAMILIES.some(f => { const c = document.getElementById('items_'+f); return c && c.querySelectorAll('.item-block').length > 0; });
+  const hasProducts = FAMILIES.some(f => {
+    const c = document.getElementById('items_'+f);
+    return c && c.querySelectorAll('.item-block').length > 0;
+  });
   const nuevoDesc = document.getElementById('nuevo_descripcion').value.trim();
 
   if (!hasProducts && !nuevoDesc) {
     hasError = true;
-    const li = document.createElement('li'); li.textContent = 'Sin cables cargados — agregá al menos uno';
+    const li = document.createElement('li'); li.textContent = 'Sin productos — agregá al menos uno';
     errList.appendChild(li);
-    famErrors.add('Sin cables cargados');
+    famErrors.add('Sin productos cargados');
   }
 
   if (nuevoDesc) {
@@ -2284,9 +2874,9 @@ async function submitForm() {
       hasError = true;
       document.getElementById('nuevo_cantidad').classList.add('err');
       const li = document.createElement('li');
-      li.textContent = 'Cable no listado → Cantidad';
+      li.textContent = 'Producto no listado → Cantidad';
       errList.appendChild(li);
-      famErrors.add('Cable no listado');
+      famErrors.add('Producto no listado');
     }
   }
 
@@ -2294,37 +2884,20 @@ async function submitForm() {
     ['deposito','estante','columna','fila'].forEach(campo => {
       const el = document.getElementById(`nuevo_${campo}`);
       if (el && !String(el.value || '').trim()) {
-        hasError = true; el.classList.add('err');
-        const li = document.createElement('li'); li.textContent = `Cable no listado → Ubicación → ${campo}`; errList.appendChild(li);
-        famErrors.add('Cable no listado');
+        hasError = true;
+        el.classList.add('err');
+        const li = document.createElement('li');
+        li.textContent = `Producto no listado → Ubicación → ${campo}`;
+        errList.appendChild(li);
+        famErrors.add('Producto no listado');
       }
     });
   }
 
-  // Presentación de "Cable no listado": si eligió Bobina o Otro, validar el complemento
-  let pnPresentacion = document.getElementById('nuevo_presentacion').value;
-  if (nuevoDesc && pnPresentacion === 'Bobina (peso variable)') {
-    const peso = document.getElementById('nuevo_peso_bobina').value.trim();
-    if (!peso) {
-      hasError = true;
-      document.getElementById('nuevo_peso_bobina').classList.add('err');
-      const li = document.createElement('li'); li.textContent = 'Cable no listado → Peso de bobina (kg)'; errList.appendChild(li);
-      famErrors.add('Cable no listado');
-    }
-  } else if (nuevoDesc && pnPresentacion === 'OTRO') {
-    const metros = document.getElementById('nuevo_presentacion_otro').value.trim();
-    if (!metros) {
-      hasError = true;
-      document.getElementById('nuevo_presentacion_otro').classList.add('err');
-      const li = document.createElement('li'); li.textContent = 'Cable no listado → Metros por rollo (Otro)'; errList.appendChild(li);
-      famErrors.add('Cable no listado');
-    } else {
-      pnPresentacion = metros + ' (otro)';
-    }
-  }
-
   if (hasError) {
-    famErrors.forEach(n => { const li = document.createElement('li'); li.textContent = n; ovList.appendChild(li); });
+    famErrors.forEach(n => {
+      const li = document.createElement('li'); li.textContent = n; ovList.appendChild(li);
+    });
     document.getElementById('f-err-banner').classList.add('show');
     document.getElementById('ov-err').classList.add('show');
     return;
@@ -2346,7 +2919,6 @@ async function submitForm() {
       descripcion: nuevoDesc,
       cantidad:    document.getElementById('nuevo_cantidad').value,
       unidad:      document.getElementById('nuevo_unidad').value,
-      presentacion: pnPresentacion,
       observacion: document.getElementById('nuevo_observacion').value.trim(),
       deposito:    document.getElementById('nuevo_deposito').value,
       estante:     document.getElementById('nuevo_estante').value,
@@ -2361,10 +2933,15 @@ async function submitForm() {
   btn.disabled = true; btn.textContent = 'Enviando...';
 
   try {
-    await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
     try { localStorage.removeItem(CONFIG.storageKey); } catch (e) {}
     document.getElementById('ov-ok-detail').textContent =
-      `${tipo} registrada por ${resp} — ${total} cable${total!==1?'s':''} guardado${total!==1?'s':''}.`;
+      `${tipo} registrada por ${resp} — ${total} producto${total!==1?'s':''} guardado${total!==1?'s':''}.`;
     document.getElementById('ov-ok').classList.add('show');
     btn.style.display = 'none';
     stockLoaded = false;
@@ -2377,11 +2954,15 @@ async function submitForm() {
 function poblarSelectsGenerales() {
   const selResp = document.getElementById('responsable');
   const selObra = document.getElementById('obra');
-  CONFIG.responsables.forEach(r => { const opt = document.createElement('option'); opt.textContent = r; selResp.appendChild(opt); });
+  CONFIG.responsables.forEach(r => {
+    const opt = document.createElement('option'); opt.textContent = r; selResp.appendChild(opt);
+  });
   const otroResp = document.createElement('option'); otroResp.value = 'OTRO'; otroResp.textContent = 'Otro...'; selResp.appendChild(otroResp);
 
-  CONFIG.obras.forEach(o => { const opt = document.createElement('option'); opt.textContent = o; selObra.appendChild(opt); });
-  const otroObra = document.createElement('option'); otroObra.value = 'OTRO'; otroObra.textContent = 'Otra...'; selObra.appendChild(otroObra);
+  CONFIG.obras.forEach(o => {
+    const opt = document.createElement('option'); opt.textContent = o; selObra.appendChild(opt);
+  });
+  const otroObra = document.createElement('option'); otroObra.value = 'OTRO'; otroObra.textContent = 'Otra obra...'; selObra.appendChild(otroObra);
 }
 
 // ============================================================
@@ -2390,6 +2971,7 @@ function poblarSelectsGenerales() {
 document.addEventListener('DOMContentLoaded', function() {
   poblarSelectsGenerales();
 
+  // Mayúsculas forzadas en todos los campos de texto libre estáticos
   forzarMayusculas(document.getElementById('responsable_otro'));
   forzarMayusculas(document.getElementById('obra_otro'));
   forzarMayusculas(document.getElementById('nuevo_descripcion'));
@@ -2424,33 +3006,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  document.addEventListener('input', function(e) { if (e.target.matches('input, select, textarea')) programarGuardado(); });
-  document.addEventListener('change', function(e) { if (e.target.matches('input, select, textarea')) programarGuardado(); });
+  // Borrador automático: guardar en cualquier cambio del formulario
+  document.addEventListener('input', function(e) {
+    if (e.target.matches('input, select, textarea')) programarGuardado();
+  });
+  document.addEventListener('change', function(e) {
+    if (e.target.matches('input, select, textarea')) programarGuardado();
+  });
   restaurarBorrador();
-  revisarDeepLinkProducto();
 });
-
-// ============================================================
-// 3.8 DEEP LINK DESDE EL BUSCADOR MAESTRO
-// ============================================================
-function revisarDeepLinkProducto() {
-  const params = new URLSearchParams(window.location.search);
-  const idProducto = params.get('id');
-  if (!idProducto) return;
-
-  goStock();
-  const intentarAbrir = () => {
-    const idx = stockData.findIndex(p => p.id === idProducto);
-    if (idx >= 0) {
-      openDetail(idx);
-    } else if (stockLoaded) {
-      // ya cargó el stock pero no está ese ID — no hacemos nada más
-    } else {
-      setTimeout(intentarAbrir, 300); // el fetch todavía no terminó, reintenta
-    }
-  };
-  intentarAbrir();
-}
 </script>
 </body>
 </html>
