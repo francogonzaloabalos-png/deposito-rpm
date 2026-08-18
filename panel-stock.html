@@ -23,9 +23,6 @@
             --ok-bg: #123321;
             --bad-fg: #f87171;
             --bad-bg: #3a1414;
-            --entrada: #4ade80;
-            --salida: #f87171;
-            --devol: #60a5fa;
             --devol-bg: #122a4a;
             --devol-fg: #60a5fa;
             --hover-bg: #16213b;
@@ -135,9 +132,19 @@
         }
 
         @keyframes successScale {
-            0% { transform: scale(0.6); opacity: 0; }
-            80% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
+            0% {
+                transform: scale(0.6);
+                opacity: 0;
+            }
+
+            80% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .pulse.off {
@@ -282,10 +289,6 @@
             margin-top: 3px;
         }
 
-        .stat.warn .stat-num {
-            color: var(--amber);
-        }
-
         .stat.bad .stat-num {
             color: var(--bad-fg);
         }
@@ -387,16 +390,96 @@
             background: var(--bg-card);
             border: 1px solid var(--line-soft);
             border-radius: var(--radius);
-            overflow: hidden;
+            position: relative;
         }
 
+        /* Bloque superior fijo: Barra de scroll horizontal + Encabezados */
+        .sticky-top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 25;
+            background: var(--bg-elev);
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+            border-bottom: 1.5px solid var(--line);
+        }
+
+        /* Barra de scroll horizontal disimulada arriba */
+        .top-scrollbar-wrap {
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 7px;
+            background: var(--bg-elev);
+            border-bottom: 1px solid var(--line-soft);
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
+        }
+
+        .top-scrollbar-wrap::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .top-scrollbar-wrap::-webkit-scrollbar-track {
+            background: var(--bg-elev);
+        }
+
+        .top-scrollbar-wrap::-webkit-scrollbar-thumb {
+            background: var(--txt-faint);
+            opacity: 0.6;
+            border-radius: 4px;
+        }
+
+        .top-scrollbar-wrap::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        .top-scrollbar-inner {
+            height: 1px;
+            min-width: 920px;
+        }
+
+        /* Envoltorio del thead fijo superior */
+        .sticky-thead-wrap {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .sticky-header-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 12.8px;
+            min-width: 920px;
+            table-layout: fixed;
+        }
+
+        /* Barra de scroll inferior sutil */
         .table-scroll {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-scroll::-webkit-scrollbar-track {
+            background: var(--bg-card);
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: var(--line);
+            border-radius: 4px;
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
         }
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             font-size: 12.8px;
             min-width: 920px;
         }
@@ -410,7 +493,6 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .6px;
-            border-bottom: 1px solid var(--line);
             white-space: nowrap;
             cursor: pointer;
             user-select: none;
@@ -421,15 +503,41 @@
         }
 
         thead th .arrow {
-            opacity: .5;
-            font-size: 9px;
-            margin-left: 3px;
+            opacity: .75;
+            font-size: 7px;
+            margin-left: 2px;
+            display: inline-block;
+            vertical-align: 1px;
+            transition: opacity .15s;
+        }
+
+        /* Opción 1: Optimización de espaciado interno (padding) y micro-flechas */
+        #stockTable td:nth-child(1), #stickyStockTable th:nth-child(1) {
+            min-width: 48px;
+            text-align: center;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+
+        #stockTable td:nth-child(2), #stickyStockTable th:nth-child(2) {
+            min-width: 66px;
+            text-align: center;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+
+        #stockTable td:nth-child(7), #stickyStockTable th:nth-child(7) {
+            min-width: 52px;
+            text-align: center;
+            padding-left: 3px;
+            padding-right: 3px;
         }
 
         tbody td {
             padding: 9px 12px;
             border-bottom: 1px solid var(--line-soft);
             vertical-align: middle;
+            background: var(--bg-card);
         }
 
         tbody tr:last-child td {
@@ -675,7 +783,8 @@
         }
 
         .field input,
-        .field select {
+        .field select,
+        .field textarea {
             width: 100%;
             background: var(--bg-card);
             border: 1px solid var(--line);
@@ -687,8 +796,19 @@
             outline: none;
         }
 
+        .field textarea {
+            resize: none;
+            overflow: hidden;
+            min-height: 38px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-word;
+            transition: height .08s ease;
+        }
+
         .field input:focus,
-        .field select:focus {
+        .field select:focus,
+        .field textarea:focus {
             border-color: var(--accent);
         }
 
@@ -811,6 +931,7 @@
             background: var(--accent-soft) !important;
             border-bottom-color: var(--accent) !important;
         }
+
         .pin-badge {
             font-size: 10px;
             font-weight: 800;
@@ -822,6 +943,7 @@
             display: inline-block;
             vertical-align: middle;
         }
+
         .btn-edit-desc {
             background: none;
             border: none;
@@ -834,10 +956,12 @@
             margin-left: 0;
             transition: opacity 0.15s;
         }
+
         .btn-edit-desc:hover {
             opacity: 0.8;
             background: none;
         }
+
         .thumbs-wrap {
             display: flex;
             flex-direction: column;
@@ -845,6 +969,7 @@
             align-items: center;
             justify-content: center;
         }
+
         .cart-order-bar {
             position: fixed;
             bottom: 18px;
@@ -863,6 +988,7 @@
             gap: 16px;
             flex-wrap: wrap;
         }
+
         .cart-order-actions {
             display: flex;
             gap: 8px;
@@ -876,17 +1002,27 @@
             color: #94a3b8;
             line-height: 1.4;
         }
+
         .obs-tag strong {
             color: #cbd5e1;
         }
+
         .obs-vacia {
             color: #64748b;
         }
 
         /* ---------- BARRA DE CARRITO POR TIPO DE MOVIMIENTO ---------- */
-        .cart-order-bar.tipo-entrada { border-color: var(--ok-fg); }
-        .cart-order-bar.tipo-salida { border-color: var(--bad-fg); }
-        .cart-order-bar.tipo-devolucion { border-color: var(--devol-fg); }
+        .cart-order-bar.tipo-entrada {
+            border-color: var(--ok-fg);
+        }
+
+        .cart-order-bar.tipo-salida {
+            border-color: var(--bad-fg);
+        }
+
+        .cart-order-bar.tipo-devolucion {
+            border-color: var(--devol-fg);
+        }
     </style>
 </head>
 
@@ -894,43 +1030,97 @@
     <div class="app">
 
         <!-- SELECTOR DE DISEÑO -->
-        <div id="themeSelectorContainer" style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; position: relative;">
-            <button id="themeDropdownBtn" type="button" onclick="document.getElementById('themeDropdownMenu').classList.toggle('ts-open')" style="display:flex;align-items:center;gap:7px;background:var(--bg-elev);border:1.5px solid var(--line);border-radius:8px;padding:5px 11px;cursor:pointer;font-size:12px;font-weight:600;color:var(--txt-dim);letter-spacing:0.3px;">
+        <div id="themeSelectorContainer"
+            style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; position: relative;">
+            <button id="themeDropdownBtn" type="button"
+                onclick="document.getElementById('themeDropdownMenu').classList.toggle('ts-open')"
+                style="display:flex;align-items:center;gap:7px;background:var(--bg-elev);border:1.5px solid var(--line);border-radius:8px;padding:5px 11px;cursor:pointer;font-size:12px;font-weight:600;color:var(--txt-dim);letter-spacing:0.3px;">
                 <span style="font-size:13px;">🎨</span> Diseños
                 <span style="font-size:9px;margin-left:2px;opacity:0.6;">▾</span>
             </button>
-            <div id="themeDropdownMenu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:999;background:var(--bg-elev);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,0.22);min-width:220px;">
-                <div style="font-size:10px;font-weight:700;color:var(--txt-faint);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Elegir combinación de colores</div>
+            <div id="themeDropdownMenu"
+                style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:999;background:var(--bg-elev);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,0.22);min-width:220px;">
+                <div
+                    style="font-size:10px;font-weight:700;color:var(--txt-faint);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+                    Elegir combinación de colores</div>
                 <div id="themeDotsRow" style="display:flex;flex-direction:column;gap:4px;">
-                    <div style="font-size:9.5px;font-weight:700;color:var(--txt-faint);letter-spacing:0.8px;text-transform:uppercase;margin:2px 0 1px 4px;">— Paletas Claras —</div>
-                    <button type="button" class="ts-opt" onclick="applyTheme('corporateNavy');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span class="ts-dot" style="background:#eef1f6;border:2px solid #1f3d73;"></span> Azul Marino (Claro)</button>
-                    <button type="button" class="ts-opt" onclick="applyTheme('lightBlue');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span class="ts-dot" style="background:#ffffff;border:2px solid #2563eb;"></span> Blanco y Azul (Claro)</button>
-                    <button type="button" class="ts-opt" onclick="applyTheme('nordLight');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span class="ts-dot" style="background:#eceff4;border:2px solid #5e81ac;"></span> Gris Claro Suave</button>
-                    <button type="button" class="ts-opt" onclick="applyTheme('oceanTeal');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span class="ts-dot" style="background:#ecfeff;border:2px solid #0891b2;"></span> Turquesa Océano (Claro)</button>
-                    <button type="button" class="ts-opt" onclick="applyTheme('amberWarm');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span class="ts-dot" style="background:#fef7e0;border:2px solid #d97706;"></span> Ámbar y Crema (Cálido)</button>
-                    <button type="button" class="ts-opt" onclick="applyTheme('lavenderLight');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span class="ts-dot" style="background:#f5f3ff;border:2px solid #7c3aed;"></span> Lavanda Pastel (Claro)</button>
+                    <div
+                        style="font-size:9.5px;font-weight:700;color:var(--txt-faint);letter-spacing:0.8px;text-transform:uppercase;margin:2px 0 1px 4px;">
+                        — Paletas Claras —</div>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('lightBlue');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#ffffff;border:2px solid #2563eb;"></span> Blanco y Azul
+                        (Claro)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('corporateNavy');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#eef1f6;border:2px solid #1f3d73;"></span> Azul Marino
+                        (Claro)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('nordLight');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#eceff4;border:2px solid #5e81ac;"></span> Gris Claro
+                        Suave</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('oceanTeal');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#ecfeff;border:2px solid #0891b2;"></span> Turquesa Océano
+                        (Claro)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('amberWarm');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#fef7e0;border:2px solid #d97706;"></span> Ámbar y Crema
+                        (Cálido)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('lavenderLight');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#f5f3ff;border:2px solid #7c3aed;"></span> Lavanda Pastel
+                        (Claro)</button>
 
-                    <div style="font-size:9.5px;font-weight:700;color:var(--txt-faint);letter-spacing:0.8px;text-transform:uppercase;margin:6px 0 1px 4px;border-top:1px solid var(--line-soft);padding-top:6px;">— Paletas Oscuras —</div>
-                    <button type="button" class="ts-opt" onclick="applyTheme('maestroSlate');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span class="ts-dot" style="background:#0f172a;border:2px solid #3b82f6;"></span> Gris Grafito (Oscuro)</button>
-                    <button type="button" class="ts-opt" onclick="applyTheme('slateDark');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span class="ts-dot" style="background:#090d16;border:2px solid #38bdf8;"></span> Noche Negra (Oscuro)</button>
+                    <div
+                        style="font-size:9.5px;font-weight:700;color:var(--txt-faint);letter-spacing:0.8px;text-transform:uppercase;margin:6px 0 1px 4px;border-top:1px solid var(--line-soft);padding-top:6px;">
+                        — Paletas Oscuras —</div>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('maestroSlate');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#0f172a;border:2px solid #3b82f6;"></span> Gris Grafito
+                        (Oscuro)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('slateDark');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#090d16;border:2px solid #38bdf8;"></span> Noche Negra
+                        (Oscuro)</button>
                 </div>
             </div>
             <!-- puntos de referencia de paleta activa -->
             <div id="themeActiveDots" style="display:flex;gap:5px;align-items:center;"></div>
         </div>
         <style>
-            .ts-open { display:block !important; }
-            .ts-opt {
-                display:flex;align-items:center;gap:8px;
-                background:none;border:none;cursor:pointer;
-                color:var(--txt-dim);font-size:12px;font-weight:500;
-                padding:4px 6px;width:100%;text-align:left;
-                border-radius:5px;transition:background .15s;
+            .ts-open {
+                display: block !important;
             }
-            .ts-opt:hover { background:var(--hover-bg); color:var(--txt); }
+
+            .ts-opt {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: var(--txt-dim);
+                font-size: 12px;
+                font-weight: 500;
+                padding: 4px 6px;
+                width: 100%;
+                text-align: left;
+                border-radius: 5px;
+                transition: background .15s;
+            }
+
+            .ts-opt:hover {
+                background: var(--hover-bg);
+                color: var(--txt);
+            }
+
             .ts-dot {
-                display:inline-block;width:13px;height:13px;
-                border-radius:50%;flex-shrink:0;
+                display: inline-block;
+                width: 13px;
+                height: 13px;
+                border-radius: 50%;
+                flex-shrink: 0;
             }
         </style>
 
@@ -938,7 +1128,8 @@
             <div>
                 <div class="brand-eyebrow">RPM Construcciones</div>
                 <div class="brand-title">Panel de Depósitos <span class="dim">/ Stock</span></div>
-                <div class="status-line" onclick="cargarTodo(false)" style="cursor:pointer;" title="Haz clic para reintentar conexión"><span class="pulse" id="pulseDot"></span><span
+                <div class="status-line" onclick="cargarTodo(false)" style="cursor:pointer;"
+                    title="Haz clic para reintentar conexión"><span class="pulse" id="pulseDot"></span><span
                         id="statusText">Conectando…</span></div>
             </div>
             <div class="header-actions">
@@ -977,21 +1168,30 @@
                 </select>
             </div>
             <div class="table-wrap">
-                <div class="table-scroll">
+                <div class="sticky-top-bar">
+                    <div class="top-scrollbar-wrap" id="topScrollStock">
+                        <div class="top-scrollbar-inner"></div>
+                    </div>
+                    <div class="sticky-thead-wrap" id="theadWrapStock">
+                        <table class="sticky-header-table" id="stickyStockTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="seleccion" style="text-align:center;">Sel. <span class="arrow"></span></th>
+                                    <th data-sort="fotos" style="text-align:center;">Foto(s) <span class="arrow"></span></th>
+                                    <th data-sort="familia">Familia <span class="arrow"></span></th>
+                                    <th data-sort="descripcion">Descripción <span class="arrow"></span></th>
+                                    <th data-sort="marca">Marca <span class="arrow"></span></th>
+                                    <th data-sort="ubicacion">Ubicación <span class="arrow"></span></th>
+                                    <th data-sort="stock_minimo">Mín. <span class="arrow"></span></th>
+                                    <th data-sort="stock_actual">Stock <span class="arrow"></span></th>
+                                    <th data-sort="estado">Estado <span class="arrow"></span></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-scroll" id="scrollStock">
                     <table id="stockTable">
-                        <thead>
-                            <tr>
-                                <th style="width:36px;text-align:center;">Sel.</th>
-                                <th style="width:85px;text-align:center;">Foto(s)</th>
-                                <th data-sort="familia">Familia <span class="arrow"></span></th>
-                                <th data-sort="descripcion">Descripción <span class="arrow"></span></th>
-                                <th data-sort="marca">Marca <span class="arrow"></span></th>
-                                <th data-sort="ubicacion">Ubicación <span class="arrow"></span></th>
-                                <th data-sort="stock_minimo">Mín. <span class="arrow"></span></th>
-                                <th data-sort="stock_actual">Stock <span class="arrow"></span></th>
-                                <th data-sort="estado">Estado <span class="arrow"></span></th>
-                            </tr>
-                        </thead>
                         <tbody id="stockBody"></tbody>
                     </table>
                 </div>
@@ -1015,18 +1215,27 @@
                 </select>
             </div>
             <div class="table-wrap">
-                <div class="table-scroll">
+                <div class="sticky-top-bar">
+                    <div class="top-scrollbar-wrap" id="topScrollMov">
+                        <div class="top-scrollbar-inner"></div>
+                    </div>
+                    <div class="sticky-thead-wrap" id="theadWrapMov">
+                        <table class="sticky-header-table" id="stickyMovTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="fecha">Fecha <span class="arrow"></span></th>
+                                    <th data-sort="tipo">Tipo <span class="arrow"></span></th>
+                                    <th data-sort="descripcion">Producto <span class="arrow"></span></th>
+                                    <th data-sort="cantidad">Cant. <span class="arrow"></span></th>
+                                    <th data-sort="responsable">Responsable <span class="arrow"></span></th>
+                                    <th data-sort="obra">Obra / destino <span class="arrow"></span></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-scroll" id="scrollMov">
                     <table id="movTable">
-                        <thead>
-                            <tr>
-                                <th data-sort="fecha">Fecha <span class="arrow"></span></th>
-                                <th data-sort="tipo">Tipo <span class="arrow"></span></th>
-                                <th data-sort="descripcion">Producto <span class="arrow"></span></th>
-                                <th data-sort="cantidad">Cant. <span class="arrow"></span></th>
-                                <th data-sort="responsable">Responsable <span class="arrow"></span></th>
-                                <th data-sort="obra">Obra / destino <span class="arrow"></span></th>
-                            </tr>
-                        </thead>
                         <tbody id="movBody"></tbody>
                     </table>
                 </div>
@@ -1079,12 +1288,14 @@
     <!-- Edit Product Modal -->
     <div class="overlay" id="editProductOverlay">
         <div class="modal" style="max-width: 400px; width: 100%; position: relative;">
-            <button type="button" id="editProdCloseX" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; color: var(--txt-dim); cursor: pointer; line-height: 1; padding: 4px; border-radius: 6px; transition: color 0.15s;" title="Cerrar ventana">✕</button>
+            <button type="button" id="editProdCloseX"
+                style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; color: var(--txt-dim); cursor: pointer; line-height: 1; padding: 4px; border-radius: 6px; transition: color 0.15s;"
+                title="Cerrar ventana">✕</button>
             <h3 id="editProdTitle">Editar Producto</h3>
             <div class="sub" id="editProdSub"></div>
             <div class="field">
                 <label>Descripción del Producto</label>
-                <input type="text" id="editProdDesc" placeholder="Descripción…">
+                <textarea id="editProdDesc" placeholder="Descripción…" rows="1" oninput="autoResizeTextarea(this)"></textarea>
             </div>
             <div class="field">
                 <label>Marca</label>
@@ -1098,14 +1309,18 @@
                 <label>Stock Mínimo</label>
                 <input type="number" id="editProdMin" min="0" placeholder="0">
             </div>
-            <div class="field" style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 12px 0;">
-                <div style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+            <div class="field"
+                style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 12px 0;">
+                <div
+                    style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
                     <span>📍</span> Ubicación física
                 </div>
                 <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 0.9fr; gap: 8px; align-items: end;">
                     <div style="display: flex; flex-direction: column;">
-                        <label style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Depósito</label>
-                        <select id="editProdUbiDep" style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box; cursor: pointer;">
+                        <label
+                            style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Depósito</label>
+                        <select id="editProdUbiDep"
+                            style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box; cursor: pointer;">
                             <option value="">—</option>
                             <option value="1">1</option>
                             <option value="2">2</option>
@@ -1118,19 +1333,38 @@
                         </select>
                     </div>
                     <div style="display: flex; flex-direction: column;">
-                        <label style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Estante</label>
-                        <input type="number" id="editProdUbiEst" min="0" step="1" placeholder="Ej: 2" style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
+                        <label
+                            style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Estante</label>
+                        <input type="number" id="editProdUbiEst" min="0" step="1" placeholder="Ej: 2"
+                            style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
                     </div>
                     <div style="display: flex; flex-direction: column;">
-                        <label style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Columna</label>
-                        <input type="number" id="editProdUbiCol" min="0" step="1" placeholder="Ej: 5" style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
+                        <label
+                            style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Columna</label>
+                        <input type="number" id="editProdUbiCol" min="0" step="1" placeholder="Ej: 5"
+                            style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
                     </div>
                     <div style="display: flex; flex-direction: column;">
-                        <label style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Fila</label>
-                        <input type="text" id="editProdUbiFila" maxlength="1" placeholder="Ej: B" style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 800; font-size: 13px; text-transform: uppercase; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
+                        <label
+                            style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Fila</label>
+                        <input type="text" id="editProdUbiFila" maxlength="1" placeholder="Ej: B"
+                            style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 800; font-size: 13px; text-transform: uppercase; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
                     </div>
                 </div>
             </div>
+
+            <div class="field"
+                style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 12px 0;">
+                <div
+                    style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                    <span>📷</span> Fotos del producto <span style="font-weight:400; color: var(--txt-faint); text-transform:none; letter-spacing:0;">(máx. 2)</span>
+                </div>
+                <div id="editProdFotosPreview" style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;"></div>
+                <input type="file" accept="image/*" id="editProdFotoInput" style="display:none" onchange="manejarSeleccionFotoEditProd(this)">
+                <button type="button" class="btn small" id="editProdFotoBtn" onclick="document.getElementById('editProdFotoInput').click()">+ Agregar foto</button>
+                <div id="editProdFotoMsg" style="display:none; font-size:11px; color: var(--txt-faint); margin-top: 6px;">Ya tenés las 2 fotos máximas cargadas. Eliminá una (✕) para poder agregar otra.</div>
+            </div>
+
             <div class="field">
                 <label>Observaciones</label>
                 <input type="text" id="editProdObs" placeholder="Observaciones…">
@@ -1148,7 +1382,7 @@
         <div class="modal" style="max-width: 500px; width: 90%;">
             <h3>⚡ Movimiento en Lote</h3>
             <div class="sub" style="margin-bottom: 12px;">Ingresá la cantidad a mover para cada producto:</div>
-            
+
             <div class="field">
                 <label>Movimiento</label>
                 <div class="seg" id="batchTipoSeg">
@@ -1160,27 +1394,30 @@
 
             <div class="field">
                 <label>Productos y Cantidades</label>
-                <div class="batch-items-list" id="batchItemsList" style="max-height: 200px; overflow-y: auto; background: var(--bg-elev); border: 1.5px solid var(--line); border-radius: 9px; padding: 6px 10px;">
+                <div class="batch-items-list" id="batchItemsList"
+                    style="max-height: 200px; overflow-y: auto; background: var(--bg-elev); border: 1.5px solid var(--line); border-radius: 9px; padding: 6px 10px;">
                     <!-- Se llena dinámicamente -->
                 </div>
             </div>
 
             <div class="field">
-                <button type="button" class="btn primary" id="adjustBatchAddMore" style="width: 100%; display: block; font-size: 13px; font-weight: 700; background: #2563eb; color: #fff; padding: 10px; border-radius: 8px; border: none; cursor: pointer; text-align: center; margin-top: 10px;">➕ Agregar más productos al lote</button>
+                <button type="button" class="btn primary" id="adjustBatchAddMore"
+                    style="width: 100%; display: block; font-size: 13px; font-weight: 700; background: #2563eb; color: #fff; padding: 10px; border-radius: 8px; border: none; cursor: pointer; text-align: center; margin-top: 10px;">➕
+                    Agregar más productos al lote</button>
             </div>
 
             <div class="field">
                 <label>Responsable</label>
                 <input type="text" id="adjustBatchResponsable" placeholder="Nombre de quien retira/entrega">
             </div>
-            
+
             <div class="field">
                 <label>Obra / destino (opcional)</label>
                 <input type="text" id="adjustBatchObra" placeholder="Obra, Mantenimiento, etc.">
             </div>
 
             <div class="modal-err" id="adjustBatchErr"></div>
-            
+
             <div class="modal-actions">
                 <button class="btn ghost" id="adjustBatchCancel">Cancelar</button>
                 <button class="btn primary" id="adjustBatchConfirm">Confirmar Movimiento</button>
@@ -1191,10 +1428,13 @@
     <!-- Success Confirmation Modal -->
     <div class="overlay" id="successOverlay">
         <div class="modal" style="max-width: 360px; text-align: center; padding: 28px;">
-            <div style="font-size: 54px; color: #10b981; margin-bottom: 12px; animation: successScale 0.3s ease-out;">✔️</div>
+            <div style="font-size: 54px; color: #10b981; margin-bottom: 12px; animation: successScale 0.3s ease-out;">✔️
+            </div>
             <h3 style="font-size: 18px; margin-bottom: 8px; color: var(--txt);">¡Movimiento Guardado!</h3>
-            <p id="successMessage" style="font-size: 13.5px; color: var(--txt-dim); margin-bottom: 22px; line-height: 1.5;"></p>
-            <button class="btn primary" id="successClose" style="width: 100%; justify-content: center; padding: 10px; font-size: 13px; font-weight: 700;">Aceptar</button>
+            <p id="successMessage"
+                style="font-size: 13.5px; color: var(--txt-dim); margin-bottom: 22px; line-height: 1.5;"></p>
+            <button class="btn primary" id="successClose"
+                style="width: 100%; justify-content: center; padding: 10px; font-size: 13px; font-weight: 700;">Aceptar</button>
         </div>
     </div>
 
@@ -1258,17 +1498,12 @@
             mov: [],
             zona: '',           // '' = todas
             activeTab: 'stock',
-            stock: { search: '', familia: '', estado: '', sortKey: 'familia', sortDir: 1 },
+            stockUi: { search: '', familia: '', estado: '', sortKey: 'familia', sortDir: 1 },
             movUi: { search: '', tipo: '', sortKey: 'fecha', sortDir: -1, page: 0 },
-            pollHandle: null,
             modalOpen: false,
             selectedIds: new Set(),
             batchDraftQtys: {},
         };
-        // (nota: 'stock' arriba se reasigna abajo con los datos reales; separamos el filtro en stockUi)
-        state.data = { stock: [], mov: [] };
-        state.stockUi = state.stock; // filtro/orden de la tabla de stock
-        state.stock = [];            // datos crudos de stock
 
         // ============================================================
         // FETCH
@@ -1304,11 +1539,29 @@
                 if (!silencioso) setStatus('Cargando…', true);
                 const [rStock, rMov] = await Promise.all([apiGet('stock'), apiGet('movimientos')]);
                 if (!rStock.ok) throw new Error(rStock.error || 'Error cargando stock');
-                state.stock = rStock.productos || [];
-                state.mov = (rMov && rMov.ok) ? (rMov.movimientos || []) : [];
-                buildZoneChips();
-                populateFamiliaFilter();
-                renderAll();
+                const nuevoStock = rStock.productos || [];
+                const nuevoMov = (rMov && rMov.ok) ? (rMov.movimientos || []) : [];
+
+                const huboCambios = JSON.stringify(nuevoStock) !== JSON.stringify(state.stock)
+                    || JSON.stringify(nuevoMov) !== JSON.stringify(state.mov);
+
+                state.stock = nuevoStock;
+                state.mov = nuevoMov;
+
+                // Modo silencioso (polling) sin cambios reales → no se toca la tabla en absoluto.
+                if (!silencioso || huboCambios) {
+                    const scrollDiv = document.getElementById('scrollStock');
+                    const scrollTopGuardado = scrollDiv ? scrollDiv.scrollTop : 0;
+
+                    buildZoneChips();
+                    populateFamiliaFilter();
+                    renderAll();
+
+                    // Al repintar por un cambio real detectado en silencio, restauramos el scroll
+                    // para que no "salte" la pantalla mientras estás mirando la tabla.
+                    if (silencioso && scrollDiv) scrollDiv.scrollTop = scrollTopGuardado;
+                }
+
                 setStatus(isDemo ? 'Modo demo activo' : ('Actualizado ' + horaAhora()), true);
                 if (!silencioso) showToast('Stock actualizado ✓');
             } catch (err) {
@@ -1420,15 +1673,29 @@
                 list = list.filter(p => matchesSearch(p, ui.search, ['descripcion', 'marca', 'familia', 'id']));
             }
             list = list.slice().sort((a, b) => {
-                const aSel = state.selectedIds.has(a.id);
-                const bSel = state.selectedIds.has(b.id);
-                if (aSel && !bSel) return -1;
-                if (!aSel && bSel) return 1;
+                if (ui.sortKey === 'seleccion') {
+                    const aSel = state.selectedIds.has(a.id) ? 1 : 0;
+                    const bSel = state.selectedIds.has(b.id) ? 1 : 0;
+                    if (aSel !== bSel) {
+                        return (bSel - aSel); // seleccionados siempre arriba
+                    }
+                }
 
-                let va = a[ui.sortKey], vb = b[ui.sortKey];
-                if (ui.sortKey === 'ubicacion') { va = ubicacionStr(a); vb = ubicacionStr(b); }
-                if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * ui.sortDir;
-                return String(va || '').localeCompare(String(vb || ''), undefined, { numeric: true }) * ui.sortDir;
+                if (ui.sortKey === 'fotos') {
+                    const aPhotos = (a.imagen || '').split('||').map(x => x.trim()).filter(Boolean).length;
+                    const bPhotos = (b.imagen || '').split('||').map(x => x.trim()).filter(Boolean).length;
+                    if (aPhotos !== bPhotos) {
+                        return (bPhotos - aPhotos) * ui.sortDir;
+                    }
+                }
+
+                const sortCol = (ui.sortKey === 'seleccion') ? (ui.prevSortKey || 'familia') : ui.sortKey;
+                const sortDir = (ui.sortKey === 'seleccion') ? (ui.prevSortDir || 1) : ui.sortDir;
+
+                let va = a[sortCol], vb = b[sortCol];
+                if (sortCol === 'ubicacion') { va = ubicacionStr(a); vb = ubicacionStr(b); }
+                if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sortDir;
+                return String(va || '').localeCompare(String(vb || ''), undefined, { numeric: true }) * sortDir;
             });
             return list;
         }
@@ -1483,28 +1750,18 @@
         // ============================================================
         // RENDER — STOCK TABLE
         // ============================================================
-        // ============================================================
-        // RENDER — STOCK TABLE
-        // ============================================================
-        function renderStock() {
-            const list = stockFiltrado();
-            const body = document.getElementById('stockBody');
-
-            if (list.length === 0) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="10">No hay productos que coincidan con el filtro.</td></tr>`;
-            } else {
-                body.innerHTML = list.map(p => {
-                    const loc = ubicacionStr(p);
-                    const isSel = state.selectedIds.has(p.id);
-                    const imgs = (p.imagen || '').split('||').map(x => x.trim()).filter(Boolean);
-                    const imgHtml = imgs.length > 0
-                        ? `<div class="thumbs-wrap">${imgs.map(src => `<img class="thumb" src="${escapeAttr(src)}" data-full="${escapeAttr(src)}" alt="">`).join('')}</div>`
-                        : `<div class="thumb-empty">—</div>`;
-                    const estadoClass = p.estado === 'REPONER' ? 'reponer' : 'ok';
-                    return `
-      <tr class="${isSel ? 'row-selected' : ''}">
+                function buildStockRowHtml(p) {
+            const loc = ubicacionStr(p);
+            const isSel = state.selectedIds.has(p.id);
+            const imgs = (p.imagen || '').split('||').map(x => x.trim()).filter(Boolean);
+            const imgHtml = imgs.length > 0
+                ? `<div class="thumbs-wrap">${imgs.map(src => `<img class="thumb" src="${escapeAttr(src)}" data-full="${escapeAttr(src)}" alt="">`).join('')}</div>`
+                : `<div class="thumb-empty">—</div>`;
+            const estadoClass = p.estado === 'REPONER' ? 'reponer' : 'ok';
+            const className = isSel ? 'row-selected' : '';
+            const innerHtml = `
         <td style="text-align:center;"><input type="checkbox" class="select-cb" data-id="${escapeAttr(p.id)}" ${isSel ? 'checked' : ''}></td>
-        <td>${imgHtml}</td>
+        <td style="text-align:center;">${imgHtml}</td>
         <td><span class="fam-badge">${escapeHtml(p.familia)}</span></td>
         <td class="desc-cell">
             <div style="font-weight: 600; margin-bottom: 2px;">${escapeHtml(p.descripcion)}</div>
@@ -1519,40 +1776,97 @@
         </td>
         <td class="marca-cell">${escapeHtml(p.marca || '—')}</td>
         <td>${loc ? `<span class="loc-tag">${escapeHtml(loc)}</span>` : `<span class="loc-empty">sin ubicación</span>`}</td>
-        <td>${p.stock_minimo || 0}</td>
+        <td style="text-align:center;">${p.stock_minimo || 0}</td>
         <td><button class="stock-btn" data-id="${escapeAttr(p.id)}">${p.stock_actual}</button><span class="stock-min">${escapeHtml(p.unidad || 'un')}</span></td>
-        <td><span class="estado-pill ${estadoClass}">${escapeHtml(p.estado)}</span></td>
-      </tr>`;
-                }).join('');
+        <td><span class="estado-pill ${estadoClass}">${escapeHtml(p.estado)}</span></td>`;
+            return { className, innerHtml, sig: JSON.stringify(p) + '|' + isSel };
+        }
+
+        function wireStockRowEvents(tr) {
+            const cb = tr.querySelector('.select-cb');
+            if (cb) cb.addEventListener('change', e => {
+                const id = e.target.dataset.id;
+                if (e.target.checked) {
+                    state.selectedIds.add(id);
+                    tr.classList.add('row-selected');
+                    const descDiv = tr.querySelector('.desc-cell > div:last-child');
+                    if (descDiv && !descDiv.querySelector('.pin-badge')) {
+                        descDiv.insertAdjacentHTML('beforeend', '<span class="pin-badge">📌 Fijo</span>');
+                    }
+                } else {
+                    state.selectedIds.delete(id);
+                    tr.classList.remove('row-selected');
+                    const badge = tr.querySelector('.pin-badge');
+                    if (badge) badge.remove();
+                }
+                updateCartOrderBar();
+                if (state.stockUi.sortKey === 'seleccion') {
+                    renderStock();
+                }
+            });
+
+            const editBtn = tr.querySelector('.btn-edit-desc');
+            if (editBtn) editBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                openEditProductModal(editBtn.dataset.id);
+            });
+
+            const stockBtn = tr.querySelector('.stock-btn');
+            if (stockBtn) stockBtn.addEventListener('click', () => openAdjustModal(stockBtn.dataset.id));
+
+            tr.querySelectorAll('.thumb').forEach(img => {
+                img.addEventListener('click', () => openLightbox(img.dataset.full));
+            });
+        }
+
+        function renderStock() {
+            const list = stockFiltrado();
+            const body = document.getElementById('stockBody');
+
+            if (list.length === 0) {
+                body.innerHTML = `<tr class="empty-row"><td colspan="10">No hay productos que coincidan con el filtro.</td></tr>`;
+            } else {
+                const existing = new Map();
+                Array.from(body.children).forEach(tr => {
+                    if (tr.dataset && tr.dataset.rowId) {
+                        existing.set(tr.dataset.rowId, tr);
+                    } else {
+                        tr.remove(); // limpia restos como la fila "empty-row" de un render anterior
+                    }
+                });
+
+                let cursor = body.firstChild;
+                list.forEach(p => {
+                    const { className, innerHtml, sig } = buildStockRowHtml(p);
+                    let tr = existing.get(p.id);
+                    if (tr) {
+                        existing.delete(p.id);
+                        if (tr !== cursor) {
+                            body.insertBefore(tr, cursor);
+                        } else {
+                            cursor = cursor.nextSibling;
+                        }
+                        if (tr.dataset.rowSig !== sig) {
+                            tr.innerHTML = innerHtml;
+                            tr.className = className;
+                            tr.dataset.rowSig = sig;
+                            wireStockRowEvents(tr);
+                        }
+                    } else {
+                        tr = document.createElement('tr');
+                        tr.dataset.rowId = p.id;
+                        tr.dataset.rowSig = sig;
+                        tr.className = className;
+                        tr.innerHTML = innerHtml;
+                        body.insertBefore(tr, cursor);
+                        wireStockRowEvents(tr);
+                    }
+                });
+                existing.forEach(tr => tr.remove());
             }
 
             document.getElementById('stockCount').textContent = `${list.length} producto${list.length === 1 ? '' : 's'}`;
             document.getElementById('stockZonaLabel').textContent = state.zona || 'Todos los depósitos';
-
-            body.querySelectorAll('.select-cb').forEach(cb => {
-                cb.addEventListener('change', e => {
-                    const id = e.target.dataset.id;
-                    if (e.target.checked) state.selectedIds.add(id);
-                    else state.selectedIds.delete(id);
-                    updateCartOrderBar();
-                    renderStock();
-                });
-            });
-
-            body.querySelectorAll('.btn-edit-desc').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    openEditProductModal(btn.dataset.id);
-                });
-            });
-
-            body.querySelectorAll('.stock-btn').forEach(btn => {
-                btn.addEventListener('click', () => openAdjustModal(btn.dataset.id));
-            });
-
-            body.querySelectorAll('.thumb').forEach(img => {
-                img.addEventListener('click', () => openLightbox(img.dataset.full));
-            });
 
             updateCartOrderBar();
         }
@@ -1575,6 +1889,13 @@
         // PRODUCT EDIT MODAL
         // ============================================================
         let editProductCurrentId = null;
+        let editProductCurrentImages = [];
+
+        function autoResizeTextarea(el) {
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
 
         function openEditProductModal(id) {
             const p = state.stock.find(x => x.id === id);
@@ -1593,11 +1914,15 @@
             document.getElementById('editProdUbiFila').value = (p.ubicacion_fila || '').toUpperCase();
             document.getElementById('editProdObs').value = p.ult_obs || '';
             document.getElementById('editProdErr').style.display = 'none';
+            editProductCurrentImages = (p.imagen || '').split('||').map(s => s.trim()).filter(Boolean);
+            renderEditProdFotos();
             document.getElementById('editProductOverlay').classList.add('show');
+            autoResizeTextarea(document.getElementById('editProdDesc'));
         }
 
         function closeEditProductModal() {
             state.modalOpen = false;
+            editProductCurrentImages = [];
             document.getElementById('editProductOverlay').classList.remove('show');
         }
 
@@ -1645,6 +1970,14 @@
 
             if (!isDemo) {
                 try {
+                    const resDatos = await apiPost({
+                        accion: "actualizar-datos",
+                        id: editProductCurrentId,
+                        descripcion: nuevaDesc,
+                        marca: nuevaMarca,
+                        familia: nuevaFamilia,
+                        stock_minimo: nuevoMin
+                    });
                     await apiPost({
                         accion: "actualizar-observacion",
                         id: editProductCurrentId,
@@ -1658,12 +1991,130 @@
                         columna: nuevaUbiCol,
                         fila: nuevaUbiFila
                     });
-                    if (resUbic && resUbic.ok) {
+                    if (resDatos && resDatos.ok && resUbic && resUbic.ok) {
                         showToast('Ficha y ubicación guardadas en la nube ✓');
+                    } else {
+                        showToast('Guardado parcial — revisá la conexión y reintentá.', true);
                     }
                 } catch (e) {
                     console.error("Error al sincronizar datos:", e);
+                    showToast('No se pudo guardar en la nube. Reintentá.', true);
                 }
+            }
+        }
+
+        // ============================================================
+        // FOTOS DEL PRODUCTO (editar ficha) — máx. 2 fotos por producto
+        // ============================================================
+        function renderEditProdFotos() {
+            const cont = document.getElementById('editProdFotosPreview');
+            const btn = document.getElementById('editProdFotoBtn');
+            const msg = document.getElementById('editProdFotoMsg');
+            if (!cont) return;
+            cont.innerHTML = editProductCurrentImages.map((src, i) => `
+                <div style="position:relative;width:64px;height:64px;">
+                    <img src="${escapeAttr(src)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line-soft);cursor:zoom-in;" onclick="openLightbox('${escapeAttr(src)}')">
+                    <button type="button" onclick="confirmarEliminarFotoEditProd(${i})" title="Eliminar esta foto"
+                        style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--bad-fg);color:#fff;border:2px solid var(--bg-elev);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
+                </div>
+            `).join('') || `<span style="font-size:12px;color:var(--txt-faint);font-style:italic;">Sin fotos cargadas</span>`;
+            const lleno = editProductCurrentImages.length >= 2;
+            if (btn) btn.style.display = lleno ? 'none' : 'inline-flex';
+            if (msg) msg.style.display = lleno ? 'block' : 'none';
+        }
+
+        function manejarSeleccionFotoEditProd(input) {
+            const archivo = input.files[0];
+            input.value = '';
+            if (!archivo) return;
+
+            // Con 2 fotos el botón "+ Agregar foto" ya está oculto (ver renderEditProdFotos),
+            // así que este caso no debería darse — lo dejo como resguardo.
+            if (editProductCurrentImages.length >= 2) {
+                showToast('Ya hay 2 fotos — eliminá una primero (✕)', true);
+                return;
+            }
+            const modo = editProductCurrentImages.length === 0 ? 'reemplazar' : 'agregar';
+            comprimirImagenEditProd(archivo, base64 => subirFotoEditProd(base64, modo));
+        }
+
+        function comprimirImagenEditProd(archivo, callback) {
+            const dibujarYComprimir = (fuente, ancho, alto) => {
+                const canvas = document.createElement('canvas');
+                const maxAncho = 800;
+                const escala = Math.min(1, maxAncho / ancho);
+                canvas.width = ancho * escala;
+                canvas.height = alto * escala;
+                canvas.getContext('2d').drawImage(fuente, 0, 0, canvas.width, canvas.height);
+                callback(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+            };
+            if (window.createImageBitmap) {
+                createImageBitmap(archivo, { imageOrientation: 'from-image' })
+                    .then(bitmap => dibujarYComprimir(bitmap, bitmap.width, bitmap.height))
+                    .catch(() => comprimirImagenEditProdFallback(archivo, callback));
+            } else {
+                comprimirImagenEditProdFallback(archivo, callback);
+            }
+        }
+
+        function comprimirImagenEditProdFallback(archivo, callback) {
+            const img = new Image();
+            const lector = new FileReader();
+            lector.onload = e => { img.src = e.target.result; };
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxAncho = 800;
+                const escala = Math.min(1, maxAncho / img.width);
+                canvas.width = img.width * escala;
+                canvas.height = img.height * escala;
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                callback(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+            };
+            lector.readAsDataURL(archivo);
+        }
+
+        async function subirFotoEditProd(base64, modo, slot) {
+            if (!editProductCurrentId) return;
+            showToast('Subiendo imagen…');
+            try {
+                const payload = { accion: 'actualizar-imagen', id: editProductCurrentId, foto_base64: base64, modo };
+                if (slot) payload.slot = slot;
+                const resultado = isDemo
+                    ? { ok: true, imagen: [...editProductCurrentImages, 'data:image/jpeg;base64,' + base64].slice(0, 2).join('||') }
+                    : await apiPost(payload);
+                if (!resultado.ok) { showToast('Error al subir la imagen', true); return; }
+                editProductCurrentImages = (resultado.imagen || '').split('||').map(s => s.trim()).filter(Boolean);
+                const p = state.stock.find(x => x.id === editProductCurrentId);
+                if (p) p.imagen = resultado.imagen || '';
+                renderEditProdFotos();
+                renderStock();
+                showToast('Imagen actualizada ✓');
+            } catch (e) {
+                showToast('Fallo de conexión al subir la imagen', true);
+            }
+        }
+
+        function confirmarEliminarFotoEditProd(indice) {
+            if (!confirm('¿Eliminar esta foto? No se puede deshacer.')) return;
+            eliminarFotoEditProd(indice + 1); // slot es 1-based
+        }
+
+        async function eliminarFotoEditProd(slot) {
+            if (!editProductCurrentId) return;
+            showToast('Eliminando foto…');
+            try {
+                const resultado = isDemo
+                    ? { ok: true, imagen: editProductCurrentImages.filter((_, i) => i !== (slot - 1)).join('||') }
+                    : await apiPost({ accion: 'eliminar-imagen', id: editProductCurrentId, slot });
+                if (!resultado.ok) { showToast('Error al eliminar la imagen', true); return; }
+                editProductCurrentImages = (resultado.imagen || '').split('||').map(s => s.trim()).filter(Boolean);
+                const p = state.stock.find(x => x.id === editProductCurrentId);
+                if (p) p.imagen = resultado.imagen || '';
+                renderEditProdFotos();
+                renderStock();
+                showToast('Foto eliminada ✓');
+            } catch (e) {
+                showToast('Fallo de conexión al eliminar la foto', true);
             }
         }
 
@@ -1690,7 +2141,7 @@
 
                 return `- ${desc}\n  Familia: ${fam}\n  Marca: ${marca}\n  Observaciones: ${obs}\n  ID: ${id}\n  Ubicación: ${loc}\n  Stock actual: ${stock} ${unidad}`;
             }).join('\n\n');
-            
+
             if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
                 navigator.clipboard.writeText(text).then(() => {
                     showToast('Lista copiada al portapapeles ✓');
@@ -1774,7 +2225,8 @@
                         <span style="font-size: 12px; color: var(--txt-dim); width: 22px;">${escapeHtml(p.unidad || 'un')}</span>
                     </div>
                 </div>
-            `; }).join('');
+            `;
+            }).join('');
 
             selectBatchTipo('SALIDA');
             document.getElementById('adjustBatchOverlay').classList.add('show');
@@ -1795,7 +2247,7 @@
             });
             const bar = document.getElementById('cartOrderBar');
             if (bar) {
-                bar.className = 'cart-order-bar ' + 
+                bar.className = 'cart-order-bar ' +
                     (tipo === 'ENTRADA' ? 'tipo-entrada' : (tipo === 'SALIDA' ? 'tipo-salida' : 'tipo-devolucion'));
             }
         }
@@ -1908,6 +2360,7 @@
         function renderAll() {
             renderStats();
             if (state.activeTab === 'stock') renderStock(); else renderMov();
+            window.dispatchEvent(new Event('tableRendered'));
         }
 
         // ============================================================
@@ -1917,10 +2370,35 @@
             document.querySelectorAll(`#${tableId} thead th[data-sort]`).forEach(th => {
                 th.addEventListener('click', () => {
                     const key = th.dataset.sort;
-                    if (uiRef.sortKey === key) uiRef.sortDir *= -1;
-                    else { uiRef.sortKey = key; uiRef.sortDir = 1; }
+                    if (key === 'seleccion') {
+                        if (uiRef.sortKey === 'seleccion') {
+                            // Segundo clic en Sel.: se desactiva y vuelve a la posición / columna original previa
+                            uiRef.sortKey = uiRef.prevSortKey || 'familia';
+                            uiRef.sortDir = uiRef.prevSortDir || 1;
+                        } else {
+                            // Primer clic en Sel.: guarda la columna anterior y sube los seleccionados
+                            uiRef.prevSortKey = (uiRef.sortKey && uiRef.sortKey !== 'seleccion') ? uiRef.sortKey : 'familia';
+                            uiRef.prevSortDir = uiRef.sortDir || 1;
+                            uiRef.sortKey = 'seleccion';
+                            uiRef.sortDir = 1;
+                        }
+                    } else {
+                        uiRef.prevSortKey = key;
+                        if (uiRef.sortKey === key) {
+                            uiRef.sortDir *= -1;
+                        } else {
+                            uiRef.sortKey = key;
+                            uiRef.sortDir = 1;
+                        }
+                        uiRef.prevSortDir = uiRef.sortDir;
+                    }
+
                     document.querySelectorAll(`#${tableId} thead th .arrow`).forEach(a => a.textContent = '');
-                    th.querySelector('.arrow').textContent = uiRef.sortDir === 1 ? '▲' : '▼';
+                    const activeTh = document.querySelector(`#${tableId} thead th[data-sort="${uiRef.sortKey}"]`);
+                    if (activeTh) {
+                        const arrowEl = activeTh.querySelector('.arrow');
+                        if (arrowEl) arrowEl.textContent = uiRef.sortDir === 1 ? '▲' : '▼';
+                    }
                     onSorted();
                 });
             });
@@ -2150,8 +2628,8 @@
         document.getElementById('movPrev').addEventListener('click', () => { state.movUi.page--; renderMov(); });
         document.getElementById('movNext').addEventListener('click', () => { state.movUi.page++; renderMov(); });
 
-        wireSortHeaders('stockTable', state.stockUi, renderStock);
-        wireSortHeaders('movTable', state.movUi, renderMov);
+        wireSortHeaders('stickyStockTable', state.stockUi, renderStock);
+        wireSortHeaders('stickyMovTable', state.movUi, renderMov);
 
         document.getElementById('btnRefresh').addEventListener('click', () => cargarTodo(false));
         document.getElementById('btnExport').addEventListener('click', exportExcel);
@@ -2404,13 +2882,81 @@
         }
 
         // Cerrar dropdown al hacer clic fuera
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const menu = document.getElementById('themeDropdownMenu');
             const btn = document.getElementById('themeDropdownBtn');
             if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
                 menu.classList.remove('ts-open');
             }
         });
+
+        // Sincronización de anchos de columnas dinámicos y naturales
+        function syncHeaderWidths(tableId, stickyTableId, topWrapId) {
+            const table = document.getElementById(tableId);
+            const stickyTable = document.getElementById(stickyTableId);
+            const topWrap = document.getElementById(topWrapId);
+            if (!table || !stickyTable) return;
+
+            const totalW = table.scrollWidth;
+            if (totalW > 0) {
+                stickyTable.style.width = totalW + 'px';
+                stickyTable.style.minWidth = totalW + 'px';
+                if (topWrap) {
+                    const inner = topWrap.querySelector('.top-scrollbar-inner');
+                    if (inner) inner.style.width = totalW + 'px';
+                }
+            }
+
+            const row = table.querySelector('tbody tr:not(.empty-row)');
+            if (!row) return;
+            const cells = row.children;
+            const ths = stickyTable.querySelectorAll('thead th');
+            if (cells.length !== ths.length) return;
+
+            for (let i = 0; i < cells.length; i++) {
+                const w = cells[i].getBoundingClientRect().width;
+                if (w > 0) {
+                    ths[i].style.boxSizing = 'border-box';
+                    ths[i].style.width = w + 'px';
+                    ths[i].style.minWidth = w + 'px';
+                    ths[i].style.maxWidth = w + 'px';
+                }
+            }
+        }
+
+        // Sincronización de scroll horizontal y ajuste de anchos de columnas
+        function setupTopScrollSync(wrapId, theadWrapId, scrollId, tableId, stickyTableId) {
+            const topWrap = document.getElementById(wrapId);
+            const theadWrap = document.getElementById(theadWrapId);
+            const tableScroll = document.getElementById(scrollId);
+            if (!topWrap || !tableScroll) return;
+
+            const updateAll = () => {
+                syncHeaderWidths(tableId, stickyTableId, wrapId);
+            };
+
+            window.addEventListener('resize', updateAll);
+            window.addEventListener('tableRendered', updateAll);
+            setTimeout(updateAll, 50);
+
+            let isSyncing = false;
+            const syncScroll = (source) => {
+                if (isSyncing) return;
+                isSyncing = true;
+                const sl = source.scrollLeft;
+                if (topWrap && topWrap !== source) topWrap.scrollLeft = sl;
+                if (theadWrap && theadWrap !== source) theadWrap.scrollLeft = sl;
+                if (tableScroll && tableScroll !== source) tableScroll.scrollLeft = sl;
+                isSyncing = false;
+            };
+
+            topWrap.addEventListener('scroll', () => syncScroll(topWrap), { passive: true });
+            tableScroll.addEventListener('scroll', () => syncScroll(tableScroll), { passive: true });
+            if (theadWrap) theadWrap.addEventListener('scroll', () => syncScroll(theadWrap), { passive: true });
+        }
+
+        setupTopScrollSync('topScrollStock', 'theadWrapStock', 'scrollStock', 'stockTable', 'stickyStockTable');
+        setupTopScrollSync('topScrollMov', 'theadWrapMov', 'scrollMov', 'movTable', 'stickyMovTable');
 
         // Inicializar puntos con tema por defecto al cargar
         applyTheme('maestroSlate');
