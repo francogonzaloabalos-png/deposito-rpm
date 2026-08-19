@@ -2352,6 +2352,19 @@
             }
         }
 
+        function formatearFechaMov(f) {
+            if (!f) return '';
+            const str = String(f).trim();
+            if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/.test(str)) {
+                return str;
+            }
+            const d = new Date(str);
+            if (!isNaN(d.getTime())) {
+                return d.toLocaleString('es-AR');
+            }
+            return str;
+        }
+
         function renderMov() {
             const all = movFiltrado();
             const ps = CONFIG.MOV_PAGE_SIZE;
@@ -2367,7 +2380,7 @@
                     const tipoClass = m.tipo === 'ENTRADA' ? 'entrada' : (m.tipo === 'SALIDA' ? 'salida' : 'devolucion');
                     return `
       <tr>
-        <td class="id-tag">${escapeHtml(m.fecha || '')}</td>
+        <td class="id-tag">${escapeHtml(formatearFechaMov(m.fecha))}</td>
         <td><span class="mov-pill ${tipoClass}">${escapeHtml(m.tipo || '')}</span></td>
         <td class="desc-cell">${escapeHtml(m.descripcion || '')}</td>
         <td>${m.cantidad ?? ''}</td>
