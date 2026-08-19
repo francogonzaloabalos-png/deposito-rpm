@@ -1153,6 +1153,7 @@
                         id="statusText">Conectando…</span></div>
             </div>
             <div class="header-actions">
+                <button class="btn primary small" id="btnNewProduct">➕ Nuevo Producto</button>
                 <button class="btn ghost small" id="btnRefresh">↻ Actualizar</button>
                 <button class="btn small" id="btnExport">📊 Exportar a Excel</button>
             </div>
@@ -1350,6 +1351,7 @@
                             <option value="5">5</option>
                             <option value="5A">5A</option>
                             <option value="5B">5B</option>
+                            <option value="5C">5C</option>
                             <option value="6">6</option>
                         </select>
                     </div>
@@ -1395,6 +1397,145 @@
             <div class="modal-actions">
                 <button class="btn ghost" id="editProdCancel">Cancelar</button>
                 <button class="btn primary" id="editProdConfirm">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Product Modal -->
+    <div class="overlay" id="newProductOverlay">
+        <div class="modal" style="max-width: 440px; width: 100%; position: relative;">
+            <button type="button" id="newProdCloseX"
+                style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; color: var(--txt-dim); cursor: pointer; line-height: 1; padding: 4px; border-radius: 6px; transition: color 0.15s;"
+                title="Cerrar ventana">✕</button>
+            <div class="modal-body">
+                <h3>Registrar Nuevo Producto</h3>
+                <div class="sub">Ingresá los datos del nuevo producto para darlo de alta en el sistema.</div>
+                
+                <div class="field">
+                    <label>Depósito / Zona <span style="color:var(--bad-fg);">*</span></label>
+                    <select id="newProdZona" onchange="toggleCustomZonaInput(this)" style="width:100%;">
+                        <option value="">Cargando zonas...</option>
+                    </select>
+                    <input type="text" id="newProdZonaCustom" placeholder="Nombre del nuevo depósito o zona..." style="display:none; margin-top:6px;">
+                </div>
+
+                <div class="field">
+                    <label>Descripción del Producto <span style="color:var(--bad-fg);">*</span></label>
+                    <textarea id="newProdDesc" placeholder="Descripción detallada del producto…" rows="2" oninput="autoResizeTextarea(this)"></textarea>
+                </div>
+
+                <div class="field" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div>
+                        <label>Marca</label>
+                        <input type="text" id="newProdMarca" placeholder="Ej: Schneider, Philips…">
+                    </div>
+                    <div>
+                        <label>Familia</label>
+                        <select id="newProdFamiliaSel" onchange="toggleCustomFamiliaInput(this)" style="width:100%;">
+                            <option value="">Seleccionar o escribir...</option>
+                        </select>
+                        <input type="text" id="newProdFamiliaCustom" placeholder="Escribir familia..." style="display:none; margin-top:4px;">
+                    </div>
+                </div>
+
+                <div class="field" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                    <div>
+                        <label>Unidad</label>
+                        <select id="newProdUnidad" style="width:100%;">
+                            <option value="un">un (unidad)</option>
+                            <option value="m">m (metros)</option>
+                            <option value="rollo">rollo</option>
+                            <option value="kg">kg</option>
+                            <option value="l">l (litros)</option>
+                            <option value="caja">caja</option>
+                            <option value="par">par</option>
+                            <option value="paquete">paquete</option>
+                            <option value="set">set</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Stock Inicial</label>
+                        <input type="number" id="newProdStockInicial" min="0" step="1" value="0" placeholder="0">
+                    </div>
+                    <div>
+                        <label>Stock Mínimo</label>
+                        <input type="number" id="newProdStockMin" min="0" step="1" value="0" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="field"
+                    style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 12px 0;">
+                    <div
+                        style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                        <span>📍</span> Ubicación física
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 0.9fr; gap: 8px; align-items: end;">
+                        <div style="display: flex; flex-direction: column;">
+                            <label
+                                style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Depósito</label>
+                            <select id="newProdUbiDep"
+                                style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box; cursor: pointer;">
+                                <option value="">—</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="5A">5A</option>
+                                <option value="5B">5B</option>
+                                <option value="5C">5C</option>
+                                <option value="6">6</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <label
+                                style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Estante</label>
+                            <input type="number" id="newProdUbiEst" min="0" step="1" placeholder="Ej: 2"
+                                style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <label
+                                style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Columna</label>
+                            <input type="number" id="newProdUbiCol" min="0" step="1" placeholder="Ej: 5"
+                                style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <label
+                                style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Fila</label>
+                            <input type="text" id="newProdUbiFila" maxlength="1" placeholder="Ej: B"
+                                style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 800; font-size: 13px; text-transform: uppercase; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field"
+                    style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 12px 0;">
+                    <div
+                        style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                        <span>📷</span> Fotos del producto <span style="font-weight:400; color: var(--txt-faint); text-transform:none; letter-spacing:0;">(máx. 2)</span>
+                    </div>
+                    <div id="newProdFotosPreview" style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;"></div>
+                    <input type="file" accept="image/*" id="newProdFotoInput" style="display:none" onchange="manejarSeleccionFotoNewProd(this)">
+                    <button type="button" class="btn small" id="newProdFotoBtn" onclick="document.getElementById('newProdFotoInput').click()">+ Agregar foto</button>
+                    <div id="newProdFotoMsg" style="display:none; font-size:11px; color: var(--txt-faint); margin-top: 6px;">Ya tenés las 2 fotos máximas cargadas. Eliminá una (✕) para poder agregar otra.</div>
+                </div>
+
+                <div class="field" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div>
+                        <label>Responsable</label>
+                        <input type="text" id="newProdResponsable" placeholder="Nombre de quien registra">
+                    </div>
+                    <div>
+                        <label>Observaciones</label>
+                        <input type="text" id="newProdObs" placeholder="Observaciones iniciales…">
+                    </div>
+                </div>
+
+                <div class="modal-err" id="newProdErr"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn ghost" id="newProdCancel">Cancelar</button>
+                <button class="btn primary" id="newProdConfirm">Registrar Producto</button>
             </div>
         </div>
     </div>
@@ -2145,6 +2286,269 @@
         }
 
         // ============================================================
+        // REGISTRAR NUEVO PRODUCTO
+        // ============================================================
+        let newProductCurrentImages = [];
+
+        function toggleCustomZonaInput(sel) {
+            const customInput = document.getElementById('newProdZonaCustom');
+            if (!customInput) return;
+            if (sel.value === '__OTRA__') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+
+        function toggleCustomFamiliaInput(sel) {
+            const customInput = document.getElementById('newProdFamiliaCustom');
+            if (!customInput) return;
+            if (sel.value === '__OTRA__') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+
+        function openNewProductModal() {
+            state.modalOpen = true;
+            newProductCurrentImages = [];
+
+            // Limpiar campos
+            document.getElementById('newProdDesc').value = '';
+            document.getElementById('newProdMarca').value = '';
+            document.getElementById('newProdStockInicial').value = '0';
+            document.getElementById('newProdStockMin').value = '0';
+            document.getElementById('newProdUbiDep').value = '';
+            document.getElementById('newProdUbiEst').value = '';
+            document.getElementById('newProdUbiCol').value = '';
+            document.getElementById('newProdUbiFila').value = '';
+            document.getElementById('newProdResponsable').value = '';
+            document.getElementById('newProdObs').value = '';
+            document.getElementById('newProdErr').style.display = 'none';
+            document.getElementById('newProdUnidad').value = 'un';
+
+            // Poblar zonas creadas
+            const zonasExistentes = Array.from(new Set(state.stock.map(p => p.zona).filter(Boolean))).sort();
+            const selZona = document.getElementById('newProdZona');
+            let optsZona = '<option value="">-- Seleccionar Depósito / Zona --</option>';
+            zonasExistentes.forEach(z => {
+                optsZona += `<option value="${escapeAttr(z)}">${escapeHtml(z)}</option>`;
+            });
+            optsZona += '<option value="__OTRA__">➕ Otra zona (crear nueva)...</option>';
+            selZona.innerHTML = optsZona;
+
+            // Pre-seleccionar la zona activa en la vista si existe
+            if (state.zona && zonasExistentes.includes(state.zona)) {
+                selZona.value = state.zona;
+            } else if (zonasExistentes.length === 1) {
+                selZona.value = zonasExistentes[0];
+            } else {
+                selZona.value = '';
+            }
+            toggleCustomZonaInput(selZona);
+            document.getElementById('newProdZonaCustom').value = '';
+
+            // Poblar familias existentes
+            const familiasExistentes = Array.from(new Set(state.stock.map(p => p.familia).filter(Boolean))).sort();
+            const selFam = document.getElementById('newProdFamiliaSel');
+            let optsFam = '<option value="">-- Seleccionar Familia --</option>';
+            familiasExistentes.forEach(f => {
+                optsFam += `<option value="${escapeAttr(f)}">${escapeHtml(f)}</option>`;
+            });
+            optsFam += '<option value="__OTRA__">➕ Otra familia...</option>';
+            selFam.innerHTML = optsFam;
+            selFam.value = '';
+            toggleCustomFamiliaInput(selFam);
+            document.getElementById('newProdFamiliaCustom').value = '';
+
+            renderNewProdFotos();
+            document.getElementById('newProductOverlay').classList.add('show');
+            autoResizeTextarea(document.getElementById('newProdDesc'));
+        }
+
+        function closeNewProductModal() {
+            state.modalOpen = false;
+            newProductCurrentImages = [];
+            document.getElementById('newProductOverlay').classList.remove('show');
+        }
+
+        function renderNewProdFotos() {
+            const cont = document.getElementById('newProdFotosPreview');
+            const btn = document.getElementById('newProdFotoBtn');
+            const msg = document.getElementById('newProdFotoMsg');
+            if (!cont) return;
+            cont.innerHTML = newProductCurrentImages.map((img, i) => `
+                <div style="position:relative;width:64px;height:64px;">
+                    <img src="${escapeAttr(img.dataUrl)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line-soft);cursor:zoom-in;" onclick="openLightbox('${escapeAttr(img.dataUrl)}')">
+                    <button type="button" onclick="eliminarFotoNewProd(${i})" title="Eliminar esta foto"
+                        style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--bad-fg);color:#fff;border:2px solid var(--bg-elev);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
+                </div>
+            `).join('') || `<span style="font-size:12px;color:var(--txt-faint);font-style:italic;">Sin fotos cargadas</span>`;
+            const lleno = newProductCurrentImages.length >= 2;
+            if (btn) btn.style.display = lleno ? 'none' : 'inline-flex';
+            if (msg) msg.style.display = lleno ? 'block' : 'none';
+        }
+
+        function manejarSeleccionFotoNewProd(input) {
+            const archivo = input.files[0];
+            input.value = '';
+            if (!archivo) return;
+
+            if (newProductCurrentImages.length >= 2) {
+                showToast('Ya tenés 2 fotos — eliminá una primero (✕)', true);
+                return;
+            }
+            comprimirImagenEditProd(archivo, base64 => {
+                newProductCurrentImages.push({
+                    dataUrl: 'data:image/jpeg;base64,' + base64,
+                    base64: base64
+                });
+                renderNewProdFotos();
+            });
+        }
+
+        function eliminarFotoNewProd(indice) {
+            newProductCurrentImages.splice(indice, 1);
+            renderNewProdFotos();
+        }
+
+        async function confirmNewProduct() {
+            const errBox = document.getElementById('newProdErr');
+            errBox.style.display = 'none';
+
+            const selZona = document.getElementById('newProdZona').value;
+            const customZona = document.getElementById('newProdZonaCustom').value.trim();
+            const zona = (selZona === '__OTRA__' ? customZona : selZona).trim();
+
+            const desc = document.getElementById('newProdDesc').value.trim();
+            const marca = document.getElementById('newProdMarca').value.trim() || '—';
+
+            const selFam = document.getElementById('newProdFamiliaSel').value;
+            const customFam = document.getElementById('newProdFamiliaCustom').value.trim();
+            const familia = (selFam === '__OTRA__' ? customFam : selFam).trim() || 'Varios';
+
+            const unidad = document.getElementById('newProdUnidad').value;
+            const stockInicial = Number(document.getElementById('newProdStockInicial').value) || 0;
+            const stockMin = Number(document.getElementById('newProdStockMin').value) || 0;
+
+            const ubiDep = document.getElementById('newProdUbiDep').value.trim();
+            const ubiEst = document.getElementById('newProdUbiEst').value.trim();
+            const ubiCol = document.getElementById('newProdUbiCol').value.trim();
+            let ubiFila = document.getElementById('newProdUbiFila').value.trim().toUpperCase();
+
+            const responsable = document.getElementById('newProdResponsable').value.trim();
+            const obs = document.getElementById('newProdObs').value.trim();
+
+            if (!zona) {
+                errBox.textContent = 'Seleccioná o ingresá una Zona / Depósito.';
+                errBox.style.display = 'block';
+                return;
+            }
+            if (!desc) {
+                errBox.textContent = 'La descripción del producto es obligatoria.';
+                errBox.style.display = 'block';
+                return;
+            }
+
+            const btnConfirm = document.getElementById('newProdConfirm');
+            btnConfirm.disabled = true;
+            btnConfirm.textContent = 'Registrando…';
+
+            try {
+                // Generar ID local para reflejar al instante
+                const maxNum = state.stock.reduce((max, p) => {
+                    const m = String(p.id || '').match(/PROD-(\d+)/i);
+                    return m ? Math.max(max, parseInt(m[1], 10)) : max;
+                }, 0);
+                const localId = 'PROD-' + String(maxNum + 1).padStart(3, '0');
+
+                const fotosDrive = newProductCurrentImages.map(x => x.dataUrl).join('||');
+                const nuevoProducto = {
+                    id: localId,
+                    zona: zona,
+                    familia: familia,
+                    marca: marca,
+                    descripcion: desc,
+                    unidad: unidad,
+                    entradas: stockInicial > 0 ? stockInicial : 0,
+                    salidas: 0,
+                    devoluciones: 0,
+                    stock_actual: stockInicial,
+                    stock_minimo: stockMin,
+                    estado: stockInicial <= stockMin ? 'REPONER' : 'OK',
+                    ult_mov: stockInicial > 0 ? 'ENTRADA' : 'ALTA',
+                    ult_fecha: new Date().toLocaleDateString('es-AR'),
+                    ult_hora: horaAhora(),
+                    ubicacion_deposito: ubiDep,
+                    ubicacion_estante: ubiEst,
+                    ubicacion_columna: ubiCol,
+                    ubicacion_fila: ubiFila,
+                    imagen: fotosDrive,
+                    ult_obs: obs
+                };
+
+                // Agregar localmente
+                state.stock.unshift(nuevoProducto);
+
+                if (stockInicial > 0) {
+                    state.mov.unshift({
+                        fecha: new Date().toLocaleDateString('es-AR') + ' ' + horaAhora(),
+                        tipo: 'ENTRADA',
+                        zona: zona,
+                        descripcion: desc,
+                        cantidad: stockInicial,
+                        responsable: responsable || 'Alta de producto',
+                        obra: 'Ingreso Inicial'
+                    });
+                }
+
+                closeNewProductModal();
+                buildZoneChips();
+                populateFamiliaFilter();
+                renderAll();
+                showSuccessModal(`¡Producto "${desc}" registrado con éxito! (ID: ${localId})`);
+
+                // Sincronizar en Apps Script si no es demo
+                if (!isDemo) {
+                    const payload = {
+                        accion: 'crear-producto',
+                        zona: zona,
+                        familia: familia,
+                        marca: marca,
+                        descripcion: desc,
+                        unidad: unidad,
+                        stock_inicial: stockInicial,
+                        stock_minimo: stockMin,
+                        deposito: ubiDep,
+                        estante: ubiEst,
+                        columna: ubiCol,
+                        fila: ubiFila,
+                        responsable: responsable,
+                        observaciones: obs,
+                        fotos_base64: newProductCurrentImages.map(x => x.base64)
+                    };
+                    const res = await apiPost(payload);
+                    if (res && res.ok && res.id) {
+                        nuevoProducto.id = res.id;
+                        renderStock();
+                        showToast(`Guardado en la nube con ID ${res.id} ✓`);
+                    } else if (res && !res.ok) {
+                        showToast('Error al guardar en la nube: ' + (res.error || ''), true);
+                    }
+                }
+            } catch (e) {
+                console.error("Error al registrar producto:", e);
+                showToast('Error al registrar el producto', true);
+            } finally {
+                btnConfirm.disabled = false;
+                btnConfirm.textContent = 'Registrar Producto';
+            }
+        }
+
+        // ============================================================
         // BATCH ACTIONS (CARRITO / SELECCIONADOS)
         // ============================================================
         function copySelectedProducts() {
@@ -2699,6 +3103,14 @@
         document.getElementById('editProdUbiEst').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^0-9]/g, ''); });
         document.getElementById('editProdUbiCol').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^0-9]/g, ''); });
         document.getElementById('editProdUbiFila').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase(); });
+
+        document.getElementById('btnNewProduct').addEventListener('click', openNewProductModal);
+        document.getElementById('newProdCancel').addEventListener('click', closeNewProductModal);
+        document.getElementById('newProdCloseX').addEventListener('click', closeNewProductModal);
+        document.getElementById('newProdConfirm').addEventListener('click', confirmNewProduct);
+        document.getElementById('newProdUbiEst').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^0-9]/g, ''); });
+        document.getElementById('newProdUbiCol').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^0-9]/g, ''); });
+        document.getElementById('newProdUbiFila').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase(); });
 
         document.getElementById('btnBatchAdjust').addEventListener('click', openBatchAdjustModal);
         document.getElementById('btnCopySelected').addEventListener('click', copySelectedProducts);
