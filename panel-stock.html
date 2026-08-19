@@ -866,6 +866,26 @@
             display: none;
         }
 
+        #editProductOverlay .modal {
+            padding: 0;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #editProductOverlay .modal-body {
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        #editProductOverlay .modal-actions {
+            margin-top: 0;
+            padding: 14px 20px;
+            border-top: 1px solid var(--line);
+            flex-shrink: 0;
+        }
+
         .lightbox {
             position: fixed;
             inset: 0;
@@ -1291,6 +1311,7 @@
             <button type="button" id="editProdCloseX"
                 style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; color: var(--txt-dim); cursor: pointer; line-height: 1; padding: 4px; border-radius: 6px; transition: color 0.15s;"
                 title="Cerrar ventana">✕</button>
+            <div class="modal-body">
             <h3 id="editProdTitle">Editar Producto</h3>
             <div class="sub" id="editProdSub"></div>
             <div class="field">
@@ -1370,6 +1391,7 @@
                 <input type="text" id="editProdObs" placeholder="Observaciones…">
             </div>
             <div class="modal-err" id="editProdErr"></div>
+            </div>
             <div class="modal-actions">
                 <button class="btn ghost" id="editProdCancel">Cancelar</button>
                 <button class="btn primary" id="editProdConfirm">Guardar Cambios</button>
