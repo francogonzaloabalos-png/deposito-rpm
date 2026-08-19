@@ -1,0 +1,3671 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPM Stock — Panel de Depósitos</title>
+    <style>
+        :root {
+            --bg: #0b1220;
+            --bg-elev: #111a2c;
+            --bg-card: #141d33;
+            --line: #223050;
+            --line-soft: #1a2540;
+            --txt: #e7ecf7;
+            --txt-dim: #8b98b8;
+            --txt-faint: #5a6786;
+            --accent: #3b82f6;
+            --accent-soft: #1d3a66;
+            --amber: #f59e0b;
+            --amber-soft: #3a2c10;
+            --ok-fg: #4ade80;
+            --ok-bg: #123321;
+            --bad-fg: #f87171;
+            --bad-bg: #3a1414;
+            --devol-bg: #122a4a;
+            --devol-fg: #60a5fa;
+            --hover-bg: #16213b;
+            --radius: 10px;
+            --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+            --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--txt);
+            font-family: var(--sans);
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: var(--accent-soft);
+        }
+
+        .app {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 18px 20px 60px;
+        }
+
+        /* ---------- HEADER ---------- */
+        .topbar {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .brand-eyebrow {
+            font-family: var(--mono);
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--txt-faint);
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+        }
+
+        .brand-title {
+            font-size: 23px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            margin-top: 3px;
+        }
+
+        .brand-title .dim {
+            color: var(--txt-dim);
+            font-weight: 600;
+        }
+
+        .status-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--txt-faint);
+        }
+
+        .pulse {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--ok-fg);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .pulse::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1px solid var(--ok-fg);
+            opacity: 0;
+            animation: pulse 2.5s ease-out infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: .6;
+                transform: scale(.6);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(2.1);
+            }
+        }
+
+        @keyframes successScale {
+            0% {
+                transform: scale(0.6);
+                opacity: 0;
+            }
+
+            80% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .pulse.off {
+            background: var(--txt-faint);
+        }
+
+        .pulse.off::after {
+            display: none;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .btn {
+            appearance: none;
+            border: 1px solid var(--line);
+            background: var(--bg-card);
+            color: var(--txt);
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 8px 13px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: .15s border-color, .15s background;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            border-color: #33456f;
+            background: var(--bg-elev);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn.primary:hover {
+            background: #2f6fe0;
+        }
+
+        .btn.ghost {
+            background: transparent;
+        }
+
+        .btn.small {
+            padding: 5px 10px;
+            font-size: 11.5px;
+        }
+
+        .btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        /* ---------- ZONE CHIPS ---------- */
+        .zone-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-bottom: 16px;
+        }
+
+        .zone-chip {
+            flex-shrink: 0;
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .2px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: var(--bg-card);
+            color: var(--txt-dim);
+            cursor: pointer;
+            transition: .15s all;
+            white-space: nowrap;
+        }
+
+        .zone-chip:hover {
+            border-color: #33456f;
+            color: var(--txt);
+        }
+
+        .zone-chip.active {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+            color: var(--txt);
+        }
+
+        .zone-chip .count {
+            opacity: .6;
+            margin-left: 6px;
+        }
+
+        /* ---------- STATS ---------- */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width:720px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat {
+            background: var(--bg-card);
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+        }
+
+        .stat-num {
+            font-size: 26px;
+            font-weight: 800;
+            font-family: var(--mono);
+            letter-spacing: -.5px;
+        }
+
+        .stat-label {
+            font-size: 10.5px;
+            color: var(--txt-faint);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        .stat.bad .stat-num {
+            color: var(--bad-fg);
+        }
+
+        /* ---------- TABS ---------- */
+        .tabs {
+            display: flex;
+            gap: 2px;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 14px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--txt-faint);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 9px 4px;
+            margin-right: 22px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            position: relative;
+            top: 1px;
+        }
+
+        .tab-btn.active {
+            color: var(--txt);
+            border-color: var(--accent);
+        }
+
+        /* ---------- TOOLBAR ---------- */
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            color: var(--txt);
+            font-family: inherit;
+            font-size: 13px;
+            padding: 9px 12px 9px 32px;
+            outline: none;
+            transition: .15s border-color;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+        }
+
+        .search-box::before {
+            content: "";
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235a6786' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            transition: .15s all;
+        }
+
+        .search-box:focus-within::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+        }
+
+        select.filter-select {
+            background: var(--bg-card);
+            border: 1px solid var(--line);
+            color: var(--txt);
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 8px 10px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* ---------- TABLE ---------- */
+        .table-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius);
+            position: relative;
+        }
+
+        /* Bloque superior fijo: Barra de scroll horizontal + Encabezados */
+        .sticky-top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 25;
+            background: var(--bg-elev);
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+            border-bottom: 1.5px solid var(--line);
+        }
+
+        /* Barra de scroll horizontal disimulada arriba */
+        .top-scrollbar-wrap {
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 7px;
+            background: var(--bg-elev);
+            border-bottom: 1px solid var(--line-soft);
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
+        }
+
+        .top-scrollbar-wrap::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .top-scrollbar-wrap::-webkit-scrollbar-track {
+            background: var(--bg-elev);
+        }
+
+        .top-scrollbar-wrap::-webkit-scrollbar-thumb {
+            background: var(--txt-faint);
+            opacity: 0.6;
+            border-radius: 4px;
+        }
+
+        .top-scrollbar-wrap::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        .top-scrollbar-inner {
+            height: 1px;
+            min-width: 920px;
+        }
+
+        /* Envoltorio del thead fijo superior */
+        .sticky-thead-wrap {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .sticky-header-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 12.8px;
+            min-width: 920px;
+            table-layout: fixed;
+        }
+
+        /* Barra de scroll inferior sutil */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-scroll::-webkit-scrollbar-track {
+            background: var(--bg-card);
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: var(--line);
+            border-radius: 4px;
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 12.8px;
+            min-width: 920px;
+        }
+
+        thead th {
+            background: var(--bg-elev);
+            color: var(--txt-faint);
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        thead th:hover {
+            color: var(--txt);
+        }
+
+        thead th .arrow {
+            opacity: .75;
+            font-size: 7px;
+            margin-left: 2px;
+            display: inline-block;
+            vertical-align: 1px;
+            transition: opacity .15s;
+        }
+
+        /* Opción 1: Optimización de espaciado interno (padding) y micro-flechas */
+        #stockTable td:nth-child(1), #stickyStockTable th:nth-child(1) {
+            min-width: 48px;
+            text-align: center;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+
+        #stockTable td:nth-child(2), #stickyStockTable th:nth-child(2) {
+            min-width: 66px;
+            text-align: center;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+
+        #stockTable td:nth-child(7), #stickyStockTable th:nth-child(7) {
+            min-width: 52px;
+            text-align: center;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+
+        tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--line-soft);
+            vertical-align: middle;
+            background: var(--bg-card);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover td {
+            background: var(--hover-bg);
+        }
+
+        .empty-row td {
+            text-align: center;
+            color: var(--txt-faint);
+            padding: 36px 12px;
+            font-style: italic;
+        }
+
+        .fam-badge {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--accent-soft);
+            padding: 3px 9px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .id-tag {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--txt-faint);
+        }
+
+        .desc-cell {
+            font-weight: 600;
+            max-width: 280px;
+            white-space: normal;
+            line-height: 1.35;
+        }
+
+        .marca-cell {
+            color: var(--txt-dim);
+        }
+
+        .loc-tag {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--txt-dim);
+            background: var(--bg-elev);
+            border: 1px solid var(--line-soft);
+            padding: 3px 7px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .loc-empty {
+            color: var(--txt-faint);
+            font-style: italic;
+            font-size: 11.5px;
+        }
+
+        .stock-btn {
+            font-family: var(--mono);
+            font-weight: 800;
+            font-size: 14px;
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 3px 9px;
+            cursor: pointer;
+            color: var(--txt);
+            transition: .15s all;
+        }
+
+        .stock-btn:hover {
+            border-color: var(--line);
+            background: var(--bg-elev);
+        }
+
+        .stock-min {
+            font-size: 10.5px;
+            color: var(--txt-faint);
+            margin-left: 4px;
+        }
+
+        .estado-pill {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 12px;
+            letter-spacing: .4px;
+        }
+
+        .estado-pill.ok {
+            background: var(--ok-bg);
+            color: var(--ok-fg);
+        }
+
+        .estado-pill.reponer {
+            background: var(--bad-bg);
+            color: var(--bad-fg);
+        }
+
+        .thumb {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid var(--line-soft);
+            cursor: zoom-in;
+            display: block;
+        }
+
+        .thumb-empty {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px dashed var(--line-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--txt-faint);
+            font-size: 13px;
+        }
+
+        .mov-pill {
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 12px;
+            letter-spacing: .3px;
+        }
+
+        .mov-pill.entrada {
+            background: var(--ok-bg);
+            color: var(--ok-fg);
+        }
+
+        .mov-pill.salida {
+            background: var(--bad-bg);
+            color: var(--bad-fg);
+        }
+
+        .mov-pill.devolucion {
+            background: var(--devol-bg);
+            color: var(--devol-fg);
+        }
+
+        .table-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-top: 1px solid var(--line-soft);
+            font-size: 11.5px;
+            color: var(--txt-faint);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* ---------- DEMO BANNER ---------- */
+        .demo-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--amber-soft);
+            border: 1px solid #6b4e14;
+            color: #fbbf6a;
+            font-size: 12.5px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .demo-banner b {
+            color: #ffcf8a;
+        }
+
+        .demo-tag {
+            font-family: var(--mono);
+            font-size: 9.5px;
+            font-weight: 800;
+            background: #6b4e14;
+            color: #ffe0ac;
+            padding: 2px 7px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+        }
+
+        /* ---------- MODAL ---------- */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 8, 18, .7);
+            backdrop-filter: blur(2px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 16px;
+        }
+
+        .overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-elev);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 380px;
+            padding: 20px;
+        }
+
+        .modal h3 {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 2px;
+        }
+
+        .modal .sub {
+            font-size: 12px;
+            color: var(--txt-dim);
+            margin-bottom: 16px;
+        }
+
+        .field {
+            margin-bottom: 12px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--txt-faint);
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            margin-bottom: 5px;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            color: var(--txt);
+            font-family: inherit;
+            font-size: 13px;
+            padding: 9px 10px;
+            outline: none;
+        }
+
+        .field textarea {
+            resize: none;
+            overflow: hidden;
+            min-height: 38px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-word;
+            transition: height .08s ease;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .seg {
+            display: flex;
+            gap: 6px;
+        }
+
+        .seg button {
+            flex: 1;
+            padding: 9px 0;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: var(--bg-card);
+            color: var(--txt-dim);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .seg button.sel.entrada {
+            background: var(--ok-bg);
+            border-color: var(--ok-fg);
+            color: var(--ok-fg);
+        }
+
+        .seg button.sel.salida {
+            background: var(--bad-bg);
+            border-color: var(--bad-fg);
+            color: var(--bad-fg);
+        }
+
+        .seg button.sel.devolucion {
+            background: var(--devol-bg);
+            border-color: var(--devol-fg);
+            color: var(--devol-fg);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .modal-err {
+            font-size: 12px;
+            color: var(--bad-fg);
+            margin-top: 8px;
+            display: none;
+        }
+
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+            padding: 24px;
+            cursor: zoom-out;
+        }
+
+        .lightbox.show {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: var(--bg-elev);
+            border: 1px solid var(--line);
+            color: var(--txt);
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 10px 16px;
+            border-radius: 9px;
+            opacity: 0;
+            pointer-events: none;
+            transition: .2s all;
+            z-index: 70;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.err {
+            border-color: #6b2323;
+            color: var(--bad-fg);
+        }
+
+        @media (max-width:600px) {
+            .app {
+                padding: 14px 12px 40px;
+            }
+
+            .brand-title {
+                font-size: 19px;
+            }
+        }
+
+        /* ---------- NUEVOS ESTILOS: SELECCIÓN Y EDICIÓN ---------- */
+        .row-selected td {
+            background: var(--accent-soft) !important;
+            border-bottom-color: var(--accent) !important;
+        }
+
+        .pin-badge {
+            font-size: 10px;
+            font-weight: 800;
+            background: var(--accent);
+            color: #ffffff;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .btn-edit-desc {
+            background: none;
+            border: none;
+            color: var(--accent);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: normal;
+            padding: 0;
+            margin-left: 0;
+            transition: opacity 0.15s;
+        }
+
+        .btn-edit-desc:hover {
+            opacity: 0.8;
+            background: none;
+        }
+
+        .thumbs-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-order-bar {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-elev);
+            border: 1.5px solid var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            color: var(--txt);
+            font-size: 13px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            z-index: 65;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .cart-order-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* ---------- OBSERVACIONES ---------- */
+        .obs-tag {
+            margin-top: 4px;
+            font-size: 11.5px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        .obs-tag strong {
+            color: #cbd5e1;
+        }
+
+        .obs-vacia {
+            color: #64748b;
+        }
+
+        /* ---------- BARRA DE CARRITO POR TIPO DE MOVIMIENTO ---------- */
+        .cart-order-bar.tipo-entrada {
+            border-color: var(--ok-fg);
+        }
+
+        .cart-order-bar.tipo-salida {
+            border-color: var(--bad-fg);
+        }
+
+        .cart-order-bar.tipo-devolucion {
+            border-color: var(--devol-fg);
+        }
+
+        /* ---------- NO CONFORMIDADES ---------- */
+        .nc-badge-row {
+            display: flex;
+            gap: 5px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .mini-pill {
+            font-size: 9.5px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 10px;
+            letter-spacing: .3px;
+            white-space: nowrap;
+        }
+
+        .mini-pill.nc {
+            background: var(--amber-soft);
+            color: var(--amber);
+        }
+
+        .mini-pill.baja {
+            background: var(--bad-bg);
+            color: var(--bad-fg);
+        }
+
+        .mini-pill.parcial {
+            background: #3a3410;
+            color: #fde047;
+        }
+
+        .prioridad-pill {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 12px;
+        }
+
+        .prioridad-pill.alta {
+            background: var(--bad-bg);
+            color: var(--bad-fg);
+        }
+
+        .prioridad-pill.media {
+            background: var(--amber-soft);
+            color: var(--amber);
+        }
+
+        .prioridad-pill.baja {
+            background: var(--ok-bg);
+            color: var(--ok-fg);
+        }
+
+        .estado-nc-pill {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 12px;
+        }
+
+        .estado-nc-pill.abierta {
+            background: var(--devol-bg);
+            color: var(--devol-fg);
+        }
+
+        .estado-nc-pill.cerrada {
+            background: var(--line-soft);
+            color: var(--txt-faint);
+        }
+
+        .nc-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 14px;
+            margin-bottom: 14px;
+            font-size: 12.5px;
+        }
+
+        .nc-detail-grid .lbl {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--txt-faint);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 2px;
+        }
+
+        .nc-detail-grid .val {
+            color: var(--txt);
+            font-weight: 600;
+        }
+
+        .nc-hist-item {
+            font-size: 11.5px;
+            color: var(--txt-dim);
+            padding: 6px 0;
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        .nc-hist-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- SELECTOR DE DISEÑO -->
+        <div id="themeSelectorContainer"
+            style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; position: relative;">
+            <button id="themeDropdownBtn" type="button"
+                onclick="document.getElementById('themeDropdownMenu').classList.toggle('ts-open')"
+                style="display:flex;align-items:center;gap:7px;background:var(--bg-elev);border:1.5px solid var(--line);border-radius:8px;padding:5px 11px;cursor:pointer;font-size:12px;font-weight:600;color:var(--txt-dim);letter-spacing:0.3px;">
+                <span style="font-size:13px;">🎨</span> Diseños
+                <span style="font-size:9px;margin-left:2px;opacity:0.6;">▾</span>
+            </button>
+            <div id="themeDropdownMenu"
+                style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:999;background:var(--bg-elev);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,0.22);min-width:220px;">
+                <div
+                    style="font-size:10px;font-weight:700;color:var(--txt-faint);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+                    Elegir combinación de colores</div>
+                <div id="themeDotsRow" style="display:flex;flex-direction:column;gap:4px;">
+                    <div
+                        style="font-size:9.5px;font-weight:700;color:var(--txt-faint);letter-spacing:0.8px;text-transform:uppercase;margin:2px 0 1px 4px;">
+                        — Paletas Claras —</div>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('lightBlue');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#ffffff;border:2px solid #2563eb;"></span> Blanco y Azul
+                        (Claro)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('corporateNavy');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#eef1f6;border:2px solid #1f3d73;"></span> Azul Marino
+                        (Claro)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('nordLight');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#eceff4;border:2px solid #5e81ac;"></span> Gris Claro
+                        Suave</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('oceanTeal');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#ecfeff;border:2px solid #0891b2;"></span> Turquesa Océano
+                        (Claro)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('amberWarm');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#fef7e0;border:2px solid #d97706;"></span> Ámbar y Crema
+                        (Cálido)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('lavenderLight');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#f5f3ff;border:2px solid #7c3aed;"></span> Lavanda Pastel
+                        (Claro)</button>
+
+                    <div
+                        style="font-size:9.5px;font-weight:700;color:var(--txt-faint);letter-spacing:0.8px;text-transform:uppercase;margin:6px 0 1px 4px;border-top:1px solid var(--line-soft);padding-top:6px;">
+                        — Paletas Oscuras —</div>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('maestroSlate');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#0f172a;border:2px solid #3b82f6;"></span> Gris Grafito
+                        (Oscuro)</button>
+                    <button type="button" class="ts-opt"
+                        onclick="applyTheme('slateDark');document.getElementById('themeDropdownMenu').classList.remove('ts-open')"><span
+                            class="ts-dot" style="background:#090d16;border:2px solid #38bdf8;"></span> Noche Negra
+                        (Oscuro)</button>
+                </div>
+            </div>
+            <!-- puntos de referencia de paleta activa -->
+            <div id="themeActiveDots" style="display:flex;gap:5px;align-items:center;"></div>
+        </div>
+        <style>
+            .ts-open {
+                display: block !important;
+            }
+
+            .ts-opt {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: var(--txt-dim);
+                font-size: 12px;
+                font-weight: 500;
+                padding: 4px 6px;
+                width: 100%;
+                text-align: left;
+                border-radius: 5px;
+                transition: background .15s;
+            }
+
+            .ts-opt:hover {
+                background: var(--hover-bg);
+                color: var(--txt);
+            }
+
+            .ts-dot {
+                display: inline-block;
+                width: 13px;
+                height: 13px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+        </style>
+
+        <div class="topbar">
+            <div>
+                <div class="brand-eyebrow">RPM Construcciones</div>
+                <div class="brand-title">Panel de Depósitos <span class="dim">/ Stock</span></div>
+                <div class="status-line" onclick="cargarTodo(false)" style="cursor:pointer;"
+                    title="Haz clic para reintentar conexión"><span class="pulse" id="pulseDot"></span><span
+                        id="statusText">Conectando…</span></div>
+            </div>
+            <div class="header-actions">
+                <button class="btn ghost small" id="btnRefresh">↻ Actualizar</button>
+                <button class="btn small" id="btnExport">📊 Exportar a Excel</button>
+            </div>
+        </div>
+
+        <div id="demoBanner" class="demo-banner" style="display:none;">
+            <span class="demo-tag">DEMO</span>
+            <span>Estás viendo datos de ejemplo. Configurá <b>CONFIG.WEB_APP_URL</b> arriba del &lt;script&gt; con la
+                URL de tu Web App de Apps Script para conectar tus depósitos reales.</span>
+        </div>
+
+        <div class="zone-row" id="zoneRow"></div>
+
+        <div class="stats" id="statsRow"></div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="stock">📋 Stock</button>
+            <button class="tab-btn" data-tab="mov">🕒 Movimientos</button>
+            <button class="tab-btn" data-tab="nc">⚠️ No Conformidades</button>
+        </div>
+
+        <!-- STOCK PANEL -->
+        <div id="panel-stock">
+            <div class="toolbar">
+                <div class="search-box"><input type="text" id="stockSearch"
+                        placeholder="Buscar por descripción, marca, familia o ID…"></div>
+                <select class="filter-select" id="filterFamilia">
+                    <option value="">Todas las familias</option>
+                </select>
+                <select class="filter-select" id="filterEstado">
+                    <option value="">Todos los estados</option>
+                    <option value="OK">OK</option>
+                    <option value="REPONER">Reponer</option>
+                </select>
+            </div>
+            <div class="table-wrap">
+                <div class="sticky-top-bar">
+                    <div class="top-scrollbar-wrap" id="topScrollStock">
+                        <div class="top-scrollbar-inner"></div>
+                    </div>
+                    <div class="sticky-thead-wrap" id="theadWrapStock">
+                        <table class="sticky-header-table" id="stickyStockTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="seleccion" style="text-align:center;">Sel. <span class="arrow"></span></th>
+                                    <th data-sort="fotos" style="text-align:center;">Foto(s) <span class="arrow"></span></th>
+                                    <th data-sort="familia">Familia <span class="arrow"></span></th>
+                                    <th data-sort="descripcion">Descripción <span class="arrow"></span></th>
+                                    <th data-sort="marca">Marca <span class="arrow"></span></th>
+                                    <th data-sort="ubicacion">Ubicación <span class="arrow"></span></th>
+                                    <th data-sort="stock_minimo">Mín. <span class="arrow"></span></th>
+                                    <th data-sort="stock_actual">Stock <span class="arrow"></span></th>
+                                    <th data-sort="estado">Estado <span class="arrow"></span></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-scroll" id="scrollStock">
+                    <table id="stockTable">
+                        <tbody id="stockBody"></tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <span id="stockCount">0 productos</span>
+                    <span id="stockZonaLabel"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MOVIMIENTOS PANEL -->
+        <div id="panel-mov" style="display:none;">
+            <div class="toolbar">
+                <div class="search-box"><input type="text" id="movSearch"
+                        placeholder="Buscar por producto, responsable u obra…"></div>
+                <select class="filter-select" id="filterTipo">
+                    <option value="">Todos los tipos</option>
+                    <option value="ENTRADA">Entrada</option>
+                    <option value="SALIDA">Salida</option>
+                    <option value="DEVOLUCIÓN">Devolución</option>
+                </select>
+            </div>
+            <div class="table-wrap">
+                <div class="sticky-top-bar">
+                    <div class="top-scrollbar-wrap" id="topScrollMov">
+                        <div class="top-scrollbar-inner"></div>
+                    </div>
+                    <div class="sticky-thead-wrap" id="theadWrapMov">
+                        <table class="sticky-header-table" id="stickyMovTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="fecha">Fecha <span class="arrow"></span></th>
+                                    <th data-sort="tipo">Tipo <span class="arrow"></span></th>
+                                    <th data-sort="descripcion">Producto <span class="arrow"></span></th>
+                                    <th data-sort="cantidad">Cant. <span class="arrow"></span></th>
+                                    <th data-sort="responsable">Responsable <span class="arrow"></span></th>
+                                    <th data-sort="obra">Obra / destino <span class="arrow"></span></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-scroll" id="scrollMov">
+                    <table id="movTable">
+                        <tbody id="movBody"></tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <span id="movCount">0 movimientos</span>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <button class="btn small ghost" id="movPrev">‹</button>
+                        <span id="movPageLabel">1 / 1</span>
+                        <button class="btn small ghost" id="movNext">›</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NO CONFORMIDADES PANEL -->
+        <div id="panel-nc" style="display:none;">
+            <div class="toolbar">
+                <div class="search-box"><input type="text" id="ncSearch"
+                        placeholder="Buscar por material, código o responsable…"></div>
+                <select class="filter-select" id="filterNcEstado">
+                    <option value="ABIERTA">Abiertas</option>
+                    <option value="">Todas</option>
+                    <option value="CERRADA">Cerradas</option>
+                </select>
+                <select class="filter-select" id="filterNcMotivo"><option value="">Todos los motivos</option></select>
+                <select class="filter-select" id="filterNcPrioridad">
+                    <option value="">Toda prioridad</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="MEDIA">Media</option>
+                    <option value="BAJA">Baja</option>
+                </select>
+            </div>
+            <div class="table-wrap">
+                <div class="sticky-top-bar">
+                    <div class="top-scrollbar-wrap" id="topScrollNc">
+                        <div class="top-scrollbar-inner"></div>
+                    </div>
+                    <div class="sticky-thead-wrap" id="theadWrapNc">
+                        <table class="sticky-header-table" id="stickyNcTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="id">ID <span class="arrow"></span></th>
+                                    <th data-sort="material">Material <span class="arrow"></span></th>
+                                    <th data-sort="cantidad" style="text-align:center;">Cant. <span class="arrow"></span></th>
+                                    <th data-sort="origen">Origen <span class="arrow"></span></th>
+                                    <th data-sort="motivo">Motivo <span class="arrow"></span></th>
+                                    <th data-sort="situacion">Situación <span class="arrow"></span></th>
+                                    <th data-sort="prioridad">Prioridad <span class="arrow"></span></th>
+                                    <th data-sort="estado">Estado <span class="arrow"></span></th>
+                                    <th style="text-align:center;">Detalle</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-scroll" id="scrollNc">
+                    <table id="ncTable">
+                        <tbody id="ncBody"></tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <span id="ncCount">0 no conformidades</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Quick adjust modal -->
+    <div class="overlay" id="adjustOverlay">
+        <div class="modal">
+            <h3 id="adjustTitle">Ajustar stock</h3>
+            <div class="sub" id="adjustSub"></div>
+            <div class="field">
+                <label>Movimiento</label>
+                <div class="seg" id="tipoSeg">
+                    <button type="button" data-tipo="ENTRADA">+ Entrada</button>
+                    <button type="button" data-tipo="SALIDA">− Salida</button>
+                    <button type="button" data-tipo="DEVOLUCIÓN">↩ Devol.</button>
+                </div>
+            </div>
+            <div class="field">
+                <label>Cantidad</label>
+                <input type="number" id="adjustCantidad" min="1" step="1" placeholder="0">
+            </div>
+            <div class="field">
+                <label>Responsable</label>
+                <input type="text" id="adjustResponsable" placeholder="Nombre">
+            </div>
+            <div class="field">
+                <label>Obra / destino (opcional)</label>
+                <input type="text" id="adjustObra" placeholder="Obra 1, Depósito, Mantenimiento…">
+            </div>
+            <div class="field" id="adjustNcToggleWrap" style="display:none;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; letter-spacing:0; font-size:12.5px; color:var(--txt);">
+                    <input type="checkbox" id="adjustTieneNc" style="width:auto;"> ⚠️ ¿Hay material no conforme en este movimiento?
+                </label>
+            </div>
+            <div id="adjustNcFields" style="display:none;">
+                <div class="field">
+                    <label>Cantidad no conforme</label>
+                    <input type="number" id="adjustNcCantidad" min="1" step="1" placeholder="0">
+                </div>
+                <div class="field">
+                    <label>Motivo</label>
+                    <select id="adjustNcMotivo">
+                        <option value="INCOMPLETO">Incompleto</option>
+                        <option value="NO FUNCIONA">No funciona</option>
+                        <option value="DAÑADO / ROTO">Dañado / Roto</option>
+                        <option value="DETERIORADO">Deteriorado</option>
+                        <option value="USADO">Usado</option>
+                        <option value="FUERA DE ESPECIFICACIÓN">Fuera de especificación</option>
+                        <option value="OTRO">Otro</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Situación</label>
+                    <select id="adjustNcSituacion">
+                        <option value="EN REVISIÓN">En revisión</option>
+                        <option value="PARA REPARACIÓN">Para reparación</option>
+                        <option value="PENDIENTE DE EVALUACIÓN">Pendiente de evaluación</option>
+                        <option value="PENDIENTE DE DECISIÓN">Pendiente de decisión</option>
+                        <option value="PARA BAJA">Para baja</option>
+                        <option value="DEVOLUCIÓN A PROVEEDOR">Devolución a proveedor</option>
+                        <option value="OTRO">Otro</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Observación NC</label>
+                    <input type="text" id="adjustNcObs" placeholder="Detalle del problema…">
+                </div>
+            </div>
+            <div class="modal-err" id="adjustErr"></div>
+            <div class="modal-actions">
+                <button class="btn ghost" id="adjustCancel">Cancelar</button>
+                <button class="btn primary" id="adjustConfirm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="overlay" id="editProductOverlay">
+        <div class="modal" style="max-width: 400px; width: 100%; position: relative;">
+            <button type="button" id="editProdCloseX"
+                style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; color: var(--txt-dim); cursor: pointer; line-height: 1; padding: 4px; border-radius: 6px; transition: color 0.15s;"
+                title="Cerrar ventana">✕</button>
+            <h3 id="editProdTitle">Editar Producto</h3>
+            <div class="sub" id="editProdSub"></div>
+            <div class="field">
+                <label>Descripción del Producto</label>
+                <textarea id="editProdDesc" placeholder="Descripción…" rows="1" oninput="autoResizeTextarea(this)"></textarea>
+            </div>
+            <div class="field">
+                <label>Marca</label>
+                <input type="text" id="editProdMarca" placeholder="Marca…">
+            </div>
+            <div class="field">
+                <label>Familia</label>
+                <input type="text" id="editProdFamilia" placeholder="Familia…">
+            </div>
+            <div class="field">
+                <label>Stock Mínimo</label>
+                <input type="number" id="editProdMin" min="0" placeholder="0">
+            </div>
+            <div class="field"
+                style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 12px 0;">
+                <div
+                    style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                    <span>📍</span> Ubicación física
+                </div>
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 0.9fr; gap: 8px; align-items: end;">
+                    <div style="display: flex; flex-direction: column;">
+                        <label
+                            style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Depósito</label>
+                        <select id="editProdUbiDep"
+                            style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box; cursor: pointer;">
+                            <option value="">—</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="5A">5A</option>
+                            <option value="5B">5B</option>
+                            <option value="6">6</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <label
+                            style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Estante</label>
+                        <input type="number" id="editProdUbiEst" min="0" step="1" placeholder="Ej: 2"
+                            style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <label
+                            style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Columna</label>
+                        <input type="number" id="editProdUbiCol" min="0" step="1" placeholder="Ej: 5"
+                            style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <label
+                            style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Fila</label>
+                        <input type="text" id="editProdUbiFila" maxlength="1" placeholder="Ej: B"
+                            style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 800; font-size: 13px; text-transform: uppercase; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field"
+                style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 12px 0;">
+                <div
+                    style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                    <span>📷</span> Fotos del producto <span style="font-weight:400; color: var(--txt-faint); text-transform:none; letter-spacing:0;">(máx. 2)</span>
+                </div>
+                <div id="editProdFotosPreview" style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;"></div>
+                <input type="file" accept="image/*" id="editProdFotoInput" style="display:none" onchange="manejarSeleccionFotoEditProd(this)">
+                <button type="button" class="btn small" id="editProdFotoBtn" onclick="document.getElementById('editProdFotoInput').click()">+ Agregar foto</button>
+                <div id="editProdFotoMsg" style="display:none; font-size:11px; color: var(--txt-faint); margin-top: 6px;">Ya tenés las 2 fotos máximas cargadas. Eliminá una (✕) para poder agregar otra.</div>
+            </div>
+
+            <div class="field">
+                <label>Observaciones</label>
+                <input type="text" id="editProdObs" placeholder="Observaciones…">
+            </div>
+            <div class="modal-err" id="editProdErr"></div>
+            <div class="modal-actions">
+                <button class="btn ghost" id="editProdCancel">Cancelar</button>
+                <button class="btn primary" id="editProdConfirm">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Adjust Modal -->
+    <div class="overlay" id="adjustBatchOverlay">
+        <div class="modal" style="max-width: 500px; width: 90%;">
+            <h3>⚡ Movimiento en Lote</h3>
+            <div class="sub" style="margin-bottom: 12px;">Ingresá la cantidad a mover para cada producto:</div>
+
+            <div class="field">
+                <label>Movimiento</label>
+                <div class="seg" id="batchTipoSeg">
+                    <button type="button" data-tipo="ENTRADA">+ Entrada</button>
+                    <button type="button" data-tipo="SALIDA" class="active">− Salida</button>
+                    <button type="button" data-tipo="DEVOLUCIÓN">↩ Devol.</button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Productos y Cantidades</label>
+                <div class="batch-items-list" id="batchItemsList"
+                    style="max-height: 200px; overflow-y: auto; background: var(--bg-elev); border: 1.5px solid var(--line); border-radius: 9px; padding: 6px 10px;">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+
+            <div class="field">
+                <button type="button" class="btn primary" id="adjustBatchAddMore"
+                    style="width: 100%; display: block; font-size: 13px; font-weight: 700; background: #2563eb; color: #fff; padding: 10px; border-radius: 8px; border: none; cursor: pointer; text-align: center; margin-top: 10px;">➕
+                    Agregar más productos al lote</button>
+            </div>
+
+            <div class="field">
+                <label>Responsable</label>
+                <input type="text" id="adjustBatchResponsable" placeholder="Nombre de quien retira/entrega">
+            </div>
+
+            <div class="field">
+                <label>Obra / destino (opcional)</label>
+                <input type="text" id="adjustBatchObra" placeholder="Obra, Mantenimiento, etc.">
+            </div>
+
+            <div class="modal-err" id="adjustBatchErr"></div>
+
+            <div class="modal-actions">
+                <button class="btn ghost" id="adjustBatchCancel">Cancelar</button>
+                <button class="btn primary" id="adjustBatchConfirm">Confirmar Movimiento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pasar a No Conforme Modal -->
+    <div class="overlay" id="ncPasarOverlay">
+        <div class="modal">
+            <h3>⚠️ Pasar a No Conforme</h3>
+            <div class="sub" id="ncPasarSub"></div>
+            <div class="field">
+                <label>Cantidad a pasar a No Conforme</label>
+                <input type="number" id="ncPasarCantidad" min="1" step="1" placeholder="0">
+            </div>
+            <div class="field">
+                <label>Motivo</label>
+                <select id="ncPasarMotivo">
+                    <option value="INCOMPLETO">Incompleto</option>
+                    <option value="NO FUNCIONA">No funciona</option>
+                    <option value="DAÑADO / ROTO" selected>Dañado / Roto</option>
+                    <option value="DETERIORADO">Deteriorado</option>
+                    <option value="USADO">Usado</option>
+                    <option value="FUERA DE ESPECIFICACIÓN">Fuera de especificación</option>
+                    <option value="OTRO">Otro</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Situación</label>
+                <select id="ncPasarSituacion">
+                    <option value="EN REVISIÓN" selected>En revisión</option>
+                    <option value="PARA REPARACIÓN">Para reparación</option>
+                    <option value="PENDIENTE DE EVALUACIÓN">Pendiente de evaluación</option>
+                    <option value="PENDIENTE DE DECISIÓN">Pendiente de decisión</option>
+                    <option value="PARA BAJA">Para baja</option>
+                    <option value="DEVOLUCIÓN A PROVEEDOR">Devolución a proveedor</option>
+                    <option value="OTRO">Otro</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Prioridad</label>
+                <div class="seg" id="ncPasarPrioridadSeg">
+                    <button type="button" data-prioridad="ALTA">Alta</button>
+                    <button type="button" data-prioridad="MEDIA">Media</button>
+                    <button type="button" data-prioridad="BAJA">Baja</button>
+                </div>
+            </div>
+            <div class="field">
+                <label>Responsable</label>
+                <input type="text" id="ncPasarResponsable" placeholder="Nombre">
+            </div>
+            <div class="field">
+                <label>Observación</label>
+                <input type="text" id="ncPasarObs" placeholder="Detalle del problema…">
+            </div>
+            <div class="modal-err" id="ncPasarErr"></div>
+            <div class="modal-actions">
+                <button class="btn ghost" id="ncPasarCancel">Cancelar</button>
+                <button class="btn primary" id="ncPasarConfirm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NC Detail / Revisión Modal -->
+    <div class="overlay" id="ncDetailOverlay">
+        <div class="modal" style="max-width: 480px; width: 100%;">
+            <h3 id="ncDetailTitle">NC-00000</h3>
+            <div class="nc-detail-grid" id="ncDetailGrid"></div>
+            <div style="border-top:1px solid var(--line-soft); margin: 4px 0 12px; padding-top: 12px; font-size: 12px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: .5px;">
+                Registrar revisión
+            </div>
+            <div class="field">
+                <label>Resultado</label>
+                <select id="ncResResultado">
+                    <option value="REPARADO">Reparado → vuelve a stock</option>
+                    <option value="PARCIAL">Uso parcial → apto con restricciones</option>
+                    <option value="BAJA">Baja → no reparable</option>
+                    <option value="PENDIENTE">Pendiente / actualizar situación</option>
+                </select>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="field"><label>Responsable</label><input type="text" id="ncResResponsable" placeholder="Nombre"></div>
+                <div class="field"><label>Prioridad</label>
+                    <select id="ncResPrioridad">
+                        <option value="ALTA">Alta</option>
+                        <option value="MEDIA">Media</option>
+                        <option value="BAJA">Baja</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                <div class="field"><label>Cant. a stock</label><input type="number" id="ncResCantStock" min="0" step="1" value="0"></div>
+                <div class="field"><label>Cant. a baja</label><input type="number" id="ncResCantBaja" min="0" step="1" value="0"></div>
+                <div class="field"><label>Cant. pendiente</label><input type="number" id="ncResCantPendiente" min="0" step="1" value="0" readonly style="opacity:.7;"></div>
+            </div>
+            <div class="field"><label>Diagnóstico</label><textarea id="ncResDiagnostico" placeholder="Diagnóstico técnico…" rows="1" oninput="autoResizeTextarea(this)"></textarea></div>
+            <div class="field"><label>Observación</label><textarea id="ncResObservacion" placeholder="Observación…" rows="1" oninput="autoResizeTextarea(this)"></textarea></div>
+            <div class="modal-err" id="ncResErr"></div>
+
+            <div style="border-top:1px solid var(--line-soft); margin: 12px 0 8px; padding-top: 10px; font-size: 11px; font-weight: 700; color: var(--txt-faint); text-transform: uppercase; letter-spacing: .5px;">
+                Historial
+            </div>
+            <div id="ncDetailHistorial" style="max-height:120px; overflow-y:auto; margin-bottom: 6px;"></div>
+
+            <div class="modal-actions">
+                <button class="btn ghost" id="ncDetailClose">Cerrar</button>
+                <button class="btn ghost" id="ncDetailPrint">🖨 Imprimir</button>
+                <button class="btn primary" id="ncDetailSave">Guardar revisión</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Confirmation Modal -->
+    <div class="overlay" id="successOverlay">
+        <div class="modal" style="max-width: 360px; text-align: center; padding: 28px;">
+            <div style="font-size: 54px; color: #10b981; margin-bottom: 12px; animation: successScale 0.3s ease-out;">✔️
+            </div>
+            <h3 style="font-size: 18px; margin-bottom: 8px; color: var(--txt);">¡Movimiento Guardado!</h3>
+            <p id="successMessage"
+                style="font-size: 13.5px; color: var(--txt-dim); margin-bottom: 22px; line-height: 1.5;"></p>
+            <button class="btn primary" id="successClose"
+                style="width: 100%; justify-content: center; padding: 10px; font-size: 13px; font-weight: 700;">Aceptar</button>
+        </div>
+    </div>
+
+    <!-- Floating Cart Order Bar -->
+    <div class="cart-order-bar" id="cartOrderBar" style="display:none;">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">🛒</span>
+            <strong id="cartOrderCount">0 seleccionados</strong>
+        </div>
+        <div class="cart-order-actions">
+            <button class="btn primary small" id="btnBatchAdjust">⚡ Movimiento con Seleccionados</button>
+            <button class="btn ghost small" id="btnCopySelected">📋 Copiar Lista</button>
+            <button class="btn ghost small" id="btnClearSelected">🧹 Limpiar</button>
+        </div>
+    </div>
+
+    <div class="lightbox" id="lightbox"><img id="lightboxImg" src="" alt=""></div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================================
+        // CONFIG — completar con la URL del Web App (Implementar > Nueva implementación)
+        // ============================================================
+        const CONFIG = {
+            WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzQVmgnoPG86r8LKnkdMn0yP17FGvoLj02LSNz8BC_mhZzEmJZgV_jgpLFArInlgUOx/exec',
+            POLL_MS: 25000,
+            MOV_PAGE_SIZE: 40,
+        };
+
+        const isDemo = !CONFIG.WEB_APP_URL || CONFIG.WEB_APP_URL.indexOf('PEGA_ACA') === 0;
+
+        // ============================================================
+        // DEMO DATA — se usa solo si no configuraste WEB_APP_URL
+        // ============================================================
+        const DEMO_STOCK = [
+            { id: 'PROD-001', zona: 'Depósito 5A', familia: 'Térmica', marca: 'Schneider', descripcion: 'Interruptor termomagnético 20A 2P Curva C', unidad: 'un', entradas: 40, salidas: 6, devoluciones: 0, stock_actual: 34, stock_minimo: 10, estado: 'OK', ult_mov: 'ENTRADA', ult_fecha: '05/08/2026', ult_hora: '08:40', ubicacion_deposito: '4', ubicacion_estante: '2', ubicacion_columna: '5', ubicacion_fila: 'B', imagen: '' },
+            { id: 'PROD-002', zona: 'Depósito 5A', familia: 'Disyuntor Diferencial', marca: 'ABB', descripcion: 'Disyuntor diferencial 2P 40A 30mA', unidad: 'un', entradas: 9, salidas: 6, devoluciones: 0, stock_actual: 3, stock_minimo: 6, estado: 'REPONER', ult_mov: 'SALIDA', ult_fecha: '09/08/2026', ult_hora: '14:32', ubicacion_deposito: '4', ubicacion_estante: '3', ubicacion_columna: '1', ubicacion_fila: 'A', imagen: '' },
+            { id: 'PROD-003', zona: 'Depósito 5A', familia: 'Fuente de Alimentación', marca: 'Mean Well', descripcion: 'Fuente LED 24V 100W IP65', unidad: 'un', entradas: 18, salidas: 6, devoluciones: 0, stock_actual: 12, stock_minimo: 8, estado: 'OK', ult_mov: 'ENTRADA', ult_fecha: '05/08/2026', ult_hora: '08:40', ubicacion_deposito: '4', ubicacion_estante: '1', ubicacion_columna: '8', ubicacion_fila: 'C', imagen: '' },
+            { id: 'PROD-004', zona: 'Depósito 5A', familia: 'Bornera Fija', marca: 'Weidmüller', descripcion: 'Bornera fija bipolar 25A', unidad: 'un', entradas: 10, salidas: 4, devoluciones: 0, stock_actual: 6, stock_minimo: 20, estado: 'REPONER', ult_mov: 'DEVOLUCIÓN', ult_fecha: '07/08/2026', ult_hora: '17:48', ubicacion_deposito: '4', ubicacion_estante: '5', ubicacion_columna: '2', ubicacion_fila: 'D', imagen: '' },
+            { id: 'PROD-005', zona: 'Depósito 5A', familia: 'Contactor', marca: 'Chint', descripcion: 'Contactor 3P 25A bobina 220V AC', unidad: 'un', entradas: 17, salidas: 3, devoluciones: 0, stock_actual: 14, stock_minimo: 5, estado: 'OK', ult_mov: 'SALIDA', ult_fecha: '06/08/2026', ult_hora: '11:02', ubicacion_deposito: '4', ubicacion_estante: '2', ubicacion_columna: '9', ubicacion_fila: 'A', imagen: '' },
+            { id: 'PROD-006', zona: 'Depósito 5A', familia: 'Fusible', marca: 'SICA', descripcion: 'Fusible NH1 100A 500V', unidad: 'un', entradas: 12, salidas: 10, devoluciones: 0, stock_actual: 2, stock_minimo: 10, estado: 'REPONER', ult_mov: 'ENTRADA', ult_fecha: '08/08/2026', ult_hora: '09:15', ubicacion_deposito: '4', ubicacion_estante: '6', ubicacion_columna: '3', ubicacion_fila: 'F', imagen: '' },
+            { id: 'PROD-007', zona: 'Iluminación', familia: 'Tira LED', marca: 'Osram', descripcion: 'Tira LED 24V 5m IP65 blanco cálido', unidad: 'rollo', entradas: 20, salidas: 14, devoluciones: 1, stock_actual: 7, stock_minimo: 5, estado: 'OK', ult_mov: 'SALIDA', ult_fecha: '04/08/2026', ult_hora: '16:20', ubicacion_deposito: '2', ubicacion_estante: '1', ubicacion_columna: '3', ubicacion_fila: 'A', imagen: '' },
+            { id: 'PROD-008', zona: 'Iluminación', familia: 'Reflector LED', marca: 'Philips', descripcion: 'Reflector LED 100W IP66 luz fría', unidad: 'un', entradas: 15, salidas: 9, devoluciones: 0, stock_actual: 6, stock_minimo: 8, estado: 'REPONER', ult_mov: 'SALIDA', ult_fecha: '03/08/2026', ult_hora: '10:05', ubicacion_deposito: '2', ubicacion_estante: '4', ubicacion_columna: '2', ubicacion_fila: 'B', imagen: '' },
+            { id: 'PROD-009', zona: 'Gabinetes y Cajas', familia: 'Gabinete', marca: 'Genrod', descripcion: 'Gabinete metálico 40x60 IP65 con riel DIN', unidad: 'un', entradas: 8, salidas: 3, devoluciones: 0, stock_actual: 5, stock_minimo: 3, estado: 'OK', ult_mov: 'ENTRADA', ult_fecha: '02/08/2026', ult_hora: '12:11', ubicacion_deposito: '6', ubicacion_estante: '1', ubicacion_columna: '1', ubicacion_fila: 'A', imagen: '' },
+            { id: 'PROD-010', zona: 'Cables', familia: 'Cable Unipolar', marca: 'Pirelli', descripcion: '2.5mm² unipolar rojo Presentación Rollo 100m', unidad: 'rollo', entradas: 6, salidas: 5, devoluciones: 0, stock_actual: 1, stock_minimo: 2, estado: 'REPONER', ult_mov: 'SALIDA', ult_fecha: '01/08/2026', ult_hora: '09:30', ubicacion_deposito: '1', ubicacion_estante: '2', ubicacion_columna: '4', ubicacion_fila: 'C', imagen: '' },
+        ];
+        const DEMO_MOV = [
+            { fecha: '09/08/2026 14:32', tipo: 'SALIDA', zona: 'Depósito 5A', descripcion: 'Disyuntor diferencial 2P 40A 30mA', cantidad: 2, responsable: 'Fernando', obra: 'Obra 1' },
+            { fecha: '08/08/2026 09:15', tipo: 'ENTRADA', zona: 'Depósito 5A', descripcion: 'Fusible NH1 100A 500V', cantidad: 10, responsable: 'Pamela', obra: 'Depósito' },
+            { fecha: '07/08/2026 17:48', tipo: 'DEVOLUCIÓN', zona: 'Depósito 5A', descripcion: 'Bornera fija bipolar 25A', cantidad: 4, responsable: 'Fernando', obra: 'Obra 2' },
+            { fecha: '06/08/2026 11:02', tipo: 'SALIDA', zona: 'Depósito 5A', descripcion: 'Contactor 3P 25A bobina 220V AC', cantidad: 3, responsable: 'Pamela', obra: 'Mantenimiento' },
+            { fecha: '05/08/2026 08:40', tipo: 'ENTRADA', zona: 'Depósito 5A', descripcion: 'Fuente LED 24V 100W IP65', cantidad: 6, responsable: 'Fernando', obra: 'Depósito' },
+            { fecha: '04/08/2026 16:20', tipo: 'SALIDA', zona: 'Iluminación', descripcion: 'Tira LED 24V 5m IP65 blanco cálido', cantidad: 8, responsable: 'Pamela', obra: 'Obra 1' },
+        ];
+        const DEMO_NC = [
+            { id: 'NC-00001', producto_id: 'PROD-001', material: 'Interruptor termomagnético 20A 2P Curva C', codigo: 'PROD-001', zona: 'Depósito 5A', cantidad: 2, cantidad_original: 2, origen: 'ENTRADA', motivo: 'DAÑADO / ROTO', situacion: 'EN REVISIÓN', prioridad: 'MEDIA', responsable: 'Fernando', observacion: 'Golpes en el embalaje detectados en la recepción.', fecha: '01/08/2026 05:45', estado: 'ABIERTA', historial: [{ fecha: '01/08/2026 05:45', accion: 'CREACIÓN', estado_anterior: '—', estado_nuevo: 'EN REVISIÓN', responsable: 'Fernando', observacion: 'Cantidad: 2' }] },
+            { id: 'NC-00002', producto_id: 'PROD-005', material: 'Contactor 3P 25A bobina 220V AC', codigo: 'PROD-005', zona: 'Depósito 5A', cantidad: 3, cantidad_original: 3, origen: 'ENTRADA', motivo: 'INCOMPLETO', situacion: 'PENDIENTE DE EVALUACIÓN', prioridad: 'MEDIA', responsable: 'Pamela', observacion: 'Faltan accesorios de montaje.', fecha: '02/08/2026 10:10', estado: 'ABIERTA', historial: [{ fecha: '02/08/2026 10:10', accion: 'CREACIÓN', estado_anterior: '—', estado_nuevo: 'PENDIENTE DE EVALUACIÓN', responsable: 'Pamela', observacion: 'Cantidad: 3' }] },
+            { id: 'NC-00003', producto_id: 'PROD-002', material: 'Disyuntor diferencial 2P 40A 30mA', codigo: 'PROD-002', zona: 'Depósito 5A', cantidad: 1, cantidad_original: 1, origen: 'DEVOLUCIÓN', motivo: 'NO FUNCIONA', situacion: 'PARA REPARACIÓN', prioridad: 'ALTA', responsable: 'Fernando', observacion: 'No enciende al conectar.', fecha: '03/08/2026 09:00', estado: 'ABIERTA', historial: [{ fecha: '03/08/2026 09:00', accion: 'CREACIÓN', estado_anterior: '—', estado_nuevo: 'PARA REPARACIÓN', responsable: 'Fernando', observacion: 'Cantidad: 1' }] },
+        ];
+
+        // ============================================================
+        // STATE
+        // ============================================================
+        const state = {
+            stock: [],
+            mov: [],
+            nc: [],
+            zona: '',           // '' = todas
+            activeTab: 'stock',
+            stockUi: { search: '', familia: '', estado: '', sortKey: 'familia', sortDir: 1 },
+            movUi: { search: '', tipo: '', sortKey: 'fecha', sortDir: -1, page: 0 },
+            ncUi: { search: '', estado: 'ABIERTA', motivo: '', prioridad: '', sortKey: 'fecha', sortDir: -1 },
+            ncCounter: 0,
+            modalOpen: false,
+            selectedIds: new Set(),
+            batchDraftQtys: {},
+        };
+
+        // ============================================================
+        // FETCH
+        // ============================================================
+        async function apiGet(action) {
+            if (isDemo) {
+                if (action === 'stock') return { ok: true, productos: DEMO_STOCK };
+                if (action === 'movimientos') return { ok: true, movimientos: DEMO_MOV };
+                if (action === 'no-conformidades') return { ok: true, no_conformidades: DEMO_NC };
+            }
+            const url = action === 'stock'
+                ? `${CONFIG.WEB_APP_URL}?action=json`
+                : action === 'movimientos'
+                    ? `${CONFIG.WEB_APP_URL}?action=movimientos&limit=1500`
+                    : `${CONFIG.WEB_APP_URL}?action=no-conformidades`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        }
+
+        async function apiPost(payload) {
+            if (isDemo) {
+                await new Promise(r => setTimeout(r, 400));
+                return { ok: true, id: 'DEMO-000', envio: 'ENV-DEMO' };
+            }
+            const res = await fetch(CONFIG.WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS con Apps Script
+                body: JSON.stringify(payload),
+            });
+            return res.json();
+        }
+
+        async function cargarTodo(silencioso) {
+            try {
+                if (!silencioso) setStatus('Cargando…', true);
+                const [rStock, rMov, rNc] = await Promise.all([
+                    apiGet('stock'),
+                    apiGet('movimientos'),
+                    apiGet('no-conformidades').catch(() => ({ ok: false })),
+                ]);
+                if (!rStock.ok) throw new Error(rStock.error || 'Error cargando stock');
+                const nuevoStock = rStock.productos || [];
+                const nuevoMov = (rMov && rMov.ok) ? (rMov.movimientos || []) : [];
+                const nuevoNc = (rNc && rNc.ok) ? (rNc.no_conformidades || []) : state.nc;
+
+                const huboCambios = JSON.stringify(nuevoStock) !== JSON.stringify(state.stock)
+                    || JSON.stringify(nuevoMov) !== JSON.stringify(state.mov)
+                    || JSON.stringify(nuevoNc) !== JSON.stringify(state.nc);
+
+                state.stock = nuevoStock;
+                state.mov = nuevoMov;
+                state.nc = nuevoNc;
+                sincronizarContadorNc();
+
+                // Modo silencioso (polling) sin cambios reales → no se toca la tabla en absoluto.
+                if (!silencioso || huboCambios) {
+                    const scrollDiv = document.getElementById('scrollStock');
+                    const scrollTopGuardado = scrollDiv ? scrollDiv.scrollTop : 0;
+
+                    buildZoneChips();
+                    populateFamiliaFilter();
+                    populateNcMotivoFilter();
+                    renderAll();
+
+                    // Al repintar por un cambio real detectado en silencio, restauramos el scroll
+                    // para que no "salte" la pantalla mientras estás mirando la tabla.
+                    if (silencioso && scrollDiv) scrollDiv.scrollTop = scrollTopGuardado;
+                }
+
+                setStatus(isDemo ? 'Modo demo activo' : ('Actualizado ' + horaAhora()), true);
+                if (!silencioso) showToast('Stock actualizado ✓');
+            } catch (err) {
+                console.error(err);
+                setStatus('Sin conexión — reintentar ↻', false);
+                showToast('No se pudo conectar. Toca "↻ Actualizar" para reintentar.', true);
+            }
+        }
+
+        function horaAhora() {
+            const d = new Date();
+            return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        }
+        function setStatus(text, ok) {
+            document.getElementById('statusText').textContent = text;
+            document.getElementById('pulseDot').classList.toggle('off', !ok);
+        }
+
+        // ============================================================
+        // ZONE CHIPS
+        // ============================================================
+        function buildZoneChips() {
+            const zonas = Array.from(new Set(state.stock.map(p => p.zona).filter(Boolean))).sort();
+            const row = document.getElementById('zoneRow');
+            const chips = ['<button class="zone-chip' + (state.zona === '' ? ' active' : '') + '" data-zona="">Todos los depósitos<span class="count">' + state.stock.length + '</span></button>'];
+            zonas.forEach(z => {
+                const n = state.stock.filter(p => p.zona === z).length;
+                chips.push(`<button class="zone-chip${state.zona === z ? ' active' : ''}" data-zona="${escapeAttr(z)}">${escapeHtml(z)}<span class="count">${n}</span></button>`);
+            });
+            row.innerHTML = chips.join('');
+            row.querySelectorAll('.zone-chip').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.zona = btn.dataset.zona;
+                    renderAll();
+                    row.querySelectorAll('.zone-chip').forEach(b => b.classList.toggle('active', b === btn));
+                });
+            });
+        }
+
+        function populateFamiliaFilter() {
+            const sel = document.getElementById('filterFamilia');
+            const current = sel.value;
+            const familias = Array.from(new Set(state.stock.map(p => p.familia).filter(Boolean))).sort();
+            sel.innerHTML = '<option value="">Todas las familias</option>' +
+                familias.map(f => `<option value="${escapeAttr(f)}">${escapeHtml(f)}</option>`).join('');
+            sel.value = familias.includes(current) ? current : '';
+        }
+
+        function populateNcMotivoFilter() {
+            const sel = document.getElementById('filterNcMotivo');
+            if (!sel) return;
+            const current = sel.value;
+            const motivos = Array.from(new Set(state.nc.map(n => n.motivo).filter(Boolean))).sort();
+            sel.innerHTML = '<option value="">Todos los motivos</option>' +
+                motivos.map(m => `<option value="${escapeAttr(m)}">${escapeHtml(m)}</option>`).join('');
+            sel.value = motivos.includes(current) ? current : '';
+        }
+
+        function sincronizarContadorNc() {
+            let max = 0;
+            state.nc.forEach(n => {
+                const m = String(n.id || '').match(/NC-(\d+)/);
+                if (m) max = Math.max(max, parseInt(m[1], 10));
+            });
+            state.ncCounter = Math.max(state.ncCounter, max);
+        }
+
+        function fechaHoraStr() {
+            const d = new Date();
+            return d.toLocaleDateString('es-AR') + ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function generarNcId() {
+            state.ncCounter++;
+            return 'NC-' + String(state.ncCounter).padStart(5, '0');
+        }
+
+        function actualizarProductoEstado(p) {
+            p.estado = p.stock_actual <= p.stock_minimo ? 'REPONER' : 'OK';
+        }
+
+        // ============================================================
+        // FILTER / SORT HELPERS
+        // ============================================================
+        function normalizeText(str) {
+            if (!str) return '';
+            return str.normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase();
+        }
+
+        function matchesSearch(item, query, fields) {
+            if (!query) return true;
+            const rawQuery = normalizeText(query).trim();
+            if (!rawQuery) return true;
+
+            const textFields = fields.map(f => item[f] || '').filter(Boolean);
+            const combinedText = textFields.join(' ');
+            const targetNorm = normalizeText(combinedText);
+
+            // Texto del producto y de la búsqueda limpios de espacios y símbolos
+            const targetAlphaNum = targetNorm.replace(/[^a-z0-9]/g, '');
+            const queryAlphaNum = rawQuery.replace(/[^a-z0-9]/g, '');
+
+            // 1. Coincidencia directa completa ignorando espacios y símbolos
+            // (ej: busca "TERMICACURVAC1P" o "TERMICA CURVAC1P" y encuentra "TÉRMI-CA CURVA C 1P")
+            if (queryAlphaNum && targetAlphaNum.includes(queryAlphaNum)) {
+                return true;
+            }
+
+            // 2. Coincidencia por palabras/términos desordenados (separados por espacios o símbolos)
+            const queryTokens = rawQuery.split(/[^a-z0-9]+/).filter(Boolean);
+            if (queryTokens.length > 0) {
+                const allTokensMatch = queryTokens.every(token => {
+                    if (targetNorm.includes(token)) return true;
+                    if (targetAlphaNum.includes(token)) return true;
+
+                    // Si el término combina letras y números juntos (ej: "curvac10a" o "termicacurvac"), descomponer por bloques
+                    const subChunks = token.match(/[a-z]+|\d+/g);
+                    if (subChunks && subChunks.length > 1) {
+                        return subChunks.every(chunk => targetAlphaNum.includes(chunk));
+                    }
+                    return false;
+                });
+
+                if (allTokensMatch) return true;
+            }
+
+            return false;
+        }
+
+        function zonaFiltrado(list) {
+            return state.zona ? list.filter(x => x.zona === state.zona) : list;
+        }
+
+        function stockFiltrado() {
+            const ui = state.stockUi;
+            let list = zonaFiltrado(state.stock);
+            if (ui.familia) list = list.filter(p => p.familia === ui.familia);
+            if (ui.estado) list = list.filter(p => p.estado === ui.estado);
+            if (ui.search) {
+                list = list.filter(p => matchesSearch(p, ui.search, ['descripcion', 'marca', 'familia', 'id']));
+            }
+            list = list.slice().sort((a, b) => {
+                if (ui.sortKey === 'seleccion') {
+                    const aSel = state.selectedIds.has(a.id) ? 1 : 0;
+                    const bSel = state.selectedIds.has(b.id) ? 1 : 0;
+                    if (aSel !== bSel) {
+                        return (bSel - aSel); // seleccionados siempre arriba
+                    }
+                }
+
+                if (ui.sortKey === 'fotos') {
+                    const aPhotos = (a.imagen || '').split('||').map(x => x.trim()).filter(Boolean).length;
+                    const bPhotos = (b.imagen || '').split('||').map(x => x.trim()).filter(Boolean).length;
+                    if (aPhotos !== bPhotos) {
+                        return (bPhotos - aPhotos) * ui.sortDir;
+                    }
+                }
+
+                const sortCol = (ui.sortKey === 'seleccion') ? (ui.prevSortKey || 'familia') : ui.sortKey;
+                const sortDir = (ui.sortKey === 'seleccion') ? (ui.prevSortDir || 1) : ui.sortDir;
+
+                let va = a[sortCol], vb = b[sortCol];
+                if (sortCol === 'ubicacion') { va = ubicacionStr(a); vb = ubicacionStr(b); }
+                if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sortDir;
+                return String(va || '').localeCompare(String(vb || ''), undefined, { numeric: true }) * sortDir;
+            });
+            return list;
+        }
+
+        function movFiltrado() {
+            const ui = state.movUi;
+            let list = zonaFiltrado(state.mov);
+            if (ui.tipo) list = list.filter(m => m.tipo === ui.tipo);
+            if (ui.search) {
+                list = list.filter(m => matchesSearch(m, ui.search, ['descripcion', 'responsable', 'obra']));
+            }
+            list = list.slice().sort((a, b) => {
+                let va = a[ui.sortKey], vb = b[ui.sortKey];
+                if (ui.sortKey === 'fecha') { va = fechaAOrden(a.fecha); vb = fechaAOrden(b.fecha); }
+                if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * ui.sortDir;
+                return String(va || '').localeCompare(String(vb || ''), undefined, { numeric: true }) * ui.sortDir;
+            });
+            return list;
+        }
+
+        function ncFiltrado() {
+            const ui = state.ncUi;
+            let list = zonaFiltrado(state.nc);
+            if (ui.estado) list = list.filter(n => n.estado === ui.estado);
+            if (ui.motivo) list = list.filter(n => n.motivo === ui.motivo);
+            if (ui.prioridad) list = list.filter(n => n.prioridad === ui.prioridad);
+            if (ui.search) list = list.filter(n => matchesSearch(n, ui.search, ['material', 'codigo', 'responsable', 'id']));
+            list = list.slice().sort((a, b) => {
+                let va = a[ui.sortKey], vb = b[ui.sortKey];
+                if (ui.sortKey === 'fecha') { va = fechaAOrden(a.fecha); vb = fechaAOrden(b.fecha); }
+                if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * ui.sortDir;
+                return String(va || '').localeCompare(String(vb || ''), undefined, { numeric: true }) * ui.sortDir;
+            });
+            return list;
+        }
+
+        // admite "dd/MM/yyyy HH:mm" para poder ordenar cronológicamente
+        function fechaAOrden(f) {
+            if (!f) return 0;
+            const m = String(f).match(/(\d{2})\/(\d{2})\/(\d{4})[ T]?(\d{2})?:?(\d{2})?/);
+            if (!m) return 0;
+            return new Date(m[3], m[2] - 1, m[1], m[4] || 0, m[5] || 0).getTime();
+        }
+
+        function ubicacionStr(p) {
+            const partes = [p.ubicacion_deposito, p.ubicacion_estante, p.ubicacion_columna, p.ubicacion_fila].filter(v => v && String(v).trim() !== '');
+            return partes.join(' / ');
+        }
+
+        // ============================================================
+        // RENDER — STATS
+        // ============================================================
+        function renderStats() {
+            const list = zonaFiltrado(state.stock);
+            const totalProductos = list.length;
+            const totalUnidades = list.reduce((s, p) => s + (Number(p.stock_actual) || 0), 0);
+            const aReponer = list.filter(p => p.estado === 'REPONER').length;
+            const familias = new Set(list.map(p => p.familia)).size;
+
+            document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><div class="stat-num">${totalProductos}</div><div class="stat-label">Productos</div></div>
+    <div class="stat"><div class="stat-num">${totalUnidades.toLocaleString('es-AR')}</div><div class="stat-label">Unidades en stock</div></div>
+    <div class="stat ${aReponer > 0 ? 'bad' : ''}"><div class="stat-num">${aReponer}</div><div class="stat-label">A reponer</div></div>
+    <div class="stat"><div class="stat-num">${familias}</div><div class="stat-label">Familias</div></div>
+  `;
+        }
+
+        // ============================================================
+        // RENDER — STOCK TABLE
+        // ============================================================
+                function buildStockRowHtml(p) {
+            const loc = ubicacionStr(p);
+            const isSel = state.selectedIds.has(p.id);
+            const imgs = (p.imagen || '').split('||').map(x => x.trim()).filter(Boolean);
+            const imgHtml = imgs.length > 0
+                ? `<div class="thumbs-wrap">${imgs.map(src => `<img class="thumb" src="${escapeAttr(src)}" data-full="${escapeAttr(src)}" alt="">`).join('')}</div>`
+                : `<div class="thumb-empty">—</div>`;
+            const estadoClass = p.estado === 'REPONER' ? 'reponer' : 'ok';
+            const className = isSel ? 'row-selected' : '';
+
+            const ncCantidad = state.nc.filter(n => n.producto_id === p.id && n.estado !== 'CERRADA').reduce((s, n) => s + (Number(n.cantidad) || 0), 0);
+            const bajaTotal = Number(p.baja_total) || 0;
+            const parcialTotal = Number(p.uso_parcial_total) || 0;
+            const badges = [];
+            if (ncCantidad > 0) badges.push(`<span class="mini-pill nc">⚠ NC ${ncCantidad}</span>`);
+            if (parcialTotal > 0) badges.push(`<span class="mini-pill parcial">🟡 ${parcialTotal}</span>`);
+            if (bajaTotal > 0) badges.push(`<span class="mini-pill baja">🔴 ${bajaTotal}</span>`);
+            const ncBadgesHtml = badges.length ? `<div class="nc-badge-row">${badges.join('')}</div>` : '';
+
+            const innerHtml = `
+        <td style="text-align:center;"><input type="checkbox" class="select-cb" data-id="${escapeAttr(p.id)}" ${isSel ? 'checked' : ''}></td>
+        <td style="text-align:center;">${imgHtml}</td>
+        <td><span class="fam-badge">${escapeHtml(p.familia)}</span></td>
+        <td class="desc-cell">
+            <div style="font-weight: 600; margin-bottom: 2px;">${escapeHtml(p.descripcion)}</div>
+            <div class="id-tag" style="margin-bottom: 4px;">ID: ${escapeHtml(p.id)}</div>
+            <div class="obs-tag" style="margin-bottom: 4px;">
+                ${p.ult_obs ? `Observaciones: ${escapeHtml(p.ult_obs)}` : '<span class="obs-vacia">Sin observaciones</span>'}
+            </div>
+            <div>
+                <button class="btn-edit-desc" data-id="${escapeAttr(p.id)}" title="Editar ficha completa del producto">[Editar ficha]</button>
+                <button class="btn-edit-desc nc-pasar-btn" data-id="${escapeAttr(p.id)}" title="Pasar unidades a No Conforme" style="margin-left:8px;color:var(--amber);">[Pasar a NC]</button>
+                ${isSel ? '<span class="pin-badge">📌 Fijo</span>' : ''}
+            </div>
+        </td>
+        <td class="marca-cell">${escapeHtml(p.marca || '—')}</td>
+        <td>${loc ? `<span class="loc-tag">${escapeHtml(loc)}</span>` : `<span class="loc-empty">sin ubicación</span>`}</td>
+        <td style="text-align:center;">${p.stock_minimo || 0}</td>
+        <td><button class="stock-btn" data-id="${escapeAttr(p.id)}">${p.stock_actual}</button><span class="stock-min">${escapeHtml(p.unidad || 'un')}</span></td>
+        <td><span class="estado-pill ${estadoClass}">${escapeHtml(p.estado)}</span>${ncBadgesHtml}</td>`;
+            return { className, innerHtml, sig: JSON.stringify(p) + '|' + isSel + '|' + ncCantidad };
+        }
+
+        function wireStockRowEvents(tr) {
+            const cb = tr.querySelector('.select-cb');
+            if (cb) cb.addEventListener('change', e => {
+                const id = e.target.dataset.id;
+                if (e.target.checked) {
+                    state.selectedIds.add(id);
+                    tr.classList.add('row-selected');
+                    const descDiv = tr.querySelector('.desc-cell > div:last-child');
+                    if (descDiv && !descDiv.querySelector('.pin-badge')) {
+                        descDiv.insertAdjacentHTML('beforeend', '<span class="pin-badge">📌 Fijo</span>');
+                    }
+                } else {
+                    state.selectedIds.delete(id);
+                    tr.classList.remove('row-selected');
+                    const badge = tr.querySelector('.pin-badge');
+                    if (badge) badge.remove();
+                }
+                updateCartOrderBar();
+                if (state.stockUi.sortKey === 'seleccion') {
+                    renderStock();
+                }
+            });
+
+            const editBtn = tr.querySelector('.btn-edit-desc');
+            if (editBtn) editBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                openEditProductModal(editBtn.dataset.id);
+            });
+
+            const stockBtn = tr.querySelector('.stock-btn');
+            if (stockBtn) stockBtn.addEventListener('click', () => openAdjustModal(stockBtn.dataset.id));
+
+            const ncBtn = tr.querySelector('.nc-pasar-btn');
+            if (ncBtn) ncBtn.addEventListener('click', e => { e.stopPropagation(); openNcPasarModal(ncBtn.dataset.id); });
+
+            tr.querySelectorAll('.thumb').forEach(img => {
+                img.addEventListener('click', () => openLightbox(img.dataset.full));
+            });
+        }
+
+        function renderStock() {
+            const list = stockFiltrado();
+            const body = document.getElementById('stockBody');
+
+            if (list.length === 0) {
+                body.innerHTML = `<tr class="empty-row"><td colspan="10">No hay productos que coincidan con el filtro.</td></tr>`;
+            } else {
+                const existing = new Map();
+                Array.from(body.children).forEach(tr => {
+                    if (tr.dataset && tr.dataset.rowId) {
+                        existing.set(tr.dataset.rowId, tr);
+                    } else {
+                        tr.remove(); // limpia restos como la fila "empty-row" de un render anterior
+                    }
+                });
+
+                let cursor = body.firstChild;
+                list.forEach(p => {
+                    const { className, innerHtml, sig } = buildStockRowHtml(p);
+                    let tr = existing.get(p.id);
+                    if (tr) {
+                        existing.delete(p.id);
+                        if (tr !== cursor) {
+                            body.insertBefore(tr, cursor);
+                        } else {
+                            cursor = cursor.nextSibling;
+                        }
+                        if (tr.dataset.rowSig !== sig) {
+                            tr.innerHTML = innerHtml;
+                            tr.className = className;
+                            tr.dataset.rowSig = sig;
+                            wireStockRowEvents(tr);
+                        }
+                    } else {
+                        tr = document.createElement('tr');
+                        tr.dataset.rowId = p.id;
+                        tr.dataset.rowSig = sig;
+                        tr.className = className;
+                        tr.innerHTML = innerHtml;
+                        body.insertBefore(tr, cursor);
+                        wireStockRowEvents(tr);
+                    }
+                });
+                existing.forEach(tr => tr.remove());
+            }
+
+            document.getElementById('stockCount').textContent = `${list.length} producto${list.length === 1 ? '' : 's'}`;
+            document.getElementById('stockZonaLabel').textContent = state.zona || 'Todos los depósitos';
+
+            updateCartOrderBar();
+        }
+
+        function updateCartOrderBar() {
+            const bar = document.getElementById('cartOrderBar');
+            const countLabel = document.getElementById('cartOrderCount');
+            const count = state.selectedIds.size;
+            if (count > 0) {
+                countLabel.textContent = `${count} producto${count === 1 ? '' : 's'} seleccionado${count === 1 ? '' : 's'}`;
+                bar.style.display = 'flex';
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
+
+
+        // ============================================================
+        // PRODUCT EDIT MODAL
+        // ============================================================
+        let editProductCurrentId = null;
+        let editProductCurrentImages = [];
+
+        function autoResizeTextarea(el) {
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+
+        function openEditProductModal(id) {
+            const p = state.stock.find(x => x.id === id);
+            if (!p) return;
+            editProductCurrentId = id;
+            state.modalOpen = true;
+            document.getElementById('editProdTitle').textContent = `Editar ${p.id}`;
+            document.getElementById('editProdSub').textContent = `Depósito: ${p.zona}`;
+            document.getElementById('editProdDesc').value = p.descripcion || '';
+            document.getElementById('editProdMarca').value = p.marca || '';
+            document.getElementById('editProdFamilia').value = p.familia || '';
+            document.getElementById('editProdMin').value = p.stock_minimo || 0;
+            document.getElementById('editProdUbiDep').value = p.ubicacion_deposito || '';
+            document.getElementById('editProdUbiEst').value = (p.ubicacion_estante !== undefined && p.ubicacion_estante !== null) ? p.ubicacion_estante : '';
+            document.getElementById('editProdUbiCol').value = (p.ubicacion_columna !== undefined && p.ubicacion_columna !== null) ? p.ubicacion_columna : '';
+            document.getElementById('editProdUbiFila').value = (p.ubicacion_fila || '').toUpperCase();
+            document.getElementById('editProdObs').value = p.ult_obs || '';
+            document.getElementById('editProdErr').style.display = 'none';
+            editProductCurrentImages = (p.imagen || '').split('||').map(s => s.trim()).filter(Boolean);
+            renderEditProdFotos();
+            document.getElementById('editProductOverlay').classList.add('show');
+            autoResizeTextarea(document.getElementById('editProdDesc'));
+        }
+
+        function closeEditProductModal() {
+            state.modalOpen = false;
+            editProductCurrentImages = [];
+            document.getElementById('editProductOverlay').classList.remove('show');
+        }
+
+        async function confirmEditProduct() {
+            if (!editProductCurrentId) return;
+            const p = state.stock.find(x => x.id === editProductCurrentId);
+            if (!p) return;
+
+            const nuevaDesc = document.getElementById('editProdDesc').value.trim();
+            const nuevaMarca = document.getElementById('editProdMarca').value.trim();
+            const nuevaFamilia = document.getElementById('editProdFamilia').value.trim();
+            const nuevoMin = Number(document.getElementById('editProdMin').value) || 0;
+            const nuevaUbiDep = document.getElementById('editProdUbiDep').value.trim();
+            const nuevaUbiEst = document.getElementById('editProdUbiEst').value.trim();
+            const nuevaUbiCol = document.getElementById('editProdUbiCol').value.trim();
+            let nuevaUbiFila = document.getElementById('editProdUbiFila').value.trim().toUpperCase();
+            if (nuevaUbiFila && !/^[A-Z]$/.test(nuevaUbiFila)) {
+                nuevaUbiFila = nuevaUbiFila.replace(/[^A-Z]/g, '').charAt(0);
+            }
+            const nuevaObs = document.getElementById('editProdObs').value.trim();
+            const errBox = document.getElementById('editProdErr');
+
+            if (!nuevaDesc) {
+                errBox.textContent = 'La descripción no puede estar vacía.';
+                errBox.style.display = 'block';
+                return;
+            }
+
+            p.descripcion = nuevaDesc;
+            p.marca = nuevaMarca;
+            p.familia = nuevaFamilia;
+            p.stock_minimo = nuevoMin;
+            p.ubicacion_deposito = nuevaUbiDep;
+            p.ubicacion_estante = nuevaUbiEst;
+            p.ubicacion_columna = nuevaUbiCol;
+            p.ubicacion_fila = nuevaUbiFila;
+            p.ult_obs = nuevaObs;
+            p.estado = p.stock_actual <= p.stock_minimo ? 'REPONER' : 'OK';
+
+            closeEditProductModal();
+            buildZoneChips();
+            populateFamiliaFilter();
+            renderAll();
+            showToast('Producto actualizado ✓');
+
+            if (!isDemo) {
+                try {
+                    const resDatos = await apiPost({
+                        accion: "actualizar-datos",
+                        id: editProductCurrentId,
+                        descripcion: nuevaDesc,
+                        marca: nuevaMarca,
+                        familia: nuevaFamilia,
+                        stock_minimo: nuevoMin
+                    });
+                    await apiPost({
+                        accion: "actualizar-observacion",
+                        id: editProductCurrentId,
+                        observacion: nuevaObs
+                    });
+                    const resUbic = await apiPost({
+                        accion: "actualizar-ubicacion",
+                        id: editProductCurrentId,
+                        deposito: nuevaUbiDep,
+                        estante: nuevaUbiEst,
+                        columna: nuevaUbiCol,
+                        fila: nuevaUbiFila
+                    });
+                    if (resDatos && resDatos.ok && resUbic && resUbic.ok) {
+                        showToast('Ficha y ubicación guardadas en la nube ✓');
+                    } else {
+                        showToast('Guardado parcial — revisá la conexión y reintentá.', true);
+                    }
+                } catch (e) {
+                    console.error("Error al sincronizar datos:", e);
+                    showToast('No se pudo guardar en la nube. Reintentá.', true);
+                }
+            }
+        }
+
+        // ============================================================
+        // FOTOS DEL PRODUCTO (editar ficha) — máx. 2 fotos por producto
+        // ============================================================
+        function renderEditProdFotos() {
+            const cont = document.getElementById('editProdFotosPreview');
+            const btn = document.getElementById('editProdFotoBtn');
+            const msg = document.getElementById('editProdFotoMsg');
+            if (!cont) return;
+            cont.innerHTML = editProductCurrentImages.map((src, i) => `
+                <div style="position:relative;width:64px;height:64px;">
+                    <img src="${escapeAttr(src)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line-soft);cursor:zoom-in;" onclick="openLightbox('${escapeAttr(src)}')">
+                    <button type="button" onclick="confirmarEliminarFotoEditProd(${i})" title="Eliminar esta foto"
+                        style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--bad-fg);color:#fff;border:2px solid var(--bg-elev);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
+                </div>
+            `).join('') || `<span style="font-size:12px;color:var(--txt-faint);font-style:italic;">Sin fotos cargadas</span>`;
+            const lleno = editProductCurrentImages.length >= 2;
+            if (btn) btn.style.display = lleno ? 'none' : 'inline-flex';
+            if (msg) msg.style.display = lleno ? 'block' : 'none';
+        }
+
+        function manejarSeleccionFotoEditProd(input) {
+            const archivo = input.files[0];
+            input.value = '';
+            if (!archivo) return;
+
+            // Con 2 fotos el botón "+ Agregar foto" ya está oculto (ver renderEditProdFotos),
+            // así que este caso no debería darse — lo dejo como resguardo.
+            if (editProductCurrentImages.length >= 2) {
+                showToast('Ya hay 2 fotos — eliminá una primero (✕)', true);
+                return;
+            }
+            const modo = editProductCurrentImages.length === 0 ? 'reemplazar' : 'agregar';
+            comprimirImagenEditProd(archivo, base64 => subirFotoEditProd(base64, modo));
+        }
+
+        function comprimirImagenEditProd(archivo, callback) {
+            const dibujarYComprimir = (fuente, ancho, alto) => {
+                const canvas = document.createElement('canvas');
+                const maxAncho = 800;
+                const escala = Math.min(1, maxAncho / ancho);
+                canvas.width = ancho * escala;
+                canvas.height = alto * escala;
+                canvas.getContext('2d').drawImage(fuente, 0, 0, canvas.width, canvas.height);
+                callback(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+            };
+            if (window.createImageBitmap) {
+                createImageBitmap(archivo, { imageOrientation: 'from-image' })
+                    .then(bitmap => dibujarYComprimir(bitmap, bitmap.width, bitmap.height))
+                    .catch(() => comprimirImagenEditProdFallback(archivo, callback));
+            } else {
+                comprimirImagenEditProdFallback(archivo, callback);
+            }
+        }
+
+        function comprimirImagenEditProdFallback(archivo, callback) {
+            const img = new Image();
+            const lector = new FileReader();
+            lector.onload = e => { img.src = e.target.result; };
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxAncho = 800;
+                const escala = Math.min(1, maxAncho / img.width);
+                canvas.width = img.width * escala;
+                canvas.height = img.height * escala;
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                callback(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+            };
+            lector.readAsDataURL(archivo);
+        }
+
+        async function subirFotoEditProd(base64, modo, slot) {
+            if (!editProductCurrentId) return;
+            showToast('Subiendo imagen…');
+            try {
+                const payload = { accion: 'actualizar-imagen', id: editProductCurrentId, foto_base64: base64, modo };
+                if (slot) payload.slot = slot;
+                const resultado = isDemo
+                    ? { ok: true, imagen: [...editProductCurrentImages, 'data:image/jpeg;base64,' + base64].slice(0, 2).join('||') }
+                    : await apiPost(payload);
+                if (!resultado.ok) { showToast('Error al subir la imagen', true); return; }
+                editProductCurrentImages = (resultado.imagen || '').split('||').map(s => s.trim()).filter(Boolean);
+                const p = state.stock.find(x => x.id === editProductCurrentId);
+                if (p) p.imagen = resultado.imagen || '';
+                renderEditProdFotos();
+                renderStock();
+                showToast('Imagen actualizada ✓');
+            } catch (e) {
+                showToast('Fallo de conexión al subir la imagen', true);
+            }
+        }
+
+        function confirmarEliminarFotoEditProd(indice) {
+            if (!confirm('¿Eliminar esta foto? No se puede deshacer.')) return;
+            eliminarFotoEditProd(indice + 1); // slot es 1-based
+        }
+
+        async function eliminarFotoEditProd(slot) {
+            if (!editProductCurrentId) return;
+            showToast('Eliminando foto…');
+            try {
+                const resultado = isDemo
+                    ? { ok: true, imagen: editProductCurrentImages.filter((_, i) => i !== (slot - 1)).join('||') }
+                    : await apiPost({ accion: 'eliminar-imagen', id: editProductCurrentId, slot });
+                if (!resultado.ok) { showToast('Error al eliminar la imagen', true); return; }
+                editProductCurrentImages = (resultado.imagen || '').split('||').map(s => s.trim()).filter(Boolean);
+                const p = state.stock.find(x => x.id === editProductCurrentId);
+                if (p) p.imagen = resultado.imagen || '';
+                renderEditProdFotos();
+                renderStock();
+                showToast('Foto eliminada ✓');
+            } catch (e) {
+                showToast('Fallo de conexión al eliminar la foto', true);
+            }
+        }
+
+        // ============================================================
+        // BATCH ACTIONS (CARRITO / SELECCIONADOS)
+        // ============================================================
+        function copySelectedProducts() {
+            const list = state.stock.filter(p => state.selectedIds.has(p.id));
+            if (list.length === 0) return;
+            const text = list.map(p => {
+                const cleanVal = (val) => {
+                    if (val === undefined || val === null) return '—';
+                    const s = String(val).trim();
+                    return (s === '' || s === '—' || s === '-') ? '—' : s;
+                };
+                const desc = cleanVal(p.descripcion);
+                const fam = cleanVal(p.familia);
+                const marca = cleanVal(p.marca);
+                const obs = (p.ult_obs && p.ult_obs.trim()) ? p.ult_obs.trim() : 'Sin observaciones';
+                const id = cleanVal(p.id);
+                const loc = ubicacionStr(p) || 'Sin ubicación';
+                const stock = (p.stock_actual !== undefined && p.stock_actual !== null) ? p.stock_actual : '0';
+                const unidad = cleanVal(p.unidad || 'un');
+
+                return `- ${desc}\n  Familia: ${fam}\n  Marca: ${marca}\n  Observaciones: ${obs}\n  ID: ${id}\n  Ubicación: ${loc}\n  Stock actual: ${stock} ${unidad}`;
+            }).join('\n\n');
+
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('Lista copiada al portapapeles ✓');
+                }).catch(() => {
+                    fallbackCopyText(text);
+                });
+            } else {
+                fallbackCopyText(text);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                    showToast('Lista copiada al portapapeles ✓');
+                } else {
+                    showToast('No se pudo copiar la lista', true);
+                }
+            } catch (err) {
+                console.error('Fallback: Error al copiar', err);
+                showToast('No se pudo copiar la lista', true);
+            }
+        }
+
+        function clearSelectedProducts() {
+            state.selectedIds.clear();
+            state.batchDraftQtys = {};
+            renderStock();
+            showToast('Selección limpiada');
+        }
+
+        let adjustBatchTipo = 'SALIDA';
+
+        function saveBatchDraftQtys() {
+            const inputs = document.querySelectorAll('.batch-cant-input');
+            for (let input of inputs) {
+                const id = input.dataset.id;
+                const val = Number(input.value) || 0;
+                state.batchDraftQtys[id] = val;
+            }
+        }
+
+        function openBatchAdjustModal() {
+            const list = state.stock.filter(p => state.selectedIds.has(p.id));
+            if (list.length === 0) return;
+
+            // Validación de depósitos
+            const zonas = new Set(list.map(p => p.zona));
+            if (zonas.size > 1) {
+                showToast('Los productos seleccionados pertenecen a distintos depósitos — filtrá por depósito.', true);
+                return;
+            }
+
+            state.modalOpen = true;
+            document.getElementById('adjustBatchResponsable').value = '';
+            document.getElementById('adjustBatchObra').value = '';
+            document.getElementById('adjustBatchErr').style.display = 'none';
+
+            // Rellenar lista de ítems con inputs individuales pre-cargados
+            const container = document.getElementById('batchItemsList');
+            container.innerHTML = list.map(p => {
+                const preVal = state.batchDraftQtys[p.id] !== undefined ? state.batchDraftQtys[p.id] : 1;
+                return `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line-soft);">
+                    <div style="flex: 1; min-width: 0; padding-right: 12px; text-align: left;">
+                        <div style="font-weight: 600; font-size: 13px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${escapeHtml(p.descripcion)}</div>
+                        <div style="font-size: 11px; color: var(--txt-dim);">ID: ${escapeHtml(p.id)} | Stock actual: ${p.stock_actual}</div>
+                    </div>
+                    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 4px;">
+                        <input type="number" class="batch-cant-input" data-id="${escapeAttr(p.id)}" min="0" step="1" value="${preVal}" style="width: 70px; padding: 6px 8px; border: 1.5px solid var(--line); border-radius: 6px; font-size: 13px; text-align: right; background: var(--bg-card); color: var(--txt); margin: 0;">
+                        <span style="font-size: 12px; color: var(--txt-dim); width: 22px;">${escapeHtml(p.unidad || 'un')}</span>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            selectBatchTipo('SALIDA');
+            document.getElementById('adjustBatchOverlay').classList.add('show');
+        }
+
+        function closeBatchAdjustModal() {
+            saveBatchDraftQtys();
+            state.modalOpen = false;
+            document.getElementById('adjustBatchOverlay').classList.remove('show');
+        }
+
+        function selectBatchTipo(tipo) {
+            adjustBatchTipo = tipo;
+            document.querySelectorAll('#batchTipoSeg button').forEach(b => {
+                const isMatch = b.dataset.tipo === tipo;
+                b.classList.toggle('sel', isMatch);
+                b.classList.toggle(tipo.toLowerCase().replace('ó', 'o'), isMatch);
+            });
+            const bar = document.getElementById('cartOrderBar');
+            if (bar) {
+                bar.className = 'cart-order-bar ' +
+                    (tipo === 'ENTRADA' ? 'tipo-entrada' : (tipo === 'SALIDA' ? 'tipo-salida' : 'tipo-devolucion'));
+            }
+        }
+
+        async function confirmBatchAdjust() {
+            const list = state.stock.filter(p => state.selectedIds.has(p.id));
+            if (list.length === 0) return;
+
+            const responsable = document.getElementById('adjustBatchResponsable').value.trim();
+            const obra = document.getElementById('adjustBatchObra').value.trim();
+            const errBox = document.getElementById('adjustBatchErr');
+            errBox.style.display = 'none';
+
+            if (!responsable) {
+                errBox.textContent = 'Ingresá quién hace el movimiento.';
+                errBox.style.display = 'block';
+                return;
+            }
+
+            // Recopilar cantidades ingresadas por ítem
+            const items = [];
+            const inputs = document.querySelectorAll('.batch-cant-input');
+            for (let input of inputs) {
+                const id = input.dataset.id;
+                const val = Number(input.value) || 0;
+                if (val > 0) {
+                    items.push({ id, cantidad: val });
+                }
+            }
+
+            if (items.length === 0) {
+                errBox.textContent = 'Ingresá al menos una cantidad mayor a 0.';
+                errBox.style.display = 'block';
+                return;
+            }
+
+            const btn = document.getElementById('adjustBatchConfirm');
+            btn.disabled = true; btn.textContent = 'Guardando…';
+
+            try {
+                const payload = {
+                    accion: 'ajuste-rapido',
+                    zona: list[0].zona,
+                    tipo_movimiento: adjustBatchTipo,
+                    fecha: new Date().toISOString(),
+                    responsable,
+                    obra,
+                    items
+                };
+
+                const resp = await apiPost(payload);
+                if (!resp.ok) throw new Error(resp.error || 'Error al guardar');
+
+                if (isDemo) {
+                    items.forEach(item => {
+                        const p = state.stock.find(x => x.id === item.id);
+                        if (p) {
+                            if (adjustBatchTipo === 'ENTRADA') p.entradas += item.cantidad, p.stock_actual += item.cantidad;
+                            if (adjustBatchTipo === 'SALIDA') p.salidas += item.cantidad, p.stock_actual -= item.cantidad;
+                            if (adjustBatchTipo === 'DEVOLUCIÓN') p.devoluciones += item.cantidad, p.stock_actual += item.cantidad;
+                            p.estado = p.stock_actual <= p.stock_minimo ? 'REPONER' : 'OK';
+                        }
+                    });
+                }
+
+                closeBatchAdjustModal();
+                state.selectedIds.clear();
+                state.batchDraftQtys = {}; // Limpiar borrador tras guardado exitoso
+                showSuccessModal(`Se registraron ${items.length} productos correctamente en el movimiento en lote.`);
+                await cargarTodo(true);
+            } catch (err) {
+                errBox.textContent = err.message || 'No se pudo guardar el movimiento.';
+                errBox.style.display = 'block';
+            } finally {
+                btn.disabled = false; btn.textContent = 'Confirmar Movimiento';
+            }
+        }
+
+        function renderMov() {
+            const all = movFiltrado();
+            const ps = CONFIG.MOV_PAGE_SIZE;
+            const totalPages = Math.max(1, Math.ceil(all.length / ps));
+            state.movUi.page = Math.min(state.movUi.page, totalPages - 1);
+            const list = all.slice(state.movUi.page * ps, state.movUi.page * ps + ps);
+            const body = document.getElementById('movBody');
+
+            if (list.length === 0) {
+                body.innerHTML = `<tr class="empty-row"><td colspan="6">No hay movimientos que coincidan con el filtro.</td></tr>`;
+            } else {
+                body.innerHTML = list.map(m => {
+                    const tipoClass = m.tipo === 'ENTRADA' ? 'entrada' : (m.tipo === 'SALIDA' ? 'salida' : 'devolucion');
+                    return `
+      <tr>
+        <td class="id-tag">${escapeHtml(m.fecha || '')}</td>
+        <td><span class="mov-pill ${tipoClass}">${escapeHtml(m.tipo || '')}</span></td>
+        <td class="desc-cell">${escapeHtml(m.descripcion || '')}</td>
+        <td>${m.cantidad ?? ''}</td>
+        <td class="marca-cell">${escapeHtml(m.responsable || '—')}</td>
+        <td class="marca-cell">${escapeHtml(m.obra || '—')}</td>
+      </tr>`;
+                }).join('');
+            }
+
+            document.getElementById('movCount').textContent = `${all.length} movimiento${all.length === 1 ? '' : 's'}`;
+            document.getElementById('movPageLabel').textContent = `${state.movUi.page + 1} / ${totalPages}`;
+            document.getElementById('movPrev').disabled = state.movUi.page <= 0;
+            document.getElementById('movNext').disabled = state.movUi.page >= totalPages - 1;
+        }
+
+        function renderNc() {
+            const list = ncFiltrado();
+            const body = document.getElementById('ncBody');
+
+            if (list.length === 0) {
+                body.innerHTML = `<tr class="empty-row"><td colspan="9">No hay no conformidades que coincidan con el filtro.</td></tr>`;
+            } else {
+                body.innerHTML = list.map(n => {
+                    const prClass = (n.prioridad || 'MEDIA').toLowerCase();
+                    const estClass = n.estado === 'CERRADA' ? 'cerrada' : 'abierta';
+                    return `
+      <tr>
+        <td class="id-tag">${escapeHtml(n.id)}</td>
+        <td class="desc-cell">${escapeHtml(n.material)}<div class="id-tag">${escapeHtml(n.codigo)}</div></td>
+        <td style="text-align:center;font-weight:800;">${n.cantidad}</td>
+        <td class="marca-cell">${escapeHtml(n.origen)}</td>
+        <td class="marca-cell">${escapeHtml(n.motivo)}</td>
+        <td class="marca-cell">${escapeHtml(n.situacion)}</td>
+        <td><span class="prioridad-pill ${prClass}">${escapeHtml(n.prioridad || '—')}</span></td>
+        <td><span class="estado-nc-pill ${estClass}">${n.estado === 'CERRADA' ? 'Cerrada' : 'Abierta'}</span></td>
+        <td style="text-align:center;"><button class="btn small ghost nc-detalle-btn" data-id="${escapeAttr(n.id)}">📋 Detalle</button></td>
+      </tr>`;
+                }).join('');
+                body.querySelectorAll('.nc-detalle-btn').forEach(btn => btn.addEventListener('click', () => openNcDetailModal(btn.dataset.id)));
+            }
+
+            document.getElementById('ncCount').textContent = `${list.length} no conformidad${list.length === 1 ? '' : 'es'}`;
+        }
+
+        function renderAll() {
+            renderStats();
+            if (state.activeTab === 'stock') renderStock();
+            else if (state.activeTab === 'mov') renderMov();
+            else if (state.activeTab === 'nc') renderNc();
+            window.dispatchEvent(new Event('tableRendered'));
+        }
+
+        // ============================================================
+        // SORT HEADERS
+        // ============================================================
+        function wireSortHeaders(tableId, uiRef, onSorted) {
+            document.querySelectorAll(`#${tableId} thead th[data-sort]`).forEach(th => {
+                th.addEventListener('click', () => {
+                    const key = th.dataset.sort;
+                    if (key === 'seleccion') {
+                        if (uiRef.sortKey === 'seleccion') {
+                            // Segundo clic en Sel.: se desactiva y vuelve a la posición / columna original previa
+                            uiRef.sortKey = uiRef.prevSortKey || 'familia';
+                            uiRef.sortDir = uiRef.prevSortDir || 1;
+                        } else {
+                            // Primer clic en Sel.: guarda la columna anterior y sube los seleccionados
+                            uiRef.prevSortKey = (uiRef.sortKey && uiRef.sortKey !== 'seleccion') ? uiRef.sortKey : 'familia';
+                            uiRef.prevSortDir = uiRef.sortDir || 1;
+                            uiRef.sortKey = 'seleccion';
+                            uiRef.sortDir = 1;
+                        }
+                    } else {
+                        uiRef.prevSortKey = key;
+                        if (uiRef.sortKey === key) {
+                            uiRef.sortDir *= -1;
+                        } else {
+                            uiRef.sortKey = key;
+                            uiRef.sortDir = 1;
+                        }
+                        uiRef.prevSortDir = uiRef.sortDir;
+                    }
+
+                    document.querySelectorAll(`#${tableId} thead th .arrow`).forEach(a => a.textContent = '');
+                    const activeTh = document.querySelector(`#${tableId} thead th[data-sort="${uiRef.sortKey}"]`);
+                    if (activeTh) {
+                        const arrowEl = activeTh.querySelector('.arrow');
+                        if (arrowEl) arrowEl.textContent = uiRef.sortDir === 1 ? '▲' : '▼';
+                    }
+                    onSorted();
+                });
+            });
+        }
+
+        // ============================================================
+        // PASAR A NO CONFORME
+        // ============================================================
+        let ncPasarProductoId = null;
+        let ncPasarPrioridad = 'MEDIA';
+
+        function openNcPasarModal(id) {
+            const p = state.stock.find(x => x.id === id);
+            if (!p) return;
+            ncPasarProductoId = id;
+            state.modalOpen = true;
+            document.getElementById('ncPasarSub').textContent = `${p.descripcion} · stock actual: ${p.stock_actual} ${p.unidad || 'un'}`;
+            document.getElementById('ncPasarCantidad').value = '';
+            document.getElementById('ncPasarMotivo').value = 'DAÑADO / ROTO';
+            document.getElementById('ncPasarSituacion').value = 'EN REVISIÓN';
+            document.getElementById('ncPasarResponsable').value = '';
+            document.getElementById('ncPasarObs').value = '';
+            document.getElementById('ncPasarErr').style.display = 'none';
+            selectNcPasarPrioridad('MEDIA');
+            document.getElementById('ncPasarOverlay').classList.add('show');
+        }
+
+        function closeNcPasarModal() {
+            state.modalOpen = false;
+            document.getElementById('ncPasarOverlay').classList.remove('show');
+        }
+
+        function selectNcPasarPrioridad(pr) {
+            ncPasarPrioridad = pr;
+            document.querySelectorAll('#ncPasarPrioridadSeg button').forEach(b => b.classList.toggle('active', b.dataset.prioridad === pr));
+        }
+
+        async function confirmNcPasar() {
+            const p = state.stock.find(x => x.id === ncPasarProductoId);
+            if (!p) return;
+            const cantidad = Number(document.getElementById('ncPasarCantidad').value);
+            const motivo = document.getElementById('ncPasarMotivo').value;
+            const situacion = document.getElementById('ncPasarSituacion').value;
+            const responsable = document.getElementById('ncPasarResponsable').value.trim();
+            const obs = document.getElementById('ncPasarObs').value.trim();
+            const errBox = document.getElementById('ncPasarErr');
+
+            if (!cantidad || cantidad <= 0) { errBox.textContent = 'Ingresá una cantidad válida.'; errBox.style.display = 'block'; return; }
+            if (cantidad > p.stock_actual) { errBox.textContent = 'La cantidad supera el stock disponible.'; errBox.style.display = 'block'; return; }
+            if (!responsable) { errBox.textContent = 'Ingresá quién realiza el registro.'; errBox.style.display = 'block'; return; }
+
+            const nc = {
+                id: generarNcId(), producto_id: p.id, material: p.descripcion, codigo: p.id, zona: p.zona,
+                cantidad, cantidad_original: cantidad, origen: 'STOCK', motivo, situacion,
+                prioridad: ncPasarPrioridad, responsable, observacion: obs, fecha: fechaHoraStr(),
+                estado: 'ABIERTA',
+                historial: [{ fecha: fechaHoraStr(), accion: 'CREACIÓN', estado_anterior: '—', estado_nuevo: situacion, responsable, observacion: obs || `Cantidad: ${cantidad}` }]
+            };
+            state.nc.push(nc);
+            p.stock_actual -= cantidad;
+            actualizarProductoEstado(p);
+
+            closeNcPasarModal();
+            populateNcMotivoFilter();
+            renderAll();
+            showToast(`${nc.id} creada — ${cantidad} unidad(es) pasadas a No Conforme ✓`);
+
+            if (!isDemo) {
+                try {
+                    await apiPost({ accion: 'registrar-no-conforme', ...nc });
+                } catch (e) {
+                    console.error('Error al sincronizar NC:', e);
+                    showToast('No conformidad guardada localmente — no se pudo sincronizar con la nube.', true);
+                }
+            }
+        }
+
+        // ============================================================
+        // DETALLE / REVISIÓN DE NO CONFORMIDAD
+        // ============================================================
+        let ncDetailCurrentId = null;
+
+        function openNcDetailModal(id) {
+            const nc = state.nc.find(x => x.id === id);
+            if (!nc) return;
+            ncDetailCurrentId = id;
+            state.modalOpen = true;
+            document.getElementById('ncDetailTitle').textContent = nc.id;
+            document.getElementById('ncDetailGrid').innerHTML = `
+                <div><div class="lbl">Material</div><div class="val">${escapeHtml(nc.material)}</div></div>
+                <div><div class="lbl">Código</div><div class="val">${escapeHtml(nc.codigo)}</div></div>
+                <div><div class="lbl">Cantidad actual</div><div class="val">${nc.cantidad}</div></div>
+                <div><div class="lbl">Origen</div><div class="val">${escapeHtml(nc.origen)}</div></div>
+                <div><div class="lbl">Motivo</div><div class="val">${escapeHtml(nc.motivo)}</div></div>
+                <div><div class="lbl">Situación</div><div class="val">${escapeHtml(nc.situacion)}</div></div>
+                <div style="grid-column:1 / -1;"><div class="lbl">Observación</div><div class="val" style="font-weight:500;">${escapeHtml(nc.observacion || '—')}</div></div>
+            `;
+            document.getElementById('ncResResultado').value = 'PENDIENTE';
+            document.getElementById('ncResResponsable').value = '';
+            document.getElementById('ncResPrioridad').value = nc.prioridad || 'MEDIA';
+            document.getElementById('ncResCantStock').value = 0;
+            document.getElementById('ncResCantBaja').value = 0;
+            document.getElementById('ncResCantPendiente').value = nc.cantidad;
+            document.getElementById('ncResDiagnostico').value = '';
+            document.getElementById('ncResObservacion').value = '';
+            document.getElementById('ncResErr').style.display = 'none';
+            renderNcHistorial(nc);
+            document.getElementById('ncDetailOverlay').classList.add('show');
+        }
+
+        function closeNcDetailModal() {
+            state.modalOpen = false;
+            document.getElementById('ncDetailOverlay').classList.remove('show');
+        }
+
+        function renderNcHistorial(nc) {
+            const cont = document.getElementById('ncDetailHistorial');
+            const hist = nc.historial || [];
+            cont.innerHTML = hist.length
+                ? hist.slice().reverse().map(h => `<div class="nc-hist-item"><strong>${escapeHtml(h.fecha)}</strong> · ${escapeHtml(h.accion)} · ${escapeHtml(h.estado_anterior)} → ${escapeHtml(h.estado_nuevo)} · ${escapeHtml(h.responsable || '—')}${h.observacion ? ' · ' + escapeHtml(h.observacion) : ''}</div>`).join('')
+                : `<span style="font-size:11.5px;color:var(--txt-faint);font-style:italic;">Sin historial.</span>`;
+        }
+
+        function wireNcResListeners() {
+            ['ncResCantStock', 'ncResCantBaja'].forEach(idAttr => {
+                document.getElementById(idAttr).addEventListener('input', () => {
+                    const nc = state.nc.find(x => x.id === ncDetailCurrentId);
+                    if (!nc) return;
+                    const cs = Number(document.getElementById('ncResCantStock').value) || 0;
+                    const cb = Number(document.getElementById('ncResCantBaja').value) || 0;
+                    const pend = Math.max(0, nc.cantidad - cs - cb);
+                    document.getElementById('ncResCantPendiente').value = pend;
+                });
+            });
+        }
+
+        async function confirmNcRevision() {
+            const nc = state.nc.find(x => x.id === ncDetailCurrentId);
+            if (!nc) return;
+            const resultado = document.getElementById('ncResResultado').value;
+            const responsable = document.getElementById('ncResResponsable').value.trim();
+            const prioridad = document.getElementById('ncResPrioridad').value;
+            const cs = Number(document.getElementById('ncResCantStock').value) || 0;
+            const cb = Number(document.getElementById('ncResCantBaja').value) || 0;
+            const diagnostico = document.getElementById('ncResDiagnostico').value.trim();
+            const observacion = document.getElementById('ncResObservacion').value.trim();
+            const errBox = document.getElementById('ncResErr');
+            errBox.style.display = 'none';
+
+            if (!responsable) { errBox.textContent = 'Ingresá quién realiza la revisión.'; errBox.style.display = 'block'; return; }
+            if (cs + cb > nc.cantidad) { errBox.textContent = 'La suma de cantidades supera la cantidad actual de la no conformidad.'; errBox.style.display = 'block'; return; }
+            if (resultado === 'REPARADO' && cs <= 0) { errBox.textContent = 'Ingresá la cantidad reparada que vuelve a stock.'; errBox.style.display = 'block'; return; }
+            if (resultado === 'BAJA' && cb <= 0) { errBox.textContent = 'Ingresá la cantidad dada de baja.'; errBox.style.display = 'block'; return; }
+
+            const p = state.stock.find(x => x.id === nc.producto_id);
+            const estadoAnterior = nc.situacion;
+            const pendiente = Math.max(0, nc.cantidad - cs - cb);
+            const parcial = (resultado === 'PARCIAL') ? pendiente : 0;
+
+            if (cs > 0 && p) { p.stock_actual += cs; actualizarProductoEstado(p); }
+            if (cb > 0 && p) { p.baja_total = (Number(p.baja_total) || 0) + cb; }
+            if (parcial > 0 && p) { p.uso_parcial_total = (Number(p.uso_parcial_total) || 0) + parcial; }
+
+            nc.cantidad = (resultado === 'PARCIAL') ? 0 : pendiente;
+            nc.prioridad = prioridad;
+
+            const accionLabel = { REPARADO: 'REPARACIÓN', PARCIAL: 'USO PARCIAL', BAJA: 'BAJA', PENDIENTE: 'ACTUALIZACIÓN' }[resultado] || 'REVISIÓN';
+            let nuevaSituacion = nc.situacion;
+            if (resultado === 'REPARADO') nuevaSituacion = pendiente > 0 ? nc.situacion : 'CERRADA';
+            if (resultado === 'PARCIAL') nuevaSituacion = 'USO PARCIAL';
+            if (resultado === 'BAJA') nuevaSituacion = pendiente > 0 ? nc.situacion : 'CERRADA';
+
+            nc.situacion = nuevaSituacion;
+            nc.estado = (nc.cantidad <= 0) ? 'CERRADA' : 'ABIERTA';
+
+            nc.historial = nc.historial || [];
+            nc.historial.push({
+                fecha: fechaHoraStr(), accion: accionLabel, estado_anterior: estadoAnterior, estado_nuevo: nuevaSituacion,
+                responsable, observacion: [diagnostico && `Diagnóstico: ${diagnostico}`, observacion, `A stock: ${cs} · A baja: ${cb} · Pendiente: ${pendiente}`].filter(Boolean).join(' — ')
+            });
+
+            closeNcDetailModal();
+            renderAll();
+            showToast(`Revisión de ${nc.id} guardada ✓`);
+
+            if (!isDemo) {
+                try {
+                    await apiPost({ accion: 'actualizar-no-conforme', id: nc.id, resultado, responsable, prioridad, cantidad_stock: cs, cantidad_baja: cb, diagnostico, observacion });
+                } catch (e) {
+                    console.error('Error al sincronizar revisión NC:', e);
+                    showToast('Revisión guardada localmente — no se pudo sincronizar con la nube.', true);
+                }
+            }
+        }
+
+        function printNcDetail() {
+            const nc = state.nc.find(x => x.id === ncDetailCurrentId);
+            if (!nc) return;
+            const histHtml = (nc.historial || []).map(h => `<tr><td>${escapeHtml(h.fecha)}</td><td>${escapeHtml(h.accion)}</td><td>${escapeHtml(h.estado_anterior)} → ${escapeHtml(h.estado_nuevo)}</td><td>${escapeHtml(h.responsable || '—')}</td><td>${escapeHtml(h.observacion || '—')}</td></tr>`).join('');
+            const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${escapeHtml(nc.id)} — Ficha de No Conformidad</title>
+                <style>
+                    body{font-family:Arial,Helvetica,sans-serif;color:#111;padding:24px;}
+                    h1{font-size:18px;margin-bottom:2px;}
+                    .sub{color:#555;font-size:12px;margin-bottom:18px;}
+                    table{width:100%;border-collapse:collapse;margin-bottom:18px;}
+                    th,td{border:1px solid #ccc;padding:6px 8px;font-size:12px;text-align:left;}
+                    th{background:#f1f1f1;}
+                    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin-bottom:18px;}
+                    .lbl{font-size:10px;text-transform:uppercase;color:#777;font-weight:bold;}
+                    .val{font-size:13px;font-weight:600;}
+                </style></head><body>
+                <h1>RPM Construcciones — Ficha de No Conformidad</h1>
+                <div class="sub">${escapeHtml(nc.id)} · Impreso ${fechaHoraStr()}</div>
+                <div class="grid">
+                    <div><div class="lbl">Material</div><div class="val">${escapeHtml(nc.material)}</div></div>
+                    <div><div class="lbl">Código</div><div class="val">${escapeHtml(nc.codigo)}</div></div>
+                    <div><div class="lbl">Depósito</div><div class="val">${escapeHtml(nc.zona || '—')}</div></div>
+                    <div><div class="lbl">Cantidad actual</div><div class="val">${nc.cantidad} (original: ${nc.cantidad_original})</div></div>
+                    <div><div class="lbl">Origen</div><div class="val">${escapeHtml(nc.origen)}</div></div>
+                    <div><div class="lbl">Motivo</div><div class="val">${escapeHtml(nc.motivo)}</div></div>
+                    <div><div class="lbl">Situación</div><div class="val">${escapeHtml(nc.situacion)}</div></div>
+                    <div><div class="lbl">Prioridad</div><div class="val">${escapeHtml(nc.prioridad || '—')}</div></div>
+                    <div><div class="lbl">Estado</div><div class="val">${nc.estado === 'CERRADA' ? 'Cerrada' : 'Abierta'}</div></div>
+                    <div><div class="lbl">Responsable inicial</div><div class="val">${escapeHtml(nc.responsable || '—')}</div></div>
+                    <div style="grid-column:1/-1;"><div class="lbl">Observación</div><div class="val" style="font-weight:500;">${escapeHtml(nc.observacion || '—')}</div></div>
+                </div>
+                <h3 style="font-size:13px;">Historial</h3>
+                <table><thead><tr><th>Fecha</th><th>Acción</th><th>Situación</th><th>Responsable</th><th>Observación</th></tr></thead><tbody>${histHtml || '<tr><td colspan="5">Sin historial.</td></tr>'}</tbody></table>
+                </body></html>`;
+            const w = window.open('', '_blank');
+            if (!w) { showToast('El navegador bloqueó la ventana de impresión.', true); return; }
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => w.print(), 300);
+        }
+
+        // ============================================================
+        // QUICK ADJUST MODAL
+        // ============================================================
+        let adjustTipo = 'SALIDA';
+
+        function openAdjustModal(id) {
+            const p = state.stock.find(x => x.id === id);
+            if (!p) return;
+            state.modalOpen = true;
+            document.getElementById('adjustTitle').textContent = p.descripcion;
+            document.getElementById('adjustSub').textContent = `${p.familia} · ${p.marca || '—'} · stock actual: ${p.stock_actual} ${p.unidad || 'un'}`;
+            document.getElementById('adjustCantidad').value = '';
+            document.getElementById('adjustResponsable').value = '';
+            document.getElementById('adjustObra').value = '';
+            document.getElementById('adjustErr').style.display = 'none';
+            document.getElementById('adjustTieneNc').checked = false;
+            document.getElementById('adjustNcFields').style.display = 'none';
+            document.getElementById('adjustNcCantidad').value = '';
+            document.getElementById('adjustNcObs').value = '';
+            document.getElementById('adjustOverlay').dataset.id = id;
+            selectTipo('SALIDA');
+            document.getElementById('adjustOverlay').classList.add('show');
+        }
+
+        function closeAdjustModal() {
+            state.modalOpen = false;
+            document.getElementById('adjustOverlay').classList.remove('show');
+        }
+
+        function selectTipo(tipo) {
+            adjustTipo = tipo;
+            document.querySelectorAll('#tipoSeg button').forEach(b => {
+                b.classList.toggle('sel', b.dataset.tipo === tipo);
+                b.classList.toggle(tipo.toLowerCase().replace('ó', 'o'), b.dataset.tipo === tipo);
+            });
+            const showNcToggle = (tipo === 'ENTRADA' || tipo === 'DEVOLUCIÓN');
+            document.getElementById('adjustNcToggleWrap').style.display = showNcToggle ? 'block' : 'none';
+            if (!showNcToggle) {
+                document.getElementById('adjustTieneNc').checked = false;
+                document.getElementById('adjustNcFields').style.display = 'none';
+            }
+        }
+
+        async function confirmAdjust() {
+            const cantidad = Number(document.getElementById('adjustCantidad').value);
+            const responsable = document.getElementById('adjustResponsable').value.trim();
+            const obra = document.getElementById('adjustObra').value.trim();
+            const errBox = document.getElementById('adjustErr');
+
+            const tieneNc = (adjustTipo === 'ENTRADA' || adjustTipo === 'DEVOLUCIÓN') && document.getElementById('adjustTieneNc').checked;
+            const cantidadNc = tieneNc ? Number(document.getElementById('adjustNcCantidad').value) : 0;
+            const motivoNc = document.getElementById('adjustNcMotivo').value;
+            const situacionNc = document.getElementById('adjustNcSituacion').value;
+            const obsNc = document.getElementById('adjustNcObs').value.trim();
+
+            if (!cantidad || cantidad <= 0) { errBox.textContent = 'Ingresá una cantidad válida.'; errBox.style.display = 'block'; return; }
+            if (!responsable) { errBox.textContent = 'Ingresá quién hace el movimiento.'; errBox.style.display = 'block'; return; }
+            if (tieneNc && (!cantidadNc || cantidadNc <= 0)) { errBox.textContent = 'Ingresá la cantidad no conforme.'; errBox.style.display = 'block'; return; }
+            if (tieneNc && cantidadNc > cantidad) { errBox.textContent = 'La cantidad no conforme no puede superar la cantidad total.'; errBox.style.display = 'block'; return; }
+
+            const p = state.stock.find(x => x.id === document.getElementById('adjustOverlay').dataset.id);
+            if (!p) { errBox.textContent = 'No se encontró el producto.'; errBox.style.display = 'block'; return; }
+
+            const btn = document.getElementById('adjustConfirm');
+            btn.disabled = true; btn.textContent = 'Guardando…';
+
+            const cantidadConforme = cantidad - cantidadNc;
+
+            try {
+                const payload = {
+                    accion: 'ajuste-rapido',
+                    zona: p.zona,
+                    tipo_movimiento: adjustTipo,
+                    fecha: new Date().toISOString(),
+                    responsable, obra,
+                    items: [{ id: p.id, cantidad }],
+                    tiene_nc: tieneNc, cantidad_nc: cantidadNc, motivo_nc: motivoNc, situacion_nc: situacionNc, obs_nc: obsNc,
+                };
+                const resp = await apiPost(payload);
+                if (!resp.ok) throw new Error(resp.error || 'Error al guardar');
+
+                if (isDemo) {
+                    if (adjustTipo === 'ENTRADA') p.entradas += cantidad, p.stock_actual += cantidadConforme;
+                    if (adjustTipo === 'SALIDA') p.salidas += cantidad, p.stock_actual -= cantidad;
+                    if (adjustTipo === 'DEVOLUCIÓN') p.devoluciones += cantidad, p.stock_actual += cantidadConforme;
+                    actualizarProductoEstado(p);
+                }
+
+                if (tieneNc && cantidadNc > 0) {
+                    const nc = {
+                        id: generarNcId(), producto_id: p.id, material: p.descripcion, codigo: p.id, zona: p.zona,
+                        cantidad: cantidadNc, cantidad_original: cantidadNc, origen: adjustTipo, motivo: motivoNc, situacion: situacionNc,
+                        prioridad: 'MEDIA', responsable, observacion: obsNc, fecha: fechaHoraStr(), estado: 'ABIERTA',
+                        historial: [{ fecha: fechaHoraStr(), accion: 'CREACIÓN', estado_anterior: '—', estado_nuevo: situacionNc, responsable, observacion: obsNc || `Cantidad: ${cantidadNc}` }]
+                    };
+                    state.nc.push(nc);
+                    populateNcMotivoFilter();
+                }
+
+                closeAdjustModal();
+                const msg = (tieneNc && cantidadNc > 0)
+                    ? `Movimiento guardado: ${cantidadConforme} a stock y ${cantidadNc} a No Conforme para "${p.descripcion}".`
+                    : `Se registró el movimiento correctamente para el producto "${p.descripcion}".`;
+                showSuccessModal(msg);
+                await cargarTodo(true);
+            } catch (err) {
+                errBox.textContent = err.message || 'No se pudo guardar el movimiento.';
+                errBox.style.display = 'block';
+            } finally {
+                btn.disabled = false; btn.textContent = 'Confirmar';
+            }
+        }
+
+        // ============================================================
+        // LIGHTBOX / TOAST / EXPORT
+        // ============================================================
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').classList.add('show');
+        }
+        function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
+
+        let toastTimer;
+        function showToast(msg, isErr) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.toggle('err', !!isErr);
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function showSuccessModal(mensaje) {
+            state.modalOpen = true;
+            document.getElementById('successMessage').textContent = mensaje;
+            document.getElementById('successOverlay').classList.add('show');
+        }
+
+        function closeSuccessModal() {
+            state.modalOpen = false;
+            document.getElementById('successOverlay').classList.remove('show');
+        }
+
+        function exportExcel() {
+            const list = stockFiltrado();
+            const zonaNombre = state.zona || 'Todos los depósitos';
+            const fechaHoy = new Date().toLocaleDateString('es-AR') + ' ' + new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+            const headers = [
+                { key: 'id', label: 'ID Producto' },
+                { key: 'zona', label: 'Depósito / Zona' },
+                { key: 'familia', label: 'Familia' },
+                { key: 'marca', label: 'Marca' },
+                { key: 'descripcion', label: 'Descripción' },
+                { key: 'ubicacion', label: 'Ubicación' },
+                { key: 'unidad', label: 'Unidad' },
+                { key: 'stock_minimo', label: 'Stock Mínimo' },
+                { key: 'stock_actual', label: 'Stock Actual' },
+                { key: 'estado', label: 'Estado' },
+                { key: 'ult_mov', label: 'Últ. Movimiento' },
+                { key: 'ult_fecha', label: 'Fecha Últ. Mov.' }
+            ];
+
+            const tableHeaderHtml = headers.map(h =>
+                `<th style="background-color: #1e293b; color: #ffffff; font-weight: bold; border: 1px solid #334155; padding: 8px 12px; text-align: left; font-family: Calibri, Arial, sans-serif;">${h.label}</th>`
+            ).join('');
+
+            const tableRowsHtml = list.map((p, idx) => {
+                const loc = ubicacionStr(p) || '—';
+                const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+                const isReponer = p.estado === 'REPONER';
+                const estadoBg = isReponer ? '#fee2e2' : '#dcfce7';
+                const estadoColor = isReponer ? '#991b1b' : '#166534';
+
+                return `<tr style="background-color: ${rowBg};">
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Consolas, monospace; font-weight: bold; color: #334155;">${escapeHtml(p.id)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.zona)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif; font-weight: bold; color: #1e40af;">${escapeHtml(p.familia)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.marca || '—')}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif; font-weight: 600;">${escapeHtml(p.descripcion)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(loc)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.unidad || 'un')}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: right; font-family: Calibri, Arial, sans-serif;">${p.stock_minimo || 0}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: right; font-family: Calibri, Arial, sans-serif; font-weight: bold; font-size: 14px;">${p.stock_actual || 0}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: center; font-family: Calibri, Arial, sans-serif; font-weight: bold; background-color: ${estadoBg}; color: ${estadoColor};">${escapeHtml(p.estado)}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.ult_mov || '—')}</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml((p.ult_fecha || '') + ' ' + (p.ult_hora || ''))}</td>
+                </tr>`;
+            }).join('');
+
+            const excelHtml = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="utf-8">
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>Stock Depósito</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayGridlines/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                </head>
+                <body style="font-family: Calibri, Arial, sans-serif;">
+                    <h2 style="color: #0f172a; margin-bottom: 4px;">RPM Construcciones — Reporte de Stock</h2>
+                    <p style="color: #64748b; font-size: 12px; margin-top: 0; margin-bottom: 12px;">Filtro / Depósito: <strong>${escapeHtml(zonaNombre)}</strong> | Generado: ${fechaHoy} | Total productos: <strong>${list.length}</strong></p>
+                    <table border="1" style="border-collapse: collapse;">
+                        <thead>
+                            <tr>${tableHeaderHtml}</tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob(['\uFEFF' + excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `stock_${(state.zona || 'todos').replace(/\s+/g, '_')}_${Date.now()}.xls`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Excel generado correctamente ✓');
+        }
+
+        function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+        function escapeAttr(s) { return escapeHtml(s); }
+
+        // ============================================================
+        // WIRE UP
+        // ============================================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+                state.activeTab = btn.dataset.tab;
+                document.getElementById('panel-stock').style.display = state.activeTab === 'stock' ? '' : 'none';
+                document.getElementById('panel-mov').style.display = state.activeTab === 'mov' ? '' : 'none';
+                document.getElementById('panel-nc').style.display = state.activeTab === 'nc' ? '' : 'none';
+                renderAll();
+            });
+        });
+
+        document.getElementById('stockSearch').addEventListener('input', e => { state.stockUi.search = e.target.value; renderStock(); });
+        document.getElementById('filterFamilia').addEventListener('change', e => { state.stockUi.familia = e.target.value; renderStock(); });
+        document.getElementById('filterEstado').addEventListener('change', e => { state.stockUi.estado = e.target.value; renderStock(); });
+
+        document.getElementById('movSearch').addEventListener('input', e => { state.movUi.search = e.target.value; state.movUi.page = 0; renderMov(); });
+        document.getElementById('filterTipo').addEventListener('change', e => { state.movUi.tipo = e.target.value; state.movUi.page = 0; renderMov(); });
+        document.getElementById('movPrev').addEventListener('click', () => { state.movUi.page--; renderMov(); });
+        document.getElementById('movNext').addEventListener('click', () => { state.movUi.page++; renderMov(); });
+
+        document.getElementById('ncSearch').addEventListener('input', e => { state.ncUi.search = e.target.value; renderNc(); });
+        document.getElementById('filterNcEstado').addEventListener('change', e => { state.ncUi.estado = e.target.value; renderNc(); });
+        document.getElementById('filterNcMotivo').addEventListener('change', e => { state.ncUi.motivo = e.target.value; renderNc(); });
+        document.getElementById('filterNcPrioridad').addEventListener('change', e => { state.ncUi.prioridad = e.target.value; renderNc(); });
+
+        wireSortHeaders('stickyStockTable', state.stockUi, renderStock);
+        wireSortHeaders('stickyMovTable', state.movUi, renderMov);
+        wireSortHeaders('stickyNcTable', state.ncUi, renderNc);
+
+        document.getElementById('btnRefresh').addEventListener('click', () => cargarTodo(false));
+        document.getElementById('btnExport').addEventListener('click', exportExcel);
+
+        document.querySelectorAll('#tipoSeg button').forEach(b => b.addEventListener('click', () => selectTipo(b.dataset.tipo)));
+        document.getElementById('adjustCancel').addEventListener('click', closeAdjustModal);
+        document.getElementById('adjustConfirm').addEventListener('click', confirmAdjust);
+        document.getElementById('adjustOverlay').addEventListener('click', e => { if (e.target.id === 'adjustOverlay') closeAdjustModal(); });
+        document.getElementById('adjustTieneNc').addEventListener('change', e => {
+            document.getElementById('adjustNcFields').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        document.querySelectorAll('#ncPasarPrioridadSeg button').forEach(b => b.addEventListener('click', () => selectNcPasarPrioridad(b.dataset.prioridad)));
+        document.getElementById('ncPasarCancel').addEventListener('click', closeNcPasarModal);
+        document.getElementById('ncPasarConfirm').addEventListener('click', confirmNcPasar);
+        document.getElementById('ncPasarOverlay').addEventListener('click', e => { if (e.target.id === 'ncPasarOverlay') closeNcPasarModal(); });
+
+        document.getElementById('ncDetailClose').addEventListener('click', closeNcDetailModal);
+        document.getElementById('ncDetailSave').addEventListener('click', confirmNcRevision);
+        document.getElementById('ncDetailPrint').addEventListener('click', printNcDetail);
+        document.getElementById('ncDetailOverlay').addEventListener('click', e => { if (e.target.id === 'ncDetailOverlay') closeNcDetailModal(); });
+        wireNcResListeners();
+
+
+
+        document.querySelectorAll('#batchTipoSeg button').forEach(b => b.addEventListener('click', () => selectBatchTipo(b.dataset.tipo)));
+        document.getElementById('adjustBatchAddMore').addEventListener('click', () => {
+            saveBatchDraftQtys();
+            state.modalOpen = false;
+            document.getElementById('adjustBatchOverlay').classList.remove('show');
+            showToast('Selecciona más productos del listado');
+        });
+        document.getElementById('adjustBatchCancel').addEventListener('click', closeBatchAdjustModal);
+        document.getElementById('adjustBatchConfirm').addEventListener('click', confirmBatchAdjust);
+        document.getElementById('adjustBatchOverlay').addEventListener('click', e => { if (e.target.id === 'adjustBatchOverlay') closeBatchAdjustModal(); });
+
+        document.getElementById('editProdCancel').addEventListener('click', closeEditProductModal);
+        document.getElementById('editProdCloseX').addEventListener('click', closeEditProductModal);
+        document.getElementById('editProdConfirm').addEventListener('click', confirmEditProduct);
+
+        // Restricciones de entrada en campos de ubicación
+        document.getElementById('editProdUbiEst').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^0-9]/g, ''); });
+        document.getElementById('editProdUbiCol').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^0-9]/g, ''); });
+        document.getElementById('editProdUbiFila').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase(); });
+
+        document.getElementById('btnBatchAdjust').addEventListener('click', openBatchAdjustModal);
+        document.getElementById('btnCopySelected').addEventListener('click', copySelectedProducts);
+        document.getElementById('btnClearSelected').addEventListener('click', clearSelectedProducts);
+
+        document.getElementById('successClose').addEventListener('click', closeSuccessModal);
+        document.getElementById('successOverlay').addEventListener('click', e => { if (e.target.id === 'successOverlay') closeSuccessModal(); });
+
+        document.getElementById('lightbox').addEventListener('click', closeLightbox);
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        document.getElementById('demoBanner').style.display = isDemo ? 'flex' : 'none';
+        cargarTodo(false);
+        setInterval(() => { if (!state.modalOpen) cargarTodo(true); }, CONFIG.POLL_MS);
+
+
+        // =========================================================================
+        // SISTEMA DE PALETAS DE COLORES
+        // =========================================================================
+        const THEMES = {
+            maestroSlate: {
+                '--bg': '#0f172a',
+                '--bg-elev': '#1e293b',
+                '--bg-card': '#1e293b',
+                '--line': '#334155',
+                '--line-soft': '#1e293b',
+                '--txt': '#f1f5f9',
+                '--txt-dim': '#cbd5e1',
+                '--txt-faint': '#475569',
+                '--accent': '#3b82f6',
+                '--accent-soft': '#1e3a8a',
+                '--amber': '#FCD34D',
+                '--amber-soft': '#78350f',
+                '--ok-fg': '#4ade80',
+                '--ok-bg': '#052e16',
+                '--bad-fg': '#f87171',
+                '--bad-bg': '#2d0b0b',
+                '--devol-bg': '#1e3a8a',
+                '--devol-fg': '#60a5fa',
+                '--hover-bg': '#1e293b',
+            },
+            lightBlue: {
+                '--bg': '#f8fafc',
+                '--bg-elev': '#e2e8f0',
+                '--bg-card': '#ffffff',
+                '--line': '#94a3b8',
+                '--line-soft': '#cbd5e1',
+                '--txt': '#0f172a',
+                '--txt-dim': '#1e293b',
+                '--txt-faint': '#334155',
+                '--accent': '#2563eb',
+                '--accent-soft': '#dbeafe',
+                '--amber': '#d97706',
+                '--amber-soft': '#fef3c7',
+                '--ok-fg': '#15803d',
+                '--ok-bg': '#dcfce7',
+                '--bad-fg': '#b91c1c',
+                '--bad-bg': '#fee2e2',
+                '--devol-bg': '#dbeafe',
+                '--devol-fg': '#1d4ed8',
+                '--hover-bg': '#e2e8f0',
+            },
+            nordLight: {
+                '--bg': '#e5e9f0',
+                '--bg-elev': '#d8dee9',
+                '--bg-card': '#ffffff',
+                '--line': '#4c566a',
+                '--line-soft': '#d8dee9',
+                '--txt': '#2e3440',
+                '--txt-dim': '#3b4252',
+                '--txt-faint': '#434c5e',
+                '--accent': '#4c566a',
+                '--accent-soft': '#d8dee9',
+                '--amber': '#d08770',
+                '--amber-soft': '#ebcb8b',
+                '--ok-fg': '#2b5115',
+                '--ok-bg': '#d8dee9',
+                '--bad-fg': '#bf616a',
+                '--bad-bg': '#eceff4',
+                '--devol-bg': '#e5e9f0',
+                '--devol-fg': '#5e81ac',
+                '--hover-bg': '#d8dee9',
+            },
+            lavenderLight: {
+                '--bg': '#f5f3ff',
+                '--bg-elev': '#ede9fe',
+                '--bg-card': '#ffffff',
+                '--line': '#c084fc',
+                '--line-soft': '#e9d5ff',
+                '--txt': '#4c1d95',
+                '--txt-dim': '#5b21b6',
+                '--txt-faint': '#6d28d9',
+                '--accent': '#7c3aed',
+                '--accent-soft': '#f3e8ff',
+                '--amber': '#c2410c',
+                '--amber-soft': '#fef3c7',
+                '--ok-fg': '#15803d',
+                '--ok-bg': '#dcfce7',
+                '--bad-fg': '#b91c1c',
+                '--bad-bg': '#fee2e2',
+                '--devol-bg': '#ede9fe',
+                '--devol-fg': '#6d28d9',
+                '--hover-bg': '#ede9fe',
+            },
+            amberWarm: {
+                '--bg': '#fffbeb',
+                '--bg-elev': '#fef3c7',
+                '--bg-card': '#ffffff',
+                '--line': '#ca8a04',
+                '--line-soft': '#fef08a',
+                '--txt': '#451a03',
+                '--txt-dim': '#78350f',
+                '--txt-faint': '#92400e',
+                '--accent': '#d97706',
+                '--accent-soft': '#fef3c7',
+                '--amber': '#ca8a04',
+                '--amber-soft': '#fef9c3',
+                '--ok-fg': '#166534',
+                '--ok-bg': '#dcfce7',
+                '--bad-fg': '#991b1b',
+                '--bad-bg': '#fee2e2',
+                '--devol-bg': '#e0f2fe',
+                '--devol-fg': '#0369a1',
+                '--hover-bg': '#fef3c7',
+            },
+            oceanTeal: {
+                '--bg': '#ecfeff',
+                '--bg-elev': '#cffafe',
+                '--bg-card': '#ffffff',
+                '--line': '#0d9488',
+                '--line-soft': '#e0f2fe',
+                '--txt': '#115e59',
+                '--txt-dim': '#0f766e',
+                '--txt-faint': '#0d9488',
+                '--accent': '#0891b2',
+                '--accent-soft': '#e0f7fa',
+                '--amber': '#b45309',
+                '--amber-soft': '#fef3c7',
+                '--ok-fg': '#065f46',
+                '--ok-bg': '#d1fae5',
+                '--bad-fg': '#991b1b',
+                '--bad-bg': '#fee2e2',
+                '--devol-bg': '#e0e7ff',
+                '--devol-fg': '#4338ca',
+                '--hover-bg': '#cffafe',
+            },
+            slateDark: {
+                '--bg': '#090d16',
+                '--bg-elev': '#0f172a',
+                '--bg-card': '#1e293b',
+                '--line': '#334155',
+                '--line-soft': '#1e293b',
+                '--txt': '#f8fafc',
+                '--txt-dim': '#cbd5e1',
+                '--txt-faint': '#94a3b8',
+                '--accent': '#38bdf8',
+                '--accent-soft': '#0c4a6e',
+                '--amber': '#f59e0b',
+                '--amber-soft': '#451a03',
+                '--ok-fg': '#34d399',
+                '--ok-bg': '#064e3b',
+                '--bad-fg': '#f87171',
+                '--bad-bg': '#7f1d1d',
+                '--devol-bg': '#0c4a6e',
+                '--devol-fg': '#38bdf8',
+                '--hover-bg': '#1e293b',
+            },
+            corporateNavy: {
+                '--bg': '#eef1f6',
+                '--bg-elev': '#e3e8f0',
+                '--bg-card': '#ffffff',
+                '--line': '#c7d0de',
+                '--line-soft': '#e0e5ee',
+                '--txt': '#152a4e',
+                '--txt-dim': '#3c5478',
+                '--txt-faint': '#6b7f9e',
+                '--accent': '#1f3d73',
+                '--accent-soft': '#dbe4f3',
+                '--amber': '#c07f0a',
+                '--amber-soft': '#fdf1da',
+                '--ok-fg': '#0f7a45',
+                '--ok-bg': '#dcf3e6',
+                '--bad-fg': '#b3261e',
+                '--bad-bg': '#fbe1df',
+                '--devol-bg': '#dbe4f3',
+                '--devol-fg': '#1f3d73',
+                '--hover-bg': '#e3e8f0',
+            }
+        };
+
+        const THEME_NAMES = {
+            corporateNavy: 'Azul Marino (Claro)',
+            lightBlue: 'Blanco y Azul (Claro)',
+            nordLight: 'Gris Claro Suave',
+            oceanTeal: 'Turquesa Océano (Claro)',
+            amberWarm: 'Ámbar y Crema (Cálido)',
+            lavenderLight: 'Lavanda Pastel (Claro)',
+            maestroSlate: 'Gris Grafito (Oscuro)',
+            slateDark: 'Noche Negra (Oscuro)'
+        };
+
+        function applyTheme(key) {
+            const theme = THEMES[key];
+            if (!theme) return;
+            const root = document.documentElement;
+            Object.keys(theme).forEach(prop => {
+                root.style.setProperty(prop, theme[prop]);
+            });
+            showToast('Diseño: ' + (THEME_NAMES[key] || key));
+            // Actualizar puntos de vista previa
+            const dotsContainer = document.getElementById('themeActiveDots');
+            if (dotsContainer) {
+                const previewColors = [theme['--bg'], theme['--accent'], theme['--txt-dim']].filter(Boolean);
+                dotsContainer.innerHTML = previewColors.map(c =>
+                    `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};border:1.5px solid rgba(128,128,128,0.4);"></span>`
+                ).join('');
+            }
+        }
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function (e) {
+            const menu = document.getElementById('themeDropdownMenu');
+            const btn = document.getElementById('themeDropdownBtn');
+            if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.remove('ts-open');
+            }
+        });
+
+        // Sincronización de anchos de columnas dinámicos y naturales
+        function syncHeaderWidths(tableId, stickyTableId, topWrapId) {
+            const table = document.getElementById(tableId);
+            const stickyTable = document.getElementById(stickyTableId);
+            const topWrap = document.getElementById(topWrapId);
+            if (!table || !stickyTable) return;
+
+            const totalW = table.scrollWidth;
+            if (totalW > 0) {
+                stickyTable.style.width = totalW + 'px';
+                stickyTable.style.minWidth = totalW + 'px';
+                if (topWrap) {
+                    const inner = topWrap.querySelector('.top-scrollbar-inner');
+                    if (inner) inner.style.width = totalW + 'px';
+                }
+            }
+
+            const row = table.querySelector('tbody tr:not(.empty-row)');
+            if (!row) return;
+            const cells = row.children;
+            const ths = stickyTable.querySelectorAll('thead th');
+            if (cells.length !== ths.length) return;
+
+            for (let i = 0; i < cells.length; i++) {
+                const w = cells[i].getBoundingClientRect().width;
+                if (w > 0) {
+                    ths[i].style.boxSizing = 'border-box';
+                    ths[i].style.width = w + 'px';
+                    ths[i].style.minWidth = w + 'px';
+                    ths[i].style.maxWidth = w + 'px';
+                }
+            }
+        }
+
+        // Sincronización de scroll horizontal y ajuste de anchos de columnas
+        function setupTopScrollSync(wrapId, theadWrapId, scrollId, tableId, stickyTableId) {
+            const topWrap = document.getElementById(wrapId);
+            const theadWrap = document.getElementById(theadWrapId);
+            const tableScroll = document.getElementById(scrollId);
+            if (!topWrap || !tableScroll) return;
+
+            const updateAll = () => {
+                syncHeaderWidths(tableId, stickyTableId, wrapId);
+            };
+
+            window.addEventListener('resize', updateAll);
+            window.addEventListener('tableRendered', updateAll);
+            setTimeout(updateAll, 50);
+
+            let isSyncing = false;
+            const syncScroll = (source) => {
+                if (isSyncing) return;
+                isSyncing = true;
+                const sl = source.scrollLeft;
+                if (topWrap && topWrap !== source) topWrap.scrollLeft = sl;
+                if (theadWrap && theadWrap !== source) theadWrap.scrollLeft = sl;
+                if (tableScroll && tableScroll !== source) tableScroll.scrollLeft = sl;
+                isSyncing = false;
+            };
+
+            topWrap.addEventListener('scroll', () => syncScroll(topWrap), { passive: true });
+            tableScroll.addEventListener('scroll', () => syncScroll(tableScroll), { passive: true });
+            if (theadWrap) theadWrap.addEventListener('scroll', () => syncScroll(theadWrap), { passive: true });
+        }
+
+        setupTopScrollSync('topScrollStock', 'theadWrapStock', 'scrollStock', 'stockTable', 'stickyStockTable');
+        setupTopScrollSync('topScrollMov', 'theadWrapMov', 'scrollMov', 'movTable', 'stickyMovTable');
+        setupTopScrollSync('topScrollNc', 'theadWrapNc', 'scrollNc', 'ncTable', 'stickyNcTable');
+
+        // Inicializar puntos con tema por defecto al cargar
+        applyTheme('maestroSlate');
+    </script>
+</body>
+
+</html>
