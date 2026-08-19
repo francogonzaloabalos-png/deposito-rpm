@@ -29,20 +29,21 @@
   .panel h1{ font-size: 20px; margin: 0 0 4px; }
   .panel p{ font-size: 13px; color: var(--gris); margin: 4px 0; line-height:1.5;}
 
-  .tipo-tabs{ display:flex; gap:8px; margin-top:16px; }
+  .tipo-tabs{ display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
   .tipo-btn{
     padding:10px 18px; border:2px solid #1E2A38; background:white; color:#1E2A38;
     font-weight:bold; font-size:14px; border-radius:6px 6px 0 0; cursor:pointer; border-bottom:none;
   }
   .tipo-btn.active{ background:#1E2A38; color:white; }
 
-  .bloque-tipo{ display:none; border-top: 2px solid #1E2A38; padding: 14px 0; }
+  .bloque-tipo{ display:none; border-top: 2px solid #1E2A38; padding: 16px 0 6px; }
   .bloque-tipo.active{ display:block; }
 
   .fila-controles{
     display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;
-    padding: 6px 0 12px;
+    padding: 0 0 10px;
   }
+  .fila-controles:last-child{ padding-bottom: 2px; }
   .grupo-alineado{ display:flex; align-items:center; gap:16px; }
   .fila-controles label{ font-size:12px; display:flex; flex-direction:column; gap:4px; font-weight:bold; color:#333;}
   .fila-controles input[type=number], .fila-controles input[type=text]{ padding:6px 8px; font-size:13px; width:78px; border:1px solid #ccc; border-radius:4px;}
@@ -54,7 +55,22 @@
   }
   .fila-controles button.generar:hover{ background: #063E75; }
 
-  .subtabs{ display:flex; gap:8px; margin: 4px 0 10px; }
+  /* ---------- Agrupación visual de controles (EXTENSIÓN NUEVA) ---------- */
+  .grupo-controles{
+    border:1px solid #e3e6ea;
+    background:#fbfcfd;
+    border-radius:8px;
+    padding:12px 16px 2px;
+    margin-bottom:12px;
+  }
+  .grupo-controles:last-of-type{ margin-bottom:6px; }
+  .grupo-titulo{
+    font-size:11px; font-weight:bold; letter-spacing:0.6px; text-transform:uppercase;
+    color:#0B5CAB; margin:0 0 8px;
+  }
+  .fila-imprimir{ align-items:center; }
+
+  .subtabs{ display:flex; gap:8px; margin: 4px 0 12px; }
   .sub-btn{
     padding:7px 14px; border:2px solid #0B5CAB; background:white; color:#0B5CAB;
     font-weight:bold; font-size:12px; border-radius:6px; cursor:pointer;
@@ -285,7 +301,7 @@
 
   <div class="panel">
     <h1>Generador de cartelería de depósito — RPM Construcciones</h1>
-    <p>Usá esta herramienta para imprimir la señalización de ubicación de cualquier estantería del depósito. Elegí el tipo de cartel que necesitás: <b>Celdas</b> (identifica cada casillero, ej. 1B), <b>Filas</b> (letra grande para ubicar el nivel desde el pasillo), <b>Estantes</b> (identifica cada mueble/estantería completo) o <b>Rótulos</b> (nombre de producto o carpeta). Configurá cantidad, tamaño y color según el estante que estés señalizando, generá los carteles e imprimilos — cada uno sale con una línea punteada para guiar el corte.</p>
+    <p>Usá esta herramienta para imprimir la señalización de ubicación de cualquier estantería del depósito. Elegí el tipo de cartel que necesitás: <b>Celdas</b> (identifica cada casillero, ej. 1B), <b>Filas</b> (letra grande para ubicar el nivel desde el pasillo), <b>Estantes</b> (identifica cada mueble/estantería completo), <b>Rótulos</b> (nombre de producto o carpeta) o <b>Referencias</b> (título + lista de familias). Configurá cantidad, tamaño y color según el estante que estés señalizando, generá los carteles e imprimilos — cada uno sale con una línea punteada para guiar el corte.</p>
 
     <div class="tipo-tabs">
       <button class="tipo-btn active" data-tipo="celdas" onclick="mostrarTipo('celdas')">Celdas (1B, 3D...)</button>
@@ -296,75 +312,100 @@
     </div>
 
     <!-- ===================== Control global: tamaño de hoja de impresión — EXTENSIÓN NUEVA ===================== -->
-    <div class="fila-controles" id="control-hoja" style="border-top:1px dashed #ddd;margin-top:4px;padding-top:10px;">
-      <label>Tamaño de hoja
-        <select id="hoja-tamano">
-          <option value="A4">A4 (210 × 297 mm)</option>
-          <option value="A3">A3 (297 × 420 mm)</option>
-          <option value="A2">A2 (420 × 594 mm)</option>
-          <option value="A1">A1 (594 × 841 mm)</option>
-          <option value="Carta">Carta / Letter (216 × 279 mm)</option>
-          <option value="Oficio">Oficio / Legal (216 × 356 mm)</option>
-        </select>
-      </label>
-      <label>Orientación
-        <select id="hoja-orientacion">
-          <option value="portrait">Vertical</option>
-          <option value="landscape">Horizontal</option>
-        </select>
-      </label>
+    <div class="grupo-controles" id="control-hoja" style="margin-top:12px;">
+      <p class="grupo-titulo">Hoja de impresión</p>
+      <div class="fila-controles">
+        <label>Tamaño de hoja
+          <select id="hoja-tamano">
+            <option value="A4">A4 (210 × 297 mm)</option>
+            <option value="A3">A3 (297 × 420 mm)</option>
+            <option value="A2">A2 (420 × 594 mm)</option>
+            <option value="A1">A1 (594 × 841 mm)</option>
+            <option value="Carta">Carta / Letter (216 × 279 mm)</option>
+            <option value="Oficio">Oficio / Legal (216 × 356 mm)</option>
+          </select>
+        </label>
+        <label>Orientación
+          <select id="hoja-orientacion">
+            <option value="portrait">Vertical</option>
+            <option value="landscape">Horizontal</option>
+          </select>
+        </label>
+      </div>
     </div>
 
     <!-- ===================== CELDAS ===================== -->
     <div class="bloque-tipo active" id="bloque-celdas">
-      <div class="fila-controles">
-        <label>Columnas <input type="number" id="c-cols" value="6" min="1" max="30"></label>
-        <label>Filas (letras) <input type="text" class="ancho-txt" id="c-filas" value="A,B,C,D,E"></label>
-        <label>Tipo de cartel
-          <select id="c-modo" onchange="toggleAnchoDoble()">
-            <option value="dual">Dual (A+B juntas)</option>
-            <option value="simple">Simple (una fila por cartel)</option>
-          </select>
-        </label>
-        <label>Dirección de flecha
-          <select id="c-direccion">
-            <option value="arriba">Arriba ↑</option>
-            <option value="abajo">Abajo ↓</option>
-          </select>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Distribución</p>
+        <div class="fila-controles">
+          <label>Columnas <input type="number" id="c-cols" value="6" min="1" max="30"></label>
+          <label>Filas (letras) <input type="text" class="ancho-txt" id="c-filas" value="A,B,C,D,E"></label>
+          <label>Tipo de cartel
+            <select id="c-modo" onchange="toggleAnchoDoble()">
+              <option value="dual">Dual (A+B juntas)</option>
+              <option value="simple">Simple (una fila por cartel)</option>
+            </select>
+          </label>
+          <label>Dirección de flecha
+            <select id="c-direccion">
+              <option value="arriba">Arriba ↑</option>
+              <option value="abajo">Abajo ↓</option>
+            </select>
+          </label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Ancho del cartel (mm) <input type="number" id="c-ancho" value="60" min="20"></label>
-        <label>Alto del cartel (mm) <input type="number" id="c-alto" value="30" min="15"></label>
-        <label id="c-anchod-label">Ancho doble A/B (mm) <input type="number" id="c-anchod" value="95" min="30"></label>
-        <label>Grosor de marco (mm) <input type="number" id="c-marco" value="2.6" min="0" step="0.2"></label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño</p>
+        <div class="fila-controles">
+          <label>Ancho del cartel (mm) <input type="number" id="c-ancho" value="60" min="20"></label>
+          <label>Alto del cartel (mm) <input type="number" id="c-alto" value="30" min="15"></label>
+          <label id="c-anchod-label">Ancho doble A/B (mm) <input type="number" id="c-anchod" value="95" min="30"></label>
+          <label>Grosor de marco (mm) <input type="number" id="c-marco" value="2.6" min="0" step="0.2"></label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Color
-          <input type="hidden" id="c-color" value="#0B5CAB">
-          <button type="button" class="color-swatch-btn" data-target="c-color" style="background:#0B5CAB;" onclick="abrirColorPicker('c-color', this)"></button>
-        </label>
-        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Color e impresión</p>
+        <div class="fila-controles fila-imprimir">
+          <label>Color
+            <input type="hidden" id="c-color" value="#0B5CAB">
+            <button type="button" class="color-swatch-btn" data-target="c-color" style="background:#0B5CAB;" onclick="abrirColorPicker('c-color', this)"></button>
+          </label>
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+        </div>
       </div>
     </div>
 
     <!-- ===================== FILAS ===================== -->
     <div class="bloque-tipo" id="bloque-filas">
-      <div class="fila-controles">
-        <label>Letras <input type="text" class="ancho-txt" id="f-letras" value="A,B,C,D,E"></label>
-        <label>Repetir cada letra x <input type="number" id="f-rep" value="1" min="1" max="10"></label>
-        <label>Ancho (mm) <input type="number" id="f-ancho" value="70" min="20"></label>
-        <label>Alto (mm) <input type="number" id="f-alto" value="70" min="20"></label>
-        <div class="grupo-alineado">
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Contenido</p>
+        <div class="fila-controles">
+          <label>Letras <input type="text" class="ancho-txt" id="f-letras" value="A,B,C,D,E"></label>
+          <label>Repetir cada letra x <input type="number" id="f-rep" value="1" min="1" max="10"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño</p>
+        <div class="fila-controles">
+          <label>Ancho (mm) <input type="number" id="f-ancho" value="70" min="20"></label>
+          <label>Alto (mm) <input type="number" id="f-alto" value="70" min="20"></label>
           <label>Grosor de marco (mm) <input type="number" id="f-marco" value="2.6" min="0" step="0.2"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Color e impresión</p>
+        <div class="fila-controles fila-imprimir">
           <label>Color
             <input type="hidden" id="f-color" value="#0B5CAB">
             <button type="button" class="color-swatch-btn" data-target="f-color" style="background:#0B5CAB;" onclick="abrirColorPicker('f-color', this)"></button>
           </label>
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
         </div>
-        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
       </div>
     </div>
 
@@ -374,12 +415,26 @@
         <button class="sub-btn active" onclick="mostrarOpcionEstante(1)">Opción 1 · Grafito</button>
         <button class="sub-btn" onclick="mostrarOpcionEstante(2)">Opción 2 · Ahorro de tinta</button>
       </div>
-      <div class="fila-controles">
-        <label>Cantidad de estantes <input type="number" id="e-cant" value="4" min="1" max="30"></label>
-        <label>Empieza en # <input type="number" id="e-inicio" value="1" min="1"></label>
-        <label>Ancho (mm) <input type="number" id="e-ancho" value="260" min="80"></label>
-        <label>Alto (mm) <input type="number" id="e-alto" value="120" min="50"></label>
-        <div class="grupo-alineado">
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Cantidad</p>
+        <div class="fila-controles">
+          <label>Cantidad de estantes <input type="number" id="e-cant" value="4" min="1" max="30"></label>
+          <label>Empieza en # <input type="number" id="e-inicio" value="1" min="1"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño</p>
+        <div class="fila-controles">
+          <label>Ancho (mm) <input type="number" id="e-ancho" value="260" min="80"></label>
+          <label>Alto (mm) <input type="number" id="e-alto" value="120" min="50"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Color e impresión</p>
+        <div class="fila-controles fila-imprimir">
           <label>Color de fondo
             <input type="hidden" id="e-fondo" value="#1E2A38">
             <button type="button" class="color-swatch-btn" data-target="e-fondo" style="background:#1E2A38;" onclick="abrirColorPicker('e-fondo', this)"></button>
@@ -388,176 +443,230 @@
             <input type="hidden" id="e-franja" value="#E08A2C">
             <button type="button" class="color-swatch-btn" data-target="e-franja" style="background:#E08A2C;" onclick="abrirColorPicker('e-franja', this)"></button>
           </label>
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
         </div>
-        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
       </div>
     </div>
 
     <!-- ===================== RÓTULOS DE NOMBRE (producto / carpeta) — EXTENSIÓN NUEVA ===================== -->
     <div class="bloque-tipo" id="bloque-rotulos">
-      <div class="fila-controles">
-        <label style="width:100%;max-width:520px;">Texto de cada cartel (podés escribir varias líneas dentro de uno mismo, ej. nombre arriba y código/año abajo)
-          <div id="r-lista-carteles"></div>
-          <button type="button" class="sub-btn" id="r-agregar-cartel" style="margin-top:4px;width:fit-content;">+ Agregar cartel</button>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Contenido</p>
+        <div class="fila-controles">
+          <label style="width:100%;max-width:520px;">Texto de cada cartel (podés escribir varias líneas dentro de uno mismo, ej. nombre arriba y código/año abajo)
+            <div id="r-lista-carteles"></div>
+            <button type="button" class="sub-btn" id="r-agregar-cartel" style="margin-top:4px;width:fit-content;">+ Agregar cartel</button>
+          </label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Ancho (mm) <input type="number" id="r-ancho" value="90" min="30"></label>
-        <label>Alto (mm) <input type="number" id="r-alto" value="40" min="20"></label>
-        <label>Grosor de marco (mm) <input type="number" id="r-marco" value="2.6" min="0" step="0.2"></label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño del cartel</p>
+        <div class="fila-controles">
+          <label>Ancho (mm) <input type="number" id="r-ancho" value="90" min="30"></label>
+          <label>Alto (mm) <input type="number" id="r-alto" value="40" min="20"></label>
+          <label>Grosor de marco (mm) <input type="number" id="r-marco" value="2.6" min="0" step="0.2"></label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Tipo de letra
-          <select id="r-fuente-familia" onchange="toggleFuenteOtra()">
-            <option value="Arial, Helvetica, sans-serif">Arial</option>
-            <option value="'Arial Black', Gadget, sans-serif">Arial Black</option>
-            <option value="Verdana, Geneva, sans-serif">Verdana</option>
-            <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
-            <option value="'Trebuchet MS', Helvetica, sans-serif">Trebuchet MS</option>
-            <option value="'Segoe UI', Frutiger, sans-serif">Segoe UI</option>
-            <option value="Calibri, Candara, sans-serif">Calibri</option>
-            <option value="Candara, Calibri, sans-serif">Candara</option>
-            <option value="Consolas, 'Courier New', monospace">Consolas</option>
-            <option value="'Franklin Gothic Medium', Arial, sans-serif">Franklin Gothic Medium</option>
-            <option value="'Century Gothic', Century, sans-serif">Century Gothic</option>
-            <option value="Georgia, 'Times New Roman', serif">Georgia</option>
-            <option value="Cambria, Georgia, serif">Cambria</option>
-            <option value="'Times New Roman', Times, serif">Times New Roman</option>
-            <option value="Garamond, Baskerville, serif">Garamond</option>
-            <option value="'Book Antiqua', Palatino, serif">Book Antiqua</option>
-            <option value="'Palatino Linotype', Palatino, serif">Palatino Linotype</option>
-            <option value="Rockwell, 'Courier New', serif">Rockwell</option>
-            <option value="'Courier New', Courier, monospace">Courier New</option>
-            <option value="Impact, Charcoal, sans-serif">Impact</option>
-            <option value="'Comic Sans MS', cursive, sans-serif">Comic Sans MS</option>
-            <option value="otra">Otra… (escribir el nombre)</option>
-          </select>
-        </label>
-        <label id="r-fuente-otra-label" style="display:none;">Nombre de la fuente <input type="text" id="r-fuente-otra" placeholder="ej. Calibri Light" style="width:130px;"></label>
-        <label>Tamaño de letra (general)
-          <select id="r-modo-fuente" onchange="toggleFuenteManual()">
-            <option value="auto">Automático (se ajusta al texto)</option>
-            <option value="manual">Manual</option>
-          </select>
-        </label>
-        <label id="r-fuente-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="r-fuente-manual" value="8" min="3" step="0.5"></label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tipografía</p>
+        <div class="fila-controles">
+          <label>Tipo de letra
+            <select id="r-fuente-familia" onchange="toggleFuenteOtra()">
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+              <option value="'Arial Black', Gadget, sans-serif">Arial Black</option>
+              <option value="Verdana, Geneva, sans-serif">Verdana</option>
+              <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+              <option value="'Trebuchet MS', Helvetica, sans-serif">Trebuchet MS</option>
+              <option value="'Segoe UI', Frutiger, sans-serif">Segoe UI</option>
+              <option value="Calibri, Candara, sans-serif">Calibri</option>
+              <option value="Candara, Calibri, sans-serif">Candara</option>
+              <option value="Consolas, 'Courier New', monospace">Consolas</option>
+              <option value="'Franklin Gothic Medium', Arial, sans-serif">Franklin Gothic Medium</option>
+              <option value="'Century Gothic', Century, sans-serif">Century Gothic</option>
+              <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+              <option value="Cambria, Georgia, serif">Cambria</option>
+              <option value="'Times New Roman', Times, serif">Times New Roman</option>
+              <option value="Garamond, Baskerville, serif">Garamond</option>
+              <option value="'Book Antiqua', Palatino, serif">Book Antiqua</option>
+              <option value="'Palatino Linotype', Palatino, serif">Palatino Linotype</option>
+              <option value="Rockwell, 'Courier New', serif">Rockwell</option>
+              <option value="'Courier New', Courier, monospace">Courier New</option>
+              <option value="Impact, Charcoal, sans-serif">Impact</option>
+              <option value="'Comic Sans MS', cursive, sans-serif">Comic Sans MS</option>
+              <option value="otra">Otra… (escribir el nombre)</option>
+            </select>
+          </label>
+          <label id="r-fuente-otra-label" style="display:none;">Nombre de la fuente <input type="text" id="r-fuente-otra" placeholder="ej. Calibri Light" style="width:130px;"></label>
+          <label>Tamaño de letra (general)
+            <select id="r-modo-fuente" onchange="toggleFuenteManual()">
+              <option value="auto">Automático (se ajusta al texto)</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label id="r-fuente-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="r-fuente-manual" value="8" min="3" step="0.5"></label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Alineación
-          <select id="r-alineacion">
-            <option value="centro">Centrado</option>
-            <option value="izquierda">Izquierda</option>
-            <option value="derecha">Derecha</option>
-          </select>
-        </label>
-        <label>Ícono
-          <select id="r-icono">
-            <option value="ninguno">Sin ícono</option>
-            <option value="producto">Producto (caja)</option>
-            <option value="carpeta">Carpeta</option>
-            <option value="herramienta">Herramienta (llave)</option>
-            <option value="advertencia">Advertencia</option>
-            <option value="estrella">Estrella</option>
-          </select>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Estilo</p>
+        <div class="fila-controles">
+          <label>Alineación
+            <select id="r-alineacion">
+              <option value="centro">Centrado</option>
+              <option value="izquierda">Izquierda</option>
+              <option value="derecha">Derecha</option>
+            </select>
+          </label>
+          <label>Ícono
+            <select id="r-icono">
+              <option value="ninguno">Sin ícono</option>
+              <option value="producto">Producto (caja)</option>
+              <option value="carpeta">Carpeta</option>
+              <option value="herramienta">Herramienta (llave)</option>
+              <option value="advertencia">Advertencia</option>
+              <option value="estrella">Estrella</option>
+            </select>
+          </label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Color
-          <input type="hidden" id="r-color" value="#0B5CAB">
-          <button type="button" class="color-swatch-btn" data-target="r-color" style="background:#0B5CAB;" onclick="abrirColorPicker('r-color', this)"></button>
-        </label>
-        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Color e impresión</p>
+        <div class="fila-controles fila-imprimir">
+          <label>Color
+            <input type="hidden" id="r-color" value="#0B5CAB">
+            <button type="button" class="color-swatch-btn" data-target="r-color" style="background:#0B5CAB;" onclick="abrirColorPicker('r-color', this)"></button>
+          </label>
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+        </div>
       </div>
 
-      <div class="fila-controles" style="align-items:flex-start;">
-        <label style="width:100%;max-width:560px;">Diseños guardados (hasta 3 — guardan ancho, alto, marco, color, tipo y tamaño de letra, alineación e ícono; no guardan el texto de los carteles)
-          <div id="r-presets" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;"></div>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Diseños guardados</p>
+        <div class="fila-controles" style="align-items:flex-start;">
+          <label style="width:100%;max-width:560px;">Hasta 3 diseños (guardan ancho, alto, marco, color, tipo y tamaño de letra, alineación e ícono; no guardan el texto de los carteles)
+            <div id="r-presets" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;"></div>
+          </label>
+        </div>
       </div>
     </div>
 
     <!-- ===================== REFERENCIAS (título + lista de familias) — EXTENSIÓN NUEVA ===================== -->
     <div class="bloque-tipo" id="bloque-referencias">
-      <div class="fila-controles">
-        <label style="width:100%;max-width:640px;">Tableros (cada uno es un cartel completo: título + lista de familias/ítems)
-          <div id="ref-lista-tableros"></div>
-          <button type="button" class="sub-btn" id="ref-agregar-tablero" style="margin-top:4px;width:fit-content;">+ Agregar tablero</button>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Contenido</p>
+        <div class="fila-controles">
+          <label style="width:100%;max-width:640px;">Tableros (cada uno es un cartel completo: título + lista de familias/ítems)
+            <div id="ref-lista-tableros"></div>
+            <button type="button" class="sub-btn" id="ref-agregar-tablero" style="margin-top:4px;width:fit-content;">+ Agregar tablero</button>
+          </label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Ancho (mm) <input type="number" id="ref-ancho" value="90" min="40"></label>
-        <label>Alto (mm) <input type="number" id="ref-alto" value="110" min="50"></label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño del cartel</p>
+        <div class="fila-controles">
+          <label>Ancho (mm) <input type="number" id="ref-ancho" value="90" min="40"></label>
+          <label>Alto (mm) <input type="number" id="ref-alto" value="110" min="50"></label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Color de encabezado
-          <input type="hidden" id="ref-color-header" value="#1E2A38">
-          <button type="button" class="color-swatch-btn" data-target="ref-color-header" style="background:#1E2A38;" onclick="abrirColorPicker('ref-color-header', this)"></button>
-        </label>
-        <label>Color de números / franjas
-          <input type="hidden" id="ref-color-franja" value="#0B5CAB">
-          <button type="button" class="color-swatch-btn" data-target="ref-color-franja" style="background:#0B5CAB;" onclick="abrirColorPicker('ref-color-franja', this)"></button>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Colores</p>
+        <div class="fila-controles">
+          <label>Color de encabezado
+            <input type="hidden" id="ref-color-header" value="#1E2A38">
+            <button type="button" class="color-swatch-btn" data-target="ref-color-header" style="background:#1E2A38;" onclick="abrirColorPicker('ref-color-header', this)"></button>
+          </label>
+          <label>Color de números / franjas
+            <input type="hidden" id="ref-color-franja" value="#0B5CAB">
+            <button type="button" class="color-swatch-btn" data-target="ref-color-franja" style="background:#0B5CAB;" onclick="abrirColorPicker('ref-color-franja', this)"></button>
+          </label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label style="flex-direction:row;align-items:center;gap:6px;"><input type="checkbox" id="ref-dividir" style="width:auto;"> Dividir la lista en 2 columnas</label>
-        <label>Etiqueta columna 1 <input type="text" id="ref-etiqueta1" class="ancho-txt" value="Izquierda"></label>
-        <label>Etiqueta columna 2 <input type="text" id="ref-etiqueta2" class="ancho-txt" value="Derecha"></label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Columnas</p>
+        <div class="fila-controles">
+          <label style="flex-direction:row;align-items:center;gap:6px;"><input type="checkbox" id="ref-dividir" style="width:auto;"> Dividir la lista en 2 columnas</label>
+          <label>Etiqueta columna 1 <input type="text" id="ref-etiqueta1" class="ancho-txt" value="Izquierda"></label>
+          <label>Etiqueta columna 2 <input type="text" id="ref-etiqueta2" class="ancho-txt" value="Derecha"></label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Marcador de lista
-          <select id="ref-marcador">
-            <option value="numeros">Números (1, 2, 3...)</option>
-            <option value="puntos">Viñetas (•)</option>
-          </select>
-        </label>
-        <label>Tamaño de letra (ítems)
-          <select id="ref-modo-fuente" onchange="toggleFuenteManualRef()">
-            <option value="auto">Automático (se ajusta a la cantidad de ítems)</option>
-            <option value="manual">Manual (fijo, no cambia)</option>
-          </select>
-        </label>
-        <label id="ref-fuente-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="ref-fuente-manual" value="5" min="2.5" step="0.5"></label>
-        <label>Alineación de la lista
-          <select id="ref-cuerpo-alineacion">
-            <option value="izquierda">Izquierda</option>
-            <option value="centro">Centrado</option>
-            <option value="derecha">Derecha</option>
-          </select>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Lista de ítems</p>
+        <div class="fila-controles">
+          <label>Marcador de lista
+            <select id="ref-marcador">
+              <option value="numeros">Números (1, 2, 3...)</option>
+              <option value="puntos">Viñetas (•)</option>
+            </select>
+          </label>
+          <label>Tamaño de letra (ítems)
+            <select id="ref-modo-fuente" onchange="toggleFuenteManualRef()">
+              <option value="auto">Automático (se ajusta a la cantidad de ítems)</option>
+              <option value="manual">Manual (fijo, no cambia)</option>
+            </select>
+          </label>
+          <label id="ref-fuente-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="ref-fuente-manual" value="5" min="2.5" step="0.5"></label>
+          <label>Alineación de la lista
+            <select id="ref-cuerpo-alineacion">
+              <option value="izquierda">Izquierda</option>
+              <option value="centro">Centrado</option>
+              <option value="derecha">Derecha</option>
+            </select>
+          </label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Tamaño título principal (mm) <input type="number" id="ref-titulo1-tamano" value="9" min="3" step="0.5"></label>
-        <label>Alineación título principal
-          <select id="ref-titulo1-alineacion">
-            <option value="izquierda">Izquierda</option>
-            <option value="centro">Centrado</option>
-            <option value="derecha">Derecha</option>
-          </select>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Título principal</p>
+        <div class="fila-controles">
+          <label>Tamaño
+            <select id="ref-titulo1-modo" onchange="toggleFuenteManualRefTitulo(1)">
+              <option value="auto">Automático (se ajusta al espacio)</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label id="ref-titulo1-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="ref-titulo1-tamano" value="9" min="3" step="0.5"></label>
+          <label>Alineación
+            <select id="ref-titulo1-alineacion">
+              <option value="izquierda">Izquierda</option>
+              <option value="centro">Centrado</option>
+              <option value="derecha">Derecha</option>
+            </select>
+          </label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Tamaño subtítulo (mm) <input type="number" id="ref-titulo2-tamano" value="5" min="2.5" step="0.5"></label>
-        <label>Alineación subtítulo
-          <select id="ref-titulo2-alineacion">
-            <option value="izquierda">Izquierda</option>
-            <option value="centro">Centrado</option>
-            <option value="derecha">Derecha</option>
-          </select>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Subtítulo</p>
+        <div class="fila-controles">
+          <label>Tamaño
+            <select id="ref-titulo2-modo" onchange="toggleFuenteManualRefTitulo(2)">
+              <option value="auto">Automático (se ajusta al espacio)</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label id="ref-titulo2-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="ref-titulo2-tamano" value="5" min="2.5" step="0.5"></label>
+          <label>Alineación
+            <select id="ref-titulo2-alineacion">
+              <option value="izquierda">Izquierda</option>
+              <option value="centro">Centrado</option>
+              <option value="derecha">Derecha</option>
+            </select>
+          </label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Impresión</p>
+        <div class="fila-controles fila-imprimir">
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+        </div>
       </div>
     </div>
 
@@ -1079,6 +1188,8 @@ function cerrarTodo(){
    2) Guardado automático de los últimos valores usados (localStorage)
    3) Generación 100% automática (sin botón "Generar", sin demora)
    4) Hasta 3 diseños de Rótulos guardados, para reutilizar configuraciones
+   5) Modo automático/manual para el tamaño del título principal y del
+      subtítulo en el tipo "Referencias"
    ========================================================================= */
 
 /* ---------- RÓTULOS: generación ---------- */
@@ -1217,9 +1328,24 @@ function calcularFuenteItemsRef(nItemsPorColumna, altoMM){
   return Math.max(Math.min(tam, altoMM * 0.075), 2.6);
 }
 
+/* Tamaño automático para el título principal / subtítulo del encabezado:
+   se ajusta al ancho disponible del cartel (y no puede superar el tope propio
+   de cada rol, para que el subtítulo nunca "gane" al título). */
+function calcularFuenteTituloAuto(texto, anchoMM, tamMaxMM, tamMinMM){
+  const largo = Math.max((texto || '').trim().length, 1);
+  const anchoUtil = Math.max(anchoMM - 8, 10); // descuenta el padding lateral del encabezado (4mm por lado)
+  const tam = (anchoUtil * 1.7) / largo;
+  return Math.max(Math.min(tam, tamMaxMM), tamMinMM);
+}
+
 function toggleFuenteManualRef(){
   const modo = document.getElementById('ref-modo-fuente').value;
   document.getElementById('ref-fuente-manual-label').style.display = (modo === 'manual') ? 'flex' : 'none';
+}
+
+function toggleFuenteManualRefTitulo(n){
+  const modo = document.getElementById('ref-titulo'+n+'-modo').value;
+  document.getElementById('ref-titulo'+n+'-manual-label').style.display = (modo === 'manual') ? 'flex' : 'none';
 }
 
 let rpmContadorTableros = 0;
@@ -1272,9 +1398,13 @@ function generarReferencias(){
   const modoFuente = document.getElementById('ref-modo-fuente').value;
   const fuenteManual = parseFloat(document.getElementById('ref-fuente-manual').value) || 5;
   const cuerpoAlin = refAlineacionCSS(document.getElementById('ref-cuerpo-alineacion').value);
-  const t1Tamano = parseFloat(document.getElementById('ref-titulo1-tamano').value) || 9;
+
+  const t1Modo = document.getElementById('ref-titulo1-modo').value;
+  const t1Manual = parseFloat(document.getElementById('ref-titulo1-tamano').value) || 9;
   const t1Alin = refAlineacionCSS(document.getElementById('ref-titulo1-alineacion').value);
-  const t2Tamano = parseFloat(document.getElementById('ref-titulo2-tamano').value) || 5;
+
+  const t2Modo = document.getElementById('ref-titulo2-modo').value;
+  const t2Manual = parseFloat(document.getElementById('ref-titulo2-tamano').value) || 5;
   const t2Alin = refAlineacionCSS(document.getElementById('ref-titulo2-alineacion').value);
 
   const marcarItem = (i) => marcador === 'puntos' ? '•' : (i + 1);
@@ -1286,6 +1416,9 @@ function generarReferencias(){
     const titulo2 = t.querySelector('.ref-item-titulo2').value.trim();
     const items = t.querySelector('.ref-item-items').value.split('\n').map(s => s.trim()).filter(Boolean);
     if(!titulo1 && items.length === 0) return;
+
+    const t1Tamano = t1Modo === 'manual' ? t1Manual : calcularFuenteTituloAuto(titulo1, ancho, 12, 4);
+    const t2Tamano = t2Modo === 'manual' ? t2Manual : calcularFuenteTituloAuto(titulo2, ancho, 7, 2.8);
 
     let cuerpoHTML;
     if(dividir && items.length > 1){
@@ -1425,7 +1558,8 @@ const RPM_CAMPOS_A_GUARDAR = [
   'r-ancho','r-alto','r-marco','r-color','r-fuente-familia','r-fuente-otra','r-modo-fuente','r-fuente-manual','r-alineacion','r-icono',
   'ref-ancho','ref-alto','ref-color-header','ref-color-franja','ref-dividir','ref-etiqueta1','ref-etiqueta2',
   'ref-marcador','ref-modo-fuente','ref-fuente-manual','ref-cuerpo-alineacion',
-  'ref-titulo1-tamano','ref-titulo1-alineacion','ref-titulo2-tamano','ref-titulo2-alineacion',
+  'ref-titulo1-modo','ref-titulo1-tamano','ref-titulo1-alineacion',
+  'ref-titulo2-modo','ref-titulo2-tamano','ref-titulo2-alineacion',
   'hoja-tamano','hoja-orientacion'
 ];
 
@@ -1660,6 +1794,8 @@ rpmRestaurarValores();
 toggleFuenteManual();
 toggleFuenteOtra();
 toggleFuenteManualRef();
+toggleFuenteManualRefTitulo(1);
+toggleFuenteManualRefTitulo(2);
 toggleAnchoDoble();
 rpmCargarPresetsStorage();
 rpmRenderPresets();
