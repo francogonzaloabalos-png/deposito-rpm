@@ -812,6 +812,13 @@
             border-color: var(--accent);
         }
 
+        .field input::placeholder,
+        .field textarea::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            text-transform: none !important;
+        }
+
         .seg {
             display: flex;
             gap: 6px;
@@ -1461,25 +1468,25 @@
                     <select id="newProdZona" onchange="toggleCustomZonaInput(this)" style="width:100%;">
                         <option value="">Cargando zonas...</option>
                     </select>
-                    <input type="text" id="newProdZonaCustom" placeholder="Nombre del nuevo depósito o zona..." style="display:none; margin-top:6px;">
+                    <input type="text" id="newProdZonaCustom" placeholder="Nombre del nuevo depósito o zona..." style="display:none; margin-top:6px; text-transform:uppercase;">
                 </div>
 
                 <div class="field">
                     <label>Descripción del Producto <span style="color:var(--bad-fg);">*</span></label>
-                    <textarea id="newProdDesc" placeholder="Descripción detallada del producto…" rows="2" oninput="autoResizeTextarea(this)"></textarea>
+                    <textarea id="newProdDesc" placeholder="Descripción detallada del producto…" rows="2" oninput="autoResizeTextarea(this)" style="text-transform:uppercase;"></textarea>
                 </div>
 
                 <div class="field" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div>
                         <label>Marca</label>
-                        <input type="text" id="newProdMarca" placeholder="Ej: Schneider, Philips…">
+                        <input type="text" id="newProdMarca" placeholder="Ej: Schneider, Philips…" style="text-transform:uppercase;">
                     </div>
                     <div>
                         <label>Familia</label>
                         <select id="newProdFamiliaSel" onchange="toggleCustomFamiliaInput(this)" style="width:100%;">
                             <option value="">Seleccionar o escribir...</option>
                         </select>
-                        <input type="text" id="newProdFamiliaCustom" placeholder="Escribir familia..." style="display:none; margin-top:4px;">
+                        <input type="text" id="newProdFamiliaCustom" placeholder="Escribir familia..." style="display:none; margin-top:4px; text-transform:uppercase;">
                     </div>
                 </div>
 
@@ -1518,7 +1525,7 @@
                         <div style="display: flex; flex-direction: column;">
                             <label
                                 style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Depósito</label>
-                            <select id="newProdUbiDep"
+                            <select id="newProdUbiDep" onchange="toggleCustomUbiDepInput(this); actualizarVisibilidadAclaracionUbi();"
                                 style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box; cursor: pointer;">
                                 <option value="">—</option>
                                 <option value="1">1</option>
@@ -1530,26 +1537,39 @@
                                 <option value="5B">5B</option>
                                 <option value="5C">5C</option>
                                 <option value="6">6</option>
+                                <option value="__OTRO__">➕ Otro...</option>
                             </select>
                         </div>
                         <div style="display: flex; flex-direction: column;">
                             <label
                                 style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Estante</label>
-                            <input type="number" id="newProdUbiEst" min="0" step="1" placeholder="Ej: 2"
+                            <input type="number" id="newProdUbiEst" min="0" step="1" placeholder="Ej: 2" oninput="actualizarVisibilidadAclaracionUbi()"
                                 style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
                         </div>
                         <div style="display: flex; flex-direction: column;">
                             <label
                                 style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Columna</label>
-                            <input type="number" id="newProdUbiCol" min="0" step="1" placeholder="Ej: 5"
+                            <input type="number" id="newProdUbiCol" min="0" step="1" placeholder="Ej: 5" oninput="actualizarVisibilidadAclaracionUbi()"
                                 style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 600; font-size: 13px; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
                         </div>
                         <div style="display: flex; flex-direction: column;">
                             <label
                                 style="font-size: 10.5px; font-weight: 700; color: var(--txt-faint); margin-bottom: 4px; height: 16px; line-height: 16px; text-align: center; text-transform: uppercase; white-space: nowrap;">Fila</label>
-                            <input type="text" id="newProdUbiFila" maxlength="1" placeholder="Ej: B"
+                            <input type="text" id="newProdUbiFila" maxlength="1" placeholder="Ej: B" oninput="actualizarVisibilidadAclaracionUbi()"
                                 style="width: 100%; height: 38px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-weight: 800; font-size: 13px; text-transform: uppercase; text-align: center; padding: 0 4px; outline: none; box-sizing: border-box;">
                         </div>
+                    </div>
+                    <input type="text" id="newProdUbiDepCustom" placeholder="Nombre/Nº del depósito personalizado..." style="display:none; margin-top:8px; text-transform:uppercase;">
+                    
+                    <!-- Aclaración de ubicación obligatoria si no hay estante/columna/fila -->
+                    <div id="newProdUbiAclaracionWrap" style="margin-top:10px; padding:10px 12px; background:rgba(217, 119, 6, 0.08); border:1px solid rgba(217, 119, 6, 0.35); border-radius:8px;">
+                        <div style="font-size:11px; font-weight:700; color:#d97706; display:flex; align-items:center; gap:5px; margin-bottom:4px;">
+                            <span>⚠️</span> Aclaración de ubicación <span style="color:var(--bad-fg);">*</span>
+                        </div>
+                        <div style="font-size:11px; color:var(--txt-dim); margin-bottom:6px; line-height:1.35;">
+                            Al no indicar Estante, Columna y Fila exactos, aclará dónde se ubica físicamente:
+                        </div>
+                        <input type="text" id="newProdUbiObs" placeholder="Ej: en pallet pasillo central / en piso / al lado de caja..." style="width:100%; text-transform:uppercase;">
                     </div>
                 </div>
 
@@ -1568,11 +1588,11 @@
                 <div class="field" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div>
                         <label>Responsable</label>
-                        <input type="text" id="newProdResponsable" placeholder="Nombre de quien registra">
+                        <input type="text" id="newProdResponsable" placeholder="Nombre de quien registra" style="text-transform:uppercase;">
                     </div>
                     <div>
-                        <label>Observaciones</label>
-                        <input type="text" id="newProdObs" placeholder="Observaciones iniciales…">
+                        <label>Observaciones del ítem</label>
+                        <input type="text" id="newProdObs" placeholder="Observaciones generales…" style="text-transform:uppercase;">
                     </div>
                 </div>
 
@@ -2357,6 +2377,27 @@
             }
         }
 
+        function toggleCustomUbiDepInput(sel) {
+            const customInput = document.getElementById('newProdUbiDepCustom');
+            if (!customInput) return;
+            if (sel.value === '__OTRO__') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+
+        function actualizarVisibilidadAclaracionUbi() {
+            const est = (document.getElementById('newProdUbiEst')?.value || '').trim();
+            const col = (document.getElementById('newProdUbiCol')?.value || '').trim();
+            const fila = (document.getElementById('newProdUbiFila')?.value || '').trim();
+            const wrap = document.getElementById('newProdUbiAclaracionWrap');
+            if (!wrap) return;
+            const completo = est !== '' && col !== '' && fila !== '';
+            wrap.style.display = completo ? 'none' : 'block';
+        }
+
         function openNewProductModal() {
             state.modalOpen = true;
             newProductCurrentImages = [];
@@ -2367,13 +2408,17 @@
             document.getElementById('newProdStockInicial').value = '0';
             document.getElementById('newProdStockMin').value = '0';
             document.getElementById('newProdUbiDep').value = '';
+            document.getElementById('newProdUbiDepCustom').value = '';
+            document.getElementById('newProdUbiDepCustom').style.display = 'none';
             document.getElementById('newProdUbiEst').value = '';
             document.getElementById('newProdUbiCol').value = '';
             document.getElementById('newProdUbiFila').value = '';
+            document.getElementById('newProdUbiObs').value = '';
             document.getElementById('newProdResponsable').value = '';
             document.getElementById('newProdObs').value = '';
             document.getElementById('newProdErr').style.display = 'none';
             document.getElementById('newProdUnidad').value = 'un';
+            actualizarVisibilidadAclaracionUbi();
 
             // Poblar zonas creadas
             const zonasExistentes = Array.from(new Set(state.stock.map(p => p.zona).filter(Boolean))).sort();
@@ -2465,27 +2510,30 @@
             errBox.style.display = 'none';
 
             const selZona = document.getElementById('newProdZona').value;
-            const customZona = document.getElementById('newProdZonaCustom').value.trim();
-            const zona = (selZona === '__OTRA__' ? customZona : selZona).trim();
+            const customZona = document.getElementById('newProdZonaCustom').value.trim().toUpperCase();
+            const zona = (selZona === '__OTRA__' ? customZona : selZona).trim().toUpperCase();
 
-            const desc = document.getElementById('newProdDesc').value.trim();
-            const marca = document.getElementById('newProdMarca').value.trim() || '—';
+            const desc = document.getElementById('newProdDesc').value.trim().toUpperCase();
+            const marca = document.getElementById('newProdMarca').value.trim().toUpperCase() || '—';
 
             const selFam = document.getElementById('newProdFamiliaSel').value;
-            const customFam = document.getElementById('newProdFamiliaCustom').value.trim();
-            const familia = (selFam === '__OTRA__' ? customFam : selFam).trim() || 'Varios';
+            const customFam = document.getElementById('newProdFamiliaCustom').value.trim().toUpperCase();
+            const familia = (selFam === '__OTRA__' ? customFam : selFam).trim().toUpperCase() || 'VARIOS';
 
             const unidad = document.getElementById('newProdUnidad').value;
             const stockInicial = Number(document.getElementById('newProdStockInicial').value) || 0;
             const stockMin = Number(document.getElementById('newProdStockMin').value) || 0;
 
-            const ubiDep = document.getElementById('newProdUbiDep').value.trim();
+            const selUbiDep = document.getElementById('newProdUbiDep').value;
+            const customUbiDep = document.getElementById('newProdUbiDepCustom').value.trim().toUpperCase();
+            const ubiDep = (selUbiDep === '__OTRO__' ? customUbiDep : selUbiDep).trim().toUpperCase();
+
             const ubiEst = document.getElementById('newProdUbiEst').value.trim();
             const ubiCol = document.getElementById('newProdUbiCol').value.trim();
             let ubiFila = document.getElementById('newProdUbiFila').value.trim().toUpperCase();
 
-            const responsable = document.getElementById('newProdResponsable').value.trim();
-            const obs = document.getElementById('newProdObs').value.trim();
+            const responsable = document.getElementById('newProdResponsable').value.trim().toUpperCase();
+            const obs = document.getElementById('newProdObs').value.trim().toUpperCase();
 
             if (!zona) {
                 errBox.textContent = 'Seleccioná o ingresá una Zona / Depósito.';
@@ -2496,6 +2544,26 @@
                 errBox.textContent = 'La descripción del producto es obligatoria.';
                 errBox.style.display = 'block';
                 return;
+            }
+
+            // Validación de ubicación y aclaración obligatoria si no tiene estante/columna/fila completos
+            const tieneEstanteriaCompleta = ubiEst !== '' && ubiCol !== '' && ubiFila !== '';
+            let aclaracionUbi = '';
+            if (!tieneEstanteriaCompleta) {
+                aclaracionUbi = document.getElementById('newProdUbiObs').value.trim().toUpperCase();
+                if (!aclaracionUbi) {
+                    errBox.textContent = 'Al no indicar Estante, Columna y Fila exactos, debés ingresar la Aclaración de Ubicación física obligatoria.';
+                    errBox.style.display = 'block';
+                    return;
+                }
+            }
+
+            // Concatenar en el campo Observaciones
+            let obsFinal = '';
+            if (aclaracionUbi) {
+                obsFinal = `[UBICACIÓN: ${aclaracionUbi}]` + (obs ? ` / ${obs}` : '');
+            } else {
+                obsFinal = obs;
             }
 
             const btnConfirm = document.getElementById('newProdConfirm');
@@ -2532,7 +2600,7 @@
                     ubicacion_columna: ubiCol,
                     ubicacion_fila: ubiFila,
                     imagen: fotosDrive,
-                    ult_obs: obs
+                    ult_obs: obsFinal
                 };
 
                 // Agregar localmente
@@ -2545,8 +2613,8 @@
                         zona: zona,
                         descripcion: desc,
                         cantidad: stockInicial,
-                        responsable: responsable || 'Alta de producto',
-                        obra: 'Ingreso Inicial'
+                        responsable: responsable || 'ALTA DE PRODUCTO',
+                        obra: 'INGRESO INICIAL'
                     });
                 }
 
@@ -2572,7 +2640,7 @@
                         columna: ubiCol,
                         fila: ubiFila,
                         responsable: responsable,
-                        observaciones: obs,
+                        observaciones: obsFinal,
                         fotos_base64: newProductCurrentImages.map(x => x.base64)
                     };
                     const res = await apiPost(payload);
@@ -3173,6 +3241,14 @@
         document.getElementById('newProdUbiEst').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^0-9]/g, ''); });
         document.getElementById('newProdUbiCol').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^0-9]/g, ''); });
         document.getElementById('newProdUbiFila').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase(); });
+
+        document.querySelectorAll('#newProductOverlay input[type="text"], #newProductOverlay textarea').forEach(el => {
+            el.addEventListener('input', () => {
+                const s = el.selectionStart, e = el.selectionEnd;
+                el.value = el.value.toUpperCase();
+                if (s !== null && e !== null) el.setSelectionRange(s, e);
+            });
+        });
 
         document.getElementById('btnBatchAdjust').addEventListener('click', openBatchAdjustModal);
         document.getElementById('btnCopySelected').addEventListener('click', copySelectedProducts);
