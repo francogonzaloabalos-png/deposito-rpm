@@ -873,7 +873,8 @@
             display: none;
         }
 
-        #editProductOverlay .modal {
+        #editProductOverlay .modal,
+        #newProductOverlay .modal {
             padding: 0;
             max-height: 90vh;
             display: flex;
@@ -882,38 +883,45 @@
             position: relative;
         }
 
-        #editProductOverlay .modal-body {
+        #editProductOverlay .modal-body,
+        #newProductOverlay .modal-body {
             overflow-y: auto;
             padding: 20px 20px 10px 20px;
             scrollbar-width: thin;
             scrollbar-color: var(--line) transparent;
         }
 
-        #editProductOverlay .modal-body::-webkit-scrollbar {
+        #editProductOverlay .modal-body::-webkit-scrollbar,
+        #newProductOverlay .modal-body::-webkit-scrollbar {
             width: 5px;
         }
 
-        #editProductOverlay .modal-body::-webkit-scrollbar-track {
+        #editProductOverlay .modal-body::-webkit-scrollbar-track,
+        #newProductOverlay .modal-body::-webkit-scrollbar-track {
             background: transparent;
         }
 
-        #editProductOverlay .modal-body::-webkit-scrollbar-thumb {
+        #editProductOverlay .modal-body::-webkit-scrollbar-thumb,
+        #newProductOverlay .modal-body::-webkit-scrollbar-thumb {
             background: var(--line);
             border-radius: 6px;
         }
 
-        #editProductOverlay .modal-body::-webkit-scrollbar-thumb:hover {
+        #editProductOverlay .modal-body::-webkit-scrollbar-thumb:hover,
+        #newProductOverlay .modal-body::-webkit-scrollbar-thumb:hover {
             background: var(--txt-faint);
         }
 
-        #editProductOverlay .modal-actions {
+        #editProductOverlay .modal-actions,
+        #newProductOverlay .modal-actions {
             margin-top: 0;
             padding: 14px 20px;
             border-top: 1px solid var(--line);
             flex-shrink: 0;
         }
 
-        #editProdCloseX {
+        #editProdCloseX,
+        #newProdCloseX {
             position: absolute;
             top: 12px;
             right: 14px;
@@ -934,7 +942,8 @@
             transition: all 0.15s ease;
         }
 
-        #editProdCloseX:hover {
+        #editProdCloseX:hover,
+        #newProdCloseX:hover {
             color: var(--txt);
             background: var(--hover-bg);
             border-color: var(--accent);
@@ -1459,12 +1468,10 @@
 
     <!-- New Product Modal -->
     <div class="overlay" id="newProductOverlay">
-        <div class="modal" style="max-width: 440px; width: 100%; position: relative;">
-            <button type="button" id="newProdCloseX"
-                style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; color: var(--txt-dim); cursor: pointer; line-height: 1; padding: 4px; border-radius: 6px; transition: color 0.15s;"
-                title="Cerrar ventana">✕</button>
+        <div class="modal" style="max-width: 440px; width: 100%;">
+            <button type="button" id="newProdCloseX" title="Cerrar ventana">✕</button>
             <div class="modal-body">
-                <h3>Registrar Nuevo Producto</h3>
+                <h3 style="padding-right: 32px;">Registrar Nuevo Producto</h3>
                 <div class="sub">Ingresá los datos del nuevo producto para darlo de alta en el sistema.</div>
                 
                 <div class="field">
