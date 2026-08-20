@@ -29,20 +29,21 @@
   .panel h1{ font-size: 20px; margin: 0 0 4px; }
   .panel p{ font-size: 13px; color: var(--gris); margin: 4px 0; line-height:1.5;}
 
-  .tipo-tabs{ display:flex; gap:8px; margin-top:16px; }
+  .tipo-tabs{ display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
   .tipo-btn{
     padding:10px 18px; border:2px solid #1E2A38; background:white; color:#1E2A38;
     font-weight:bold; font-size:14px; border-radius:6px 6px 0 0; cursor:pointer; border-bottom:none;
   }
   .tipo-btn.active{ background:#1E2A38; color:white; }
 
-  .bloque-tipo{ display:none; border-top: 2px solid #1E2A38; padding: 14px 0; }
+  .bloque-tipo{ display:none; border-top: 2px solid #1E2A38; padding: 16px 0 6px; }
   .bloque-tipo.active{ display:block; }
 
   .fila-controles{
     display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;
-    padding: 6px 0 12px;
+    padding: 0 0 10px;
   }
+  .fila-controles:last-child{ padding-bottom: 2px; }
   .grupo-alineado{ display:flex; align-items:center; gap:16px; }
   .fila-controles label{ font-size:12px; display:flex; flex-direction:column; gap:4px; font-weight:bold; color:#333;}
   .fila-controles input[type=number], .fila-controles input[type=text]{ padding:6px 8px; font-size:13px; width:78px; border:1px solid #ccc; border-radius:4px;}
@@ -54,7 +55,22 @@
   }
   .fila-controles button.generar:hover{ background: #063E75; }
 
-  .subtabs{ display:flex; gap:8px; margin: 4px 0 10px; }
+  /* ---------- Agrupación visual de controles (EXTENSIÓN NUEVA) ---------- */
+  .grupo-controles{
+    border:1px solid #e3e6ea;
+    background:#fbfcfd;
+    border-radius:8px;
+    padding:12px 16px 2px;
+    margin-bottom:12px;
+  }
+  .grupo-controles:last-of-type{ margin-bottom:6px; }
+  .grupo-titulo{
+    font-size:11px; font-weight:bold; letter-spacing:0.6px; text-transform:uppercase;
+    color:#0B5CAB; margin:0 0 8px;
+  }
+  .fila-imprimir{ align-items:center; }
+
+  .subtabs{ display:flex; gap:8px; margin: 4px 0 12px; }
   .sub-btn{
     padding:7px 14px; border:2px solid #0B5CAB; background:white; color:#0B5CAB;
     font-weight:bold; font-size:12px; border-radius:6px; cursor:pointer;
@@ -236,72 +252,160 @@
   .cp-btn{ flex:1; padding:8px 0; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; border:none; }
   .cp-btn-cancelar{ background:white; border:1.5px solid #1b5e3f; color:#1b5e3f; }
   .cp-btn-aceptar{ background:#1b5e3f; border:1.5px solid #1b5e3f; color:white; }
+
+  /* ================= RÓTULOS DE NOMBRE (producto / carpeta) — EXTENSIÓN NUEVA ================= */
+  .nombre-tag{
+    border-radius: 2mm;
+    display:flex; align-items:center; justify-content:center;
+    background:white;
+    font-weight:700;
+    padding: 3mm;
+    text-align:center;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .nombre-tag.alinear-izq{ justify-content:flex-start; text-align:left; }
+  .nombre-tag.alinear-der{ justify-content:flex-end; text-align:right; }
+  .nombre-tag .icono{ flex-shrink:0; margin-right:2mm; }
+  .nombre-tag .texto{ line-height:1.15; word-break:break-word; white-space:pre-line; }
+
+  /* ================= REFERENCIAS (título + lista de familias) — EXTENSIÓN NUEVA ================= */
+  .ref-tag{
+    border-radius: 4mm;
+    overflow:hidden;
+    background:white;
+    display:flex;
+    flex-direction:column;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .ref-header{
+    display:flex; flex-direction:column; align-items:flex-start;
+    padding: 3mm 4mm; color:white; flex-shrink:0; gap:0.8mm;
+  }
+  .ref-header .ref-titulo1{ font-weight:900; letter-spacing:0.3px; }
+  .ref-header .ref-titulo2{ font-weight:700; opacity:0.92; text-align:left; }
+  .ref-cuerpo{ flex:1; display:flex; padding: 2.5mm 0; gap:0; overflow:hidden; }
+  .ref-cuerpo.una-columna{ flex-direction:column; padding: 2.5mm 4mm; }
+  .ref-columna{ flex:1; display:flex; flex-direction:column; padding: 0 4mm; min-width:0; }
+  .ref-etiqueta-col{
+    color:white; font-weight:700; padding: 1mm 2.5mm; border-radius:1.5mm;
+    margin-bottom:1.5mm; letter-spacing:0.4px; width:fit-content;
+  }
+  .ref-item{ display:flex; align-items:baseline; gap:1.5mm; padding:0.5mm 0; }
+  .ref-item .num{ font-weight:900; flex-shrink:0; }
+  .ref-item .texto{ color:var(--negro); font-weight:600; line-height:1.15; }
 </style>
 </head>
 <body>
 
   <div class="panel">
     <h1>Generador de cartelería de depósito — RPM Construcciones</h1>
-    <p>Usá esta herramienta para imprimir la señalización de ubicación de cualquier estantería del depósito. Elegí el tipo de cartel que necesitás: <b>Celdas</b> (identifica cada casillero, ej. 1B), <b>Filas</b> (letra grande para ubicar el nivel desde el pasillo) o <b>Estantes</b> (identifica cada mueble/estantería completo). Configurá cantidad, tamaño y color según el estante que estés señalizando, generá los carteles e imprimilos — cada uno sale con una línea punteada para guiar el corte.</p>
+    <p>Usá esta herramienta para imprimir la señalización de ubicación de cualquier estantería del depósito. Elegí el tipo de cartel que necesitás: <b>Celdas</b> (identifica cada casillero, ej. 1B), <b>Filas</b> (letra grande para ubicar el nivel desde el pasillo), <b>Estantes</b> (identifica cada mueble/estantería completo), <b>Rótulos</b> (nombre de producto o carpeta) o <b>Referencias</b> (título + lista de familias). Configurá cantidad, tamaño y color según el estante que estés señalizando, generá los carteles e imprimilos — cada uno sale con una línea punteada para guiar el corte.</p>
 
     <div class="tipo-tabs">
       <button class="tipo-btn active" data-tipo="celdas" onclick="mostrarTipo('celdas')">Celdas (1B, 3D...)</button>
       <button class="tipo-btn" data-tipo="filas" onclick="mostrarTipo('filas')">Filas (letras)</button>
       <button class="tipo-btn" data-tipo="estantes" onclick="mostrarTipo('estantes')">Estantes</button>
+      <button class="tipo-btn" data-tipo="rotulos" onclick="mostrarTipo('rotulos')">Rótulos (nombres)</button>
+      <button class="tipo-btn" data-tipo="referencias" onclick="mostrarTipo('referencias')">Referencias (familias)</button>
+    </div>
+
+    <!-- ===================== Control global: tamaño de hoja de impresión — EXTENSIÓN NUEVA ===================== -->
+    <div class="grupo-controles" id="control-hoja" style="margin-top:12px;">
+      <p class="grupo-titulo">Hoja de impresión</p>
+      <div class="fila-controles">
+        <label>Tamaño de hoja
+          <select id="hoja-tamano">
+            <option value="A4">A4 (210 × 297 mm)</option>
+            <option value="A3">A3 (297 × 420 mm)</option>
+            <option value="A2">A2 (420 × 594 mm)</option>
+            <option value="A1">A1 (594 × 841 mm)</option>
+            <option value="Carta">Carta / Letter (216 × 279 mm)</option>
+            <option value="Oficio">Oficio / Legal (216 × 356 mm)</option>
+          </select>
+        </label>
+        <label>Orientación
+          <select id="hoja-orientacion">
+            <option value="portrait">Vertical</option>
+            <option value="landscape">Horizontal</option>
+          </select>
+        </label>
+      </div>
     </div>
 
     <!-- ===================== CELDAS ===================== -->
     <div class="bloque-tipo active" id="bloque-celdas">
-      <div class="fila-controles">
-        <label>Columnas <input type="number" id="c-cols" value="6" min="1" max="30"></label>
-        <label>Filas (letras) <input type="text" class="ancho-txt" id="c-filas" value="A,B,C,D,E"></label>
-        <label>Tipo de cartel
-          <select id="c-modo" onchange="toggleAnchoDoble()">
-            <option value="dual">Dual (A+B juntas)</option>
-            <option value="simple">Simple (una fila por cartel)</option>
-          </select>
-        </label>
-        <label>Dirección de flecha
-          <select id="c-direccion">
-            <option value="arriba">Arriba ↑</option>
-            <option value="abajo">Abajo ↓</option>
-          </select>
-        </label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Distribución</p>
+        <div class="fila-controles">
+          <label>Columnas <input type="number" id="c-cols" value="6" min="1" max="30"></label>
+          <label>Filas (letras) <input type="text" class="ancho-txt" id="c-filas" value="A,B,C,D,E"></label>
+          <label>Tipo de cartel
+            <select id="c-modo" onchange="toggleAnchoDoble()">
+              <option value="dual">Dual (A+B juntas)</option>
+              <option value="simple">Simple (una fila por cartel)</option>
+            </select>
+          </label>
+          <label>Dirección de flecha
+            <select id="c-direccion">
+              <option value="arriba">Arriba ↑</option>
+              <option value="abajo">Abajo ↓</option>
+            </select>
+          </label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Ancho del cartel (mm) <input type="number" id="c-ancho" value="60" min="20"></label>
-        <label>Alto del cartel (mm) <input type="number" id="c-alto" value="30" min="15"></label>
-        <label id="c-anchod-label">Ancho doble A/B (mm) <input type="number" id="c-anchod" value="95" min="30"></label>
-        <label>Grosor de marco (mm) <input type="number" id="c-marco" value="2.6" min="0" step="0.2"></label>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño</p>
+        <div class="fila-controles">
+          <label>Ancho del cartel (mm) <input type="number" id="c-ancho" value="60" min="20"></label>
+          <label>Alto del cartel (mm) <input type="number" id="c-alto" value="30" min="15"></label>
+          <label id="c-anchod-label">Ancho doble A/B (mm) <input type="number" id="c-anchod" value="95" min="30"></label>
+          <label>Grosor de marco (mm) <input type="number" id="c-marco" value="2.6" min="0" step="0.2"></label>
+        </div>
       </div>
 
-      <div class="fila-controles">
-        <label>Color
-          <input type="hidden" id="c-color" value="#0B5CAB">
-          <button type="button" class="color-swatch-btn" data-target="c-color" style="background:#0B5CAB;" onclick="abrirColorPicker('c-color', this)"></button>
-        </label>
-        <button class="generar" onclick="generarCeldas()">Generar</button>
-        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Color e impresión</p>
+        <div class="fila-controles fila-imprimir">
+          <label>Color
+            <input type="hidden" id="c-color" value="#0B5CAB">
+            <button type="button" class="color-swatch-btn" data-target="c-color" style="background:#0B5CAB;" onclick="abrirColorPicker('c-color', this)"></button>
+          </label>
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+        </div>
       </div>
     </div>
 
     <!-- ===================== FILAS ===================== -->
     <div class="bloque-tipo" id="bloque-filas">
-      <div class="fila-controles">
-        <label>Letras <input type="text" class="ancho-txt" id="f-letras" value="A,B,C,D,E"></label>
-        <label>Repetir cada letra x <input type="number" id="f-rep" value="1" min="1" max="10"></label>
-        <label>Ancho (mm) <input type="number" id="f-ancho" value="70" min="20"></label>
-        <label>Alto (mm) <input type="number" id="f-alto" value="70" min="20"></label>
-        <div class="grupo-alineado">
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Contenido</p>
+        <div class="fila-controles">
+          <label>Letras <input type="text" class="ancho-txt" id="f-letras" value="A,B,C,D,E"></label>
+          <label>Repetir cada letra x <input type="number" id="f-rep" value="1" min="1" max="10"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño</p>
+        <div class="fila-controles">
+          <label>Ancho (mm) <input type="number" id="f-ancho" value="70" min="20"></label>
+          <label>Alto (mm) <input type="number" id="f-alto" value="70" min="20"></label>
           <label>Grosor de marco (mm) <input type="number" id="f-marco" value="2.6" min="0" step="0.2"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Color e impresión</p>
+        <div class="fila-controles fila-imprimir">
           <label>Color
             <input type="hidden" id="f-color" value="#0B5CAB">
             <button type="button" class="color-swatch-btn" data-target="f-color" style="background:#0B5CAB;" onclick="abrirColorPicker('f-color', this)"></button>
           </label>
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
         </div>
-        <button class="generar" onclick="generarFilas()">Generar</button>
-        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
       </div>
     </div>
 
@@ -311,12 +415,26 @@
         <button class="sub-btn active" onclick="mostrarOpcionEstante(1)">Opción 1 · Grafito</button>
         <button class="sub-btn" onclick="mostrarOpcionEstante(2)">Opción 2 · Ahorro de tinta</button>
       </div>
-      <div class="fila-controles">
-        <label>Cantidad de estantes <input type="number" id="e-cant" value="4" min="1" max="30"></label>
-        <label>Empieza en # <input type="number" id="e-inicio" value="1" min="1"></label>
-        <label>Ancho (mm) <input type="number" id="e-ancho" value="260" min="80"></label>
-        <label>Alto (mm) <input type="number" id="e-alto" value="120" min="50"></label>
-        <div class="grupo-alineado">
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Cantidad</p>
+        <div class="fila-controles">
+          <label>Cantidad de estantes <input type="number" id="e-cant" value="4" min="1" max="30"></label>
+          <label>Empieza en # <input type="number" id="e-inicio" value="1" min="1"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño</p>
+        <div class="fila-controles">
+          <label>Ancho (mm) <input type="number" id="e-ancho" value="260" min="80"></label>
+          <label>Alto (mm) <input type="number" id="e-alto" value="120" min="50"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Color e impresión</p>
+        <div class="fila-controles fila-imprimir">
           <label>Color de fondo
             <input type="hidden" id="e-fondo" value="#1E2A38">
             <button type="button" class="color-swatch-btn" data-target="e-fondo" style="background:#1E2A38;" onclick="abrirColorPicker('e-fondo', this)"></button>
@@ -325,9 +443,230 @@
             <input type="hidden" id="e-franja" value="#E08A2C">
             <button type="button" class="color-swatch-btn" data-target="e-franja" style="background:#E08A2C;" onclick="abrirColorPicker('e-franja', this)"></button>
           </label>
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
         </div>
-        <button class="generar" onclick="generarEstantes()">Generar</button>
-        <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+      </div>
+    </div>
+
+    <!-- ===================== RÓTULOS DE NOMBRE (producto / carpeta) — EXTENSIÓN NUEVA ===================== -->
+    <div class="bloque-tipo" id="bloque-rotulos">
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Contenido</p>
+        <div class="fila-controles">
+          <label style="width:100%;max-width:520px;">Texto de cada cartel (podés escribir varias líneas dentro de uno mismo, ej. nombre arriba y código/año abajo)
+            <div id="r-lista-carteles"></div>
+            <button type="button" class="sub-btn" id="r-agregar-cartel" style="margin-top:4px;width:fit-content;">+ Agregar cartel</button>
+          </label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño del cartel</p>
+        <div class="fila-controles">
+          <label>Ancho (mm) <input type="number" id="r-ancho" value="90" min="30"></label>
+          <label>Alto (mm) <input type="number" id="r-alto" value="40" min="20"></label>
+          <label>Grosor de marco (mm) <input type="number" id="r-marco" value="2.6" min="0" step="0.2"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tipografía</p>
+        <div class="fila-controles">
+          <label>Tipo de letra
+            <select id="r-fuente-familia" onchange="toggleFuenteOtra()">
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+              <option value="'Arial Black', Gadget, sans-serif">Arial Black</option>
+              <option value="Verdana, Geneva, sans-serif">Verdana</option>
+              <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+              <option value="'Trebuchet MS', Helvetica, sans-serif">Trebuchet MS</option>
+              <option value="'Segoe UI', Frutiger, sans-serif">Segoe UI</option>
+              <option value="Calibri, Candara, sans-serif">Calibri</option>
+              <option value="Candara, Calibri, sans-serif">Candara</option>
+              <option value="Consolas, 'Courier New', monospace">Consolas</option>
+              <option value="'Franklin Gothic Medium', Arial, sans-serif">Franklin Gothic Medium</option>
+              <option value="'Century Gothic', Century, sans-serif">Century Gothic</option>
+              <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+              <option value="Cambria, Georgia, serif">Cambria</option>
+              <option value="'Times New Roman', Times, serif">Times New Roman</option>
+              <option value="Garamond, Baskerville, serif">Garamond</option>
+              <option value="'Book Antiqua', Palatino, serif">Book Antiqua</option>
+              <option value="'Palatino Linotype', Palatino, serif">Palatino Linotype</option>
+              <option value="Rockwell, 'Courier New', serif">Rockwell</option>
+              <option value="'Courier New', Courier, monospace">Courier New</option>
+              <option value="Impact, Charcoal, sans-serif">Impact</option>
+              <option value="'Comic Sans MS', cursive, sans-serif">Comic Sans MS</option>
+              <option value="otra">Otra… (escribir el nombre)</option>
+            </select>
+          </label>
+          <label id="r-fuente-otra-label" style="display:none;">Nombre de la fuente <input type="text" id="r-fuente-otra" placeholder="ej. Calibri Light" style="width:130px;"></label>
+          <label>Tamaño de letra (general)
+            <select id="r-modo-fuente" onchange="toggleFuenteManual()">
+              <option value="auto">Automático (se ajusta al texto)</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label id="r-fuente-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="r-fuente-manual" value="8" min="3" step="0.5"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Estilo</p>
+        <div class="fila-controles">
+          <label>Alineación
+            <select id="r-alineacion">
+              <option value="centro">Centrado</option>
+              <option value="izquierda">Izquierda</option>
+              <option value="derecha">Derecha</option>
+            </select>
+          </label>
+          <label>Ícono
+            <select id="r-icono">
+              <option value="ninguno">Sin ícono</option>
+              <option value="producto">Producto (caja)</option>
+              <option value="carpeta">Carpeta</option>
+              <option value="herramienta">Herramienta (llave)</option>
+              <option value="advertencia">Advertencia</option>
+              <option value="estrella">Estrella</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Color e impresión</p>
+        <div class="fila-controles fila-imprimir">
+          <label>Color
+            <input type="hidden" id="r-color" value="#0B5CAB">
+            <button type="button" class="color-swatch-btn" data-target="r-color" style="background:#0B5CAB;" onclick="abrirColorPicker('r-color', this)"></button>
+          </label>
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Diseños guardados</p>
+        <div class="fila-controles" style="align-items:flex-start;">
+          <label style="width:100%;max-width:560px;">Hasta 3 diseños (guardan ancho, alto, marco, color, tipo y tamaño de letra, alineación e ícono; no guardan el texto de los carteles)
+            <div id="r-presets" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== REFERENCIAS (título + lista de familias) — EXTENSIÓN NUEVA ===================== -->
+    <div class="bloque-tipo" id="bloque-referencias">
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Contenido</p>
+        <div class="fila-controles">
+          <label style="width:100%;max-width:640px;">Tableros (cada uno es un cartel completo: título + lista de familias/ítems)
+            <div id="ref-lista-tableros"></div>
+            <button type="button" class="sub-btn" id="ref-agregar-tablero" style="margin-top:4px;width:fit-content;">+ Agregar tablero</button>
+          </label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Tamaño del cartel</p>
+        <div class="fila-controles">
+          <label>Ancho (mm) <input type="number" id="ref-ancho" value="90" min="40"></label>
+          <label>Alto (mm) <input type="number" id="ref-alto" value="110" min="50"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Colores</p>
+        <div class="fila-controles">
+          <label>Color de encabezado
+            <input type="hidden" id="ref-color-header" value="#1E2A38">
+            <button type="button" class="color-swatch-btn" data-target="ref-color-header" style="background:#1E2A38;" onclick="abrirColorPicker('ref-color-header', this)"></button>
+          </label>
+          <label>Color de números / franjas
+            <input type="hidden" id="ref-color-franja" value="#0B5CAB">
+            <button type="button" class="color-swatch-btn" data-target="ref-color-franja" style="background:#0B5CAB;" onclick="abrirColorPicker('ref-color-franja', this)"></button>
+          </label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Columnas</p>
+        <div class="fila-controles">
+          <label style="flex-direction:row;align-items:center;gap:6px;"><input type="checkbox" id="ref-dividir" style="width:auto;"> Dividir la lista en 2 columnas</label>
+          <label>Etiqueta columna 1 <input type="text" id="ref-etiqueta1" class="ancho-txt" value="Izquierda"></label>
+          <label>Etiqueta columna 2 <input type="text" id="ref-etiqueta2" class="ancho-txt" value="Derecha"></label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Lista de ítems</p>
+        <div class="fila-controles">
+          <label>Marcador de lista
+            <select id="ref-marcador">
+              <option value="numeros">Números (1, 2, 3...)</option>
+              <option value="puntos">Viñetas (•)</option>
+            </select>
+          </label>
+          <label>Tamaño de letra (ítems)
+            <select id="ref-modo-fuente" onchange="toggleFuenteManualRef()">
+              <option value="auto">Automático (se ajusta a la cantidad de ítems)</option>
+              <option value="manual">Manual (fijo, no cambia)</option>
+            </select>
+          </label>
+          <label id="ref-fuente-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="ref-fuente-manual" value="5" min="2.5" step="0.5"></label>
+          <label>Alineación de la lista
+            <select id="ref-cuerpo-alineacion">
+              <option value="izquierda">Izquierda</option>
+              <option value="centro">Centrado</option>
+              <option value="derecha">Derecha</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Título principal</p>
+        <div class="fila-controles">
+          <label>Tamaño
+            <select id="ref-titulo1-modo" onchange="toggleFuenteManualRefTitulo(1)">
+              <option value="auto">Automático (se ajusta al espacio)</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label id="ref-titulo1-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="ref-titulo1-tamano" value="9" min="3" step="0.5"></label>
+          <label>Alineación
+            <select id="ref-titulo1-alineacion">
+              <option value="izquierda">Izquierda</option>
+              <option value="centro">Centrado</option>
+              <option value="derecha">Derecha</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Subtítulo</p>
+        <div class="fila-controles">
+          <label>Tamaño
+            <select id="ref-titulo2-modo" onchange="toggleFuenteManualRefTitulo(2)">
+              <option value="auto">Automático (se ajusta al espacio)</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label id="ref-titulo2-manual-label" style="display:none;">Tamaño manual (mm) <input type="number" id="ref-titulo2-tamano" value="5" min="2.5" step="0.5"></label>
+          <label>Alineación
+            <select id="ref-titulo2-alineacion">
+              <option value="izquierda">Izquierda</option>
+              <option value="centro">Centrado</option>
+              <option value="derecha">Derecha</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="grupo-controles">
+        <p class="grupo-titulo">Impresión</p>
+        <div class="fila-controles fila-imprimir">
+          <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
+        </div>
       </div>
     </div>
 
@@ -337,6 +676,7 @@
         <li><b>Un color por depósito.</b> Si hay más de un depósito, usá un color distinto en el selector para cada uno — así se identifica de un vistazo en cuál estás parado.</li>
         <li><b>Protegé el papel.</b> Si se imprime en papel común, una funda autoadhesiva transparente o cinta de embalar por encima ayuda a que dure más contra el polvo y el manoseo.</li>
         <li><b>Tamaño según distancia de lectura:</b> el cartel de Estante se lee cruzando el depósito, el de Fila desde el pasillo, y el de Celda de cerca, parado frente al estante. Ajustá el tamaño de cada uno pensando desde dónde se va a leer.</li>
+        <li><b>Rótulos de nombre:</b> usá el mismo ancho/alto/color para todos los rótulos de un mismo depósito — así, aunque los nombres tengan largos distintos, todos los carteles quedan con el mismo formato. La app recuerda automáticamente los últimos valores que usaste.</li>
       </ol>
     </details>
   </div>
@@ -345,6 +685,8 @@
   <div id="sheet-filas" class="sheet"></div>
   <div id="sheet-estantes-1" class="sheet"></div>
   <div id="sheet-estantes-2" class="sheet"></div>
+  <div id="sheet-rotulos" class="sheet"></div>
+  <div id="sheet-referencias" class="sheet"></div>
 
 <script>
 /* ---------- Navegación de tabs ---------- */
@@ -835,6 +1177,634 @@ function cerrarTodo(){
   cerrarMenu();
   cerrarModal();
 }
+</script>
+
+<script>
+/* =========================================================================
+   EXTENSIÓN NUEVA — no modifica nada del bloque original de arriba, solo agrega:
+   1) Tipo de cartel "Rótulos" (nombre de producto / carpeta), con lista de
+      carteles editable (cada cartel puede tener varias líneas y su propio
+      tamaño de letra opcional)
+   2) Guardado automático de los últimos valores usados (localStorage)
+   3) Generación 100% automática (sin botón "Generar", sin demora)
+   4) Hasta 3 diseños de Rótulos guardados, para reutilizar configuraciones
+   5) Modo automático/manual para el tamaño del título principal y del
+      subtítulo en el tipo "Referencias"
+   ========================================================================= */
+
+/* ---------- RÓTULOS: generación ---------- */
+function escapeHTML(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function calcularFuenteAuto(texto, anchoMM, altoMM){
+  const lineas = texto.split('\n').filter(l => l.length > 0);
+  const numLineas = Math.max(lineas.length, 1);
+  const maxLargo = Math.max(...lineas.map(l => l.length), 1);
+  const porAncho = (anchoMM * 1.6) / maxLargo;
+  const porAlto = (altoMM * 0.85) / (numLineas * 1.3);
+  const tam = Math.min(porAncho, porAlto);
+  return Math.max(Math.min(tam, altoMM * 0.42), 4); // nunca menor a 4mm ni mayor al alto del cartel
+}
+
+function iconoRotuloSVG(tipo, tamMM, color){
+  if(tipo === 'carpeta'){
+    return `<svg class="icono" width="${tamMM}mm" height="${tamMM}mm" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Z" fill="${color}"/></svg>`;
+  }
+  if(tipo === 'producto'){
+    return `<svg class="icono" width="${tamMM}mm" height="${tamMM}mm" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 8L12 3 3 8v8l9 5 9-5V8Z" stroke="${color}" stroke-width="1.6"/><path d="M3 8l9 5 9-5M12 13v8" stroke="${color}" stroke-width="1.6"/></svg>`;
+  }
+  if(tipo === 'herramienta'){
+    return `<svg class="icono" width="${tamMM}mm" height="${tamMM}mm" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6Z" fill="${color}"/></svg>`;
+  }
+  if(tipo === 'advertencia'){
+    return `<svg class="icono" width="${tamMM}mm" height="${tamMM}mm" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3 22 20H2Z" fill="${color}"/><rect x="11" y="10" width="2" height="5" fill="white"/><rect x="11" y="16.5" width="2" height="2" fill="white"/></svg>`;
+  }
+  if(tipo === 'estrella'){
+    return `<svg class="icono" width="${tamMM}mm" height="${tamMM}mm" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9L5.7 21l1.7-7L2 9.2l7.1-.6Z" fill="${color}"/></svg>`;
+  }
+  return '';
+}
+
+function toggleFuenteManual(){
+  const modo = document.getElementById('r-modo-fuente').value;
+  document.getElementById('r-fuente-manual-label').style.display = (modo === 'manual') ? 'flex' : 'none';
+}
+
+function toggleFuenteOtra(){
+  const val = document.getElementById('r-fuente-familia').value;
+  document.getElementById('r-fuente-otra-label').style.display = (val === 'otra') ? 'flex' : 'none';
+}
+
+/* ---- Lista dinámica de carteles de Rótulos ----
+   Cada ítem = un cartel: texto (puede tener varias líneas) + tamaño de letra propio (opcional). */
+let rpmContadorCarteles = 0;
+
+function rpmCrearItemCartel(item){
+  item = item || {};
+  rpmContadorCarteles++;
+  const id = 'r-item-' + rpmContadorCarteles;
+  const wrap = document.createElement('div');
+  wrap.className = 'r-item-cartel';
+  wrap.style.cssText = 'display:flex;gap:6px;align-items:flex-start;margin-bottom:6px;';
+  wrap.innerHTML =
+    '<textarea class="r-item-texto" id="' + id + '" rows="2" ' +
+    'style="flex:1;padding:6px 8px;font-size:13px;border:1px solid #ccc;border-radius:4px;font-family:inherit;resize:vertical;"></textarea>' +
+    '<input type="number" class="r-item-tamano" min="3" step="0.5" placeholder="auto" title="Tamaño de letra propio de este cartel, en mm. Vacío = usa el tamaño general." ' +
+    'style="width:56px;padding:6px 4px;font-size:12px;border:1px solid #ccc;border-radius:4px;">' +
+    '<button type="button" class="r-item-quitar" title="Quitar este cartel" ' +
+    'style="border:1px solid #ccc;background:white;border-radius:4px;width:28px;height:32px;cursor:pointer;font-size:15px;color:#a33;flex-shrink:0;">×</button>';
+  wrap.querySelector('.r-item-texto').value = item.texto || '';
+  wrap.querySelector('.r-item-tamano').value = item.tamano || '';
+  wrap.querySelector('.r-item-quitar').addEventListener('click', () => {
+    wrap.remove();
+    generarRotulos();
+    rpmGuardarValores();
+  });
+  return wrap;
+}
+
+function rpmAgregarCartel(item){
+  document.getElementById('r-lista-carteles').appendChild(rpmCrearItemCartel(item));
+}
+
+function generarRotulos(){
+  const ancho = parseFloat(document.getElementById('r-ancho').value) || 90;
+  const alto = parseFloat(document.getElementById('r-alto').value) || 40;
+  const marco = parseFloat(document.getElementById('r-marco').value);
+  const color = document.getElementById('r-color').value;
+  const familiaSel = document.getElementById('r-fuente-familia').value;
+  const familiaOtra = document.getElementById('r-fuente-otra').value.trim();
+  const familia = familiaSel === 'otra'
+    ? (familiaOtra ? `'${familiaOtra.replace(/'/g,"")}', Arial, sans-serif` : 'Arial, Helvetica, sans-serif')
+    : familiaSel;
+  const modoFuente = document.getElementById('r-modo-fuente').value;
+  const fuenteManual = parseFloat(document.getElementById('r-fuente-manual').value) || 8;
+  const alineacion = document.getElementById('r-alineacion').value;
+  const icono = document.getElementById('r-icono').value;
+
+  const filas = Array.from(document.querySelectorAll('#r-lista-carteles .r-item-cartel'));
+  let out = '';
+  filas.forEach(fila => {
+    const texto = fila.querySelector('.r-item-texto').value.trim();
+    if(!texto) return;
+    const tamanoPropio = parseFloat(fila.querySelector('.r-item-tamano').value);
+    let fuente;
+    if(!isNaN(tamanoPropio) && tamanoPropio > 0){
+      fuente = tamanoPropio; // tamaño puntual de este cartel, tiene prioridad
+    } else if(modoFuente === 'auto'){
+      fuente = calcularFuenteAuto(texto, ancho, alto);
+    } else {
+      fuente = fuenteManual;
+    }
+    const claseAlin = alineacion === 'izquierda' ? ' alinear-izq' : (alineacion === 'derecha' ? ' alinear-der' : '');
+    out += `
+      <div class="nombre-tag corte${claseAlin}" style="width:${ancho}mm;height:${alto}mm;border:${marco}mm solid ${color};color:${color};font-family:${familia};">
+        ${iconoRotuloSVG(icono, fuente*1.3, color)}
+        <div class="texto" style="font-size:${fuente}mm;">${escapeHTML(texto)}</div>
+      </div>`;
+  });
+  document.getElementById('sheet-rotulos').innerHTML = out;
+}
+
+document.getElementById('r-agregar-cartel').addEventListener('click', () => {
+  rpmAgregarCartel({});
+  generarRotulos();
+  rpmGuardarValores();
+});
+
+// Cualquier cambio de texto o tamaño dentro de la lista de carteles regenera al instante
+document.getElementById('r-lista-carteles').addEventListener('input', () => {
+  generarRotulos();
+  rpmGuardarValores();
+});
+
+/* ---------- REFERENCIAS: título + lista de familias, en tableros ---------- */
+function calcularFuenteItemsRef(nItemsPorColumna, altoMM){
+  const disponible = altoMM * 0.62; // espacio debajo del encabezado
+  const tam = disponible / (Math.max(nItemsPorColumna, 1) * 1.55);
+  return Math.max(Math.min(tam, altoMM * 0.075), 2.6);
+}
+
+/* Tamaño automático para el título principal / subtítulo del encabezado:
+   se ajusta al ancho disponible del cartel (y no puede superar el tope propio
+   de cada rol, para que el subtítulo nunca "gane" al título). */
+function calcularFuenteTituloAuto(texto, anchoMM, tamMaxMM, tamMinMM){
+  const largo = Math.max((texto || '').trim().length, 1);
+  const anchoUtil = Math.max(anchoMM - 8, 10); // descuenta el padding lateral del encabezado (4mm por lado)
+  const tam = (anchoUtil * 1.7) / largo;
+  return Math.max(Math.min(tam, tamMaxMM), tamMinMM);
+}
+
+function toggleFuenteManualRef(){
+  const modo = document.getElementById('ref-modo-fuente').value;
+  document.getElementById('ref-fuente-manual-label').style.display = (modo === 'manual') ? 'flex' : 'none';
+}
+
+function toggleFuenteManualRefTitulo(n){
+  const modo = document.getElementById('ref-titulo'+n+'-modo').value;
+  document.getElementById('ref-titulo'+n+'-manual-label').style.display = (modo === 'manual') ? 'flex' : 'none';
+}
+
+let rpmContadorTableros = 0;
+
+function refCrearItemTablero(item){
+  item = item || {};
+  rpmContadorTableros++;
+  const wrap = document.createElement('div');
+  wrap.className = 'ref-item-tablero';
+  wrap.style.cssText = 'display:flex;gap:6px;align-items:flex-start;margin-bottom:10px;border:1px solid #eee;border-radius:6px;padding:8px;';
+  wrap.innerHTML =
+    '<div style="flex:1;display:flex;flex-direction:column;gap:6px;">' +
+      '<div style="display:flex;gap:6px;">' +
+        '<input type="text" class="ref-item-titulo1" placeholder="Título principal (ej. DEPÓSITO 4)" style="flex:1;padding:6px 8px;font-size:13px;border:1px solid #ccc;border-radius:4px;">' +
+        '<input type="text" class="ref-item-titulo2" placeholder="Subtítulo (ej. ESTANTE A)" style="flex:1;padding:6px 8px;font-size:13px;border:1px solid #ccc;border-radius:4px;">' +
+      '</div>' +
+      '<textarea class="ref-item-items" rows="5" placeholder="Un ítem por línea, ej.: Cables / Artefactos de iluminación / Media tensión" style="width:100%;padding:6px 8px;font-size:13px;border:1px solid #ccc;border-radius:4px;font-family:inherit;resize:vertical;"></textarea>' +
+    '</div>' +
+    '<button type="button" class="ref-item-quitar" title="Quitar este tablero" style="border:1px solid #ccc;background:white;border-radius:4px;width:28px;height:32px;cursor:pointer;font-size:15px;color:#a33;flex-shrink:0;">×</button>';
+  wrap.querySelector('.ref-item-titulo1').value = item.titulo1 || '';
+  wrap.querySelector('.ref-item-titulo2').value = item.titulo2 || '';
+  wrap.querySelector('.ref-item-items').value = item.items || '';
+  wrap.querySelector('.ref-item-quitar').addEventListener('click', () => {
+    wrap.remove();
+    generarReferencias();
+    rpmGuardarValores();
+  });
+  return wrap;
+}
+
+function refAgregarTablero(item){
+  document.getElementById('ref-lista-tableros').appendChild(refCrearItemTablero(item));
+}
+
+function refAlineacionCSS(val){
+  if(val === 'centro') return 'center';
+  if(val === 'derecha') return 'flex-end';
+  return 'flex-start'; // izquierda
+}
+
+function generarReferencias(){
+  const ancho = parseFloat(document.getElementById('ref-ancho').value) || 90;
+  const alto = parseFloat(document.getElementById('ref-alto').value) || 110;
+  const colorHeader = document.getElementById('ref-color-header').value;
+  const colorFranja = document.getElementById('ref-color-franja').value;
+  const dividir = document.getElementById('ref-dividir').checked;
+  const etiqueta1 = document.getElementById('ref-etiqueta1').value || 'Izquierda';
+  const etiqueta2 = document.getElementById('ref-etiqueta2').value || 'Derecha';
+  const marcador = document.getElementById('ref-marcador').value; // 'numeros' o 'puntos'
+  const modoFuente = document.getElementById('ref-modo-fuente').value;
+  const fuenteManual = parseFloat(document.getElementById('ref-fuente-manual').value) || 5;
+  const cuerpoAlin = refAlineacionCSS(document.getElementById('ref-cuerpo-alineacion').value);
+
+  const t1Modo = document.getElementById('ref-titulo1-modo').value;
+  const t1Manual = parseFloat(document.getElementById('ref-titulo1-tamano').value) || 9;
+  const t1Alin = refAlineacionCSS(document.getElementById('ref-titulo1-alineacion').value);
+
+  const t2Modo = document.getElementById('ref-titulo2-modo').value;
+  const t2Manual = parseFloat(document.getElementById('ref-titulo2-tamano').value) || 5;
+  const t2Alin = refAlineacionCSS(document.getElementById('ref-titulo2-alineacion').value);
+
+  const marcarItem = (i) => marcador === 'puntos' ? '•' : (i + 1);
+
+  const tableros = Array.from(document.querySelectorAll('#ref-lista-tableros .ref-item-tablero'));
+  let out = '';
+  tableros.forEach(t => {
+    const titulo1 = t.querySelector('.ref-item-titulo1').value.trim();
+    const titulo2 = t.querySelector('.ref-item-titulo2').value.trim();
+    const items = t.querySelector('.ref-item-items').value.split('\n').map(s => s.trim()).filter(Boolean);
+    if(!titulo1 && items.length === 0) return;
+
+    const t1Tamano = t1Modo === 'manual' ? t1Manual : calcularFuenteTituloAuto(titulo1, ancho, 12, 4);
+    const t2Tamano = t2Modo === 'manual' ? t2Manual : calcularFuenteTituloAuto(titulo2, ancho, 7, 2.8);
+
+    let cuerpoHTML;
+    if(dividir && items.length > 1){
+      const mitad = Math.ceil(items.length / 2);
+      const col1 = items.slice(0, mitad);
+      const col2 = items.slice(mitad);
+      const fuente = modoFuente === 'manual' ? fuenteManual : calcularFuenteItemsRef(Math.max(col1.length, col2.length), alto);
+      const armarCol = (lista, offset, etiqueta) => `
+          <div class="ref-columna" style="font-size:${fuente}mm;align-items:${cuerpoAlin};">
+            <div class="ref-etiqueta-col" style="background:${colorFranja};font-size:${fuente*0.78}mm;">${escapeHTML(etiqueta)}</div>
+            ${lista.map((it,i)=>`<div class="ref-item" style="justify-content:${cuerpoAlin};"><span class="num" style="color:${colorFranja};">${marcarItem(offset+i)}</span><span class="texto">${escapeHTML(it)}</span></div>`).join('')}
+          </div>`;
+      cuerpoHTML = `<div class="ref-cuerpo">${armarCol(col1, 0, etiqueta1)}${armarCol(col2, mitad, etiqueta2)}</div>`;
+    } else {
+      const fuente = modoFuente === 'manual' ? fuenteManual : calcularFuenteItemsRef(items.length, alto);
+      cuerpoHTML = `
+        <div class="ref-cuerpo una-columna" style="font-size:${fuente}mm;align-items:${cuerpoAlin};">
+          ${items.map((it,i)=>`<div class="ref-item" style="justify-content:${cuerpoAlin};"><span class="num" style="color:${colorFranja};">${marcarItem(i)}</span><span class="texto">${escapeHTML(it)}</span></div>`).join('')}
+        </div>`;
+    }
+
+    out += `
+      <div class="ref-tag corte" style="width:${ancho}mm;height:${alto}mm;border:1.2mm solid ${colorHeader};">
+        <div class="ref-header" style="background:${colorHeader};">
+          <span class="ref-titulo1" style="font-size:${t1Tamano}mm;align-self:${t1Alin};">${escapeHTML(titulo1)}</span>
+          <span class="ref-titulo2" style="font-size:${t2Tamano}mm;align-self:${t2Alin};">${escapeHTML(titulo2)}</span>
+        </div>
+        ${cuerpoHTML}
+      </div>`;
+  });
+  document.getElementById('sheet-referencias').innerHTML = out;
+}
+
+document.getElementById('ref-agregar-tablero').addEventListener('click', () => {
+  refAgregarTablero({});
+  generarReferencias();
+  rpmGuardarValores();
+});
+
+document.getElementById('ref-lista-tableros').addEventListener('input', () => {
+  generarReferencias();
+  rpmGuardarValores();
+});
+
+/* ---------- Tamaño de hoja de impresión (global, aplica a pantalla e impresión) ---------- */
+const HOJAS_MM = {
+  'A4': {w:210, h:297},
+  'A3': {w:297, h:420},
+  'A2': {w:420, h:594},
+  'A1': {w:594, h:841},
+  'Carta': {w:216, h:279},
+  'Oficio': {w:216, h:356}
+};
+
+function aplicarTamanoHoja(){
+  const tam = document.getElementById('hoja-tamano').value;
+  const orient = document.getElementById('hoja-orientacion').value;
+  let {w, h} = HOJAS_MM[tam] || HOJAS_MM['A4'];
+  if(orient === 'landscape'){ const t = w; w = h; h = t; }
+
+  // Vista en pantalla: el ancho máximo de cada hoja visible sigue el tamaño elegido
+  document.querySelectorAll('.sheet').forEach(s => { s.style.maxWidth = w + 'mm'; });
+
+  // Impresión: @page dinámico según tamaño/orientación elegidos
+  let estiloPagina = document.getElementById('rpm-estilo-pagina');
+  if(!estiloPagina){
+    estiloPagina = document.createElement('style');
+    estiloPagina.id = 'rpm-estilo-pagina';
+    document.head.appendChild(estiloPagina);
+  }
+  estiloPagina.textContent = `@page { size: ${w}mm ${h}mm; margin: 6mm; }`;
+}
+
+/* ---------- abrirYImprimir extendido: agrega el @page dinámico a la ventana de impresión ---------- */
+function abrirYImprimir(){
+  const sheetActiva = document.querySelector('.sheet.activa');
+  if(!sheetActiva || !sheetActiva.innerHTML.trim()){
+    alert('No hay carteles generados en esta pestaña todavía. Completá algún campo para que se generen.');
+    return;
+  }
+
+  const nueva = window.open('', '_blank');
+  if(!nueva){
+    alert('Tu navegador bloqueó la ventana nueva. Habilitá los popups para este sitio y probá de nuevo.');
+    return;
+  }
+
+  const estilos = document.querySelector('style').innerHTML;
+  const estiloPaginaEl = document.getElementById('rpm-estilo-pagina');
+  const estiloPagina = estiloPaginaEl ? estiloPaginaEl.textContent : '';
+
+  nueva.document.open();
+  nueva.document.write(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <title>Imprimir carteles</title>
+      <style>${estilos}</style>
+      <style>${estiloPagina}</style>
+    </head>
+    <body>
+      <div class="sheet activa">${sheetActiva.innerHTML}</div>
+    </body>
+    </html>
+  `);
+  nueva.document.close();
+
+  nueva.focus();
+  setTimeout(function(){
+    nueva.print();
+  }, 350);
+}
+
+/* ---------- mostrarTipo extendido: agrega el caso "rotulos" sin tocar el original ---------- */
+function mostrarTipo(tipo){
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.toggle('active', b.dataset.tipo===tipo));
+  document.querySelectorAll('.bloque-tipo').forEach(b => b.classList.remove('active'));
+  document.getElementById('bloque-'+tipo).classList.add('active');
+  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('activa'));
+
+  if(tipo==='celdas') document.getElementById('sheet-celdas').classList.add('activa');
+  if(tipo==='filas') document.getElementById('sheet-filas').classList.add('activa');
+  if(tipo==='estantes') document.getElementById('sheet-estantes-'+opcionEstante.valor).classList.add('activa');
+  if(tipo==='rotulos') document.getElementById('sheet-rotulos').classList.add('activa');
+  if(tipo==='referencias') document.getElementById('sheet-referencias').classList.add('activa');
+}
+
+/* ---------- Guardado automático de los últimos valores usados ---------- */
+const RPM_STORAGE_KEY = 'rpm_carteleria_valores_v1';
+const RPM_STORAGE_ITEMS_KEY = 'rpm_carteleria_rotulos_items_v2';
+const RPM_STORAGE_REF_KEY = 'rpm_carteleria_referencias_tableros_v1';
+const RPM_CAMPOS_A_GUARDAR = [
+  'c-cols','c-filas','c-modo','c-direccion','c-ancho','c-alto','c-anchod','c-marco','c-color',
+  'f-letras','f-rep','f-ancho','f-alto','f-marco','f-color',
+  'e-cant','e-inicio','e-ancho','e-alto','e-fondo','e-franja',
+  'r-ancho','r-alto','r-marco','r-color','r-fuente-familia','r-fuente-otra','r-modo-fuente','r-fuente-manual','r-alineacion','r-icono',
+  'ref-ancho','ref-alto','ref-color-header','ref-color-franja','ref-dividir','ref-etiqueta1','ref-etiqueta2',
+  'ref-marcador','ref-modo-fuente','ref-fuente-manual','ref-cuerpo-alineacion',
+  'ref-titulo1-modo','ref-titulo1-tamano','ref-titulo1-alineacion',
+  'ref-titulo2-modo','ref-titulo2-tamano','ref-titulo2-alineacion',
+  'hoja-tamano','hoja-orientacion'
+];
+
+function rpmGuardarValores(){
+  try{
+    const datos = {};
+    RPM_CAMPOS_A_GUARDAR.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      datos[id] = (el.type === 'checkbox') ? el.checked : el.value;
+    });
+    localStorage.setItem(RPM_STORAGE_KEY, JSON.stringify(datos));
+
+    const items = Array.from(document.querySelectorAll('#r-lista-carteles .r-item-cartel')).map(f => ({
+      texto: f.querySelector('.r-item-texto').value,
+      tamano: f.querySelector('.r-item-tamano').value
+    }));
+    localStorage.setItem(RPM_STORAGE_ITEMS_KEY, JSON.stringify(items));
+
+    const tableros = Array.from(document.querySelectorAll('#ref-lista-tableros .ref-item-tablero')).map(w => ({
+      titulo1: w.querySelector('.ref-item-titulo1').value,
+      titulo2: w.querySelector('.ref-item-titulo2').value,
+      items: w.querySelector('.ref-item-items').value
+    }));
+    localStorage.setItem(RPM_STORAGE_REF_KEY, JSON.stringify(tableros));
+  }catch(e){ /* localStorage no disponible (ej. iframe con sandbox estricto en Sites) */ }
+}
+
+function rpmRestaurarValores(){
+  try{
+    const guardado = localStorage.getItem(RPM_STORAGE_KEY);
+    if(guardado){
+      const datos = JSON.parse(guardado);
+      RPM_CAMPOS_A_GUARDAR.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el && datos[id] !== undefined){
+          if(el.type === 'checkbox'){
+            el.checked = !!datos[id];
+          } else {
+            el.value = datos[id];
+            const btn = document.querySelector(`[data-target="${id}"]`);
+            if(btn) btn.style.background = datos[id];
+          }
+        }
+      });
+    }
+  }catch(e){ /* localStorage no disponible */ }
+
+  try{
+    const guardadoItems = localStorage.getItem(RPM_STORAGE_ITEMS_KEY);
+    const items = guardadoItems ? JSON.parse(guardadoItems) : null;
+    if(items && items.length){
+      items.forEach(it => rpmAgregarCartel(it));
+    } else {
+      rpmAgregarCartel({texto:'Tornillos autoperforantes'});
+      rpmAgregarCartel({texto:'Bulonería'});
+      rpmAgregarCartel({texto:'Caja de herramientas'});
+    }
+  }catch(e){
+    rpmAgregarCartel({});
+  }
+
+  try{
+    const guardadoRef = localStorage.getItem(RPM_STORAGE_REF_KEY);
+    const tableros = guardadoRef ? JSON.parse(guardadoRef) : null;
+    if(tableros && tableros.length){
+      tableros.forEach(t => refAgregarTablero(t));
+    } else {
+      refAgregarTablero({
+        titulo1: 'DEPÓSITO 4',
+        titulo2: 'ESTANTE A',
+        items: 'Cables\nArtefactos de iluminación\nMedia tensión\nConectores\nBorneras\nTerminales'
+      });
+    }
+  }catch(e){
+    refAgregarTablero({});
+  }
+}
+
+// Guarda y regenera al instante ante cualquier cambio en los campos controlados
+document.addEventListener('input', (e)=>{
+  if(!e.target || !e.target.id || !RPM_CAMPOS_A_GUARDAR.includes(e.target.id)) return;
+  rpmGuardarValores();
+  rpmRegenerarPorId(e.target.id);
+});
+document.addEventListener('change', (e)=>{
+  if(!e.target || !e.target.id || !RPM_CAMPOS_A_GUARDAR.includes(e.target.id)) return;
+  rpmGuardarValores();
+  rpmRegenerarPorId(e.target.id);
+});
+
+const RPM_FUNCION_POR_PREFIJO = {
+  'c-': generarCeldas,
+  'f-': generarFilas,
+  'e-': generarEstantes,
+  'r-': generarRotulos,
+  'ref-': generarReferencias
+};
+function rpmRegenerarPorId(id){
+  if(id.indexOf('hoja-') === 0){ aplicarTamanoHoja(); return; }
+  const m = id.match(/^([a-z]+)-/);
+  const fn = m ? RPM_FUNCION_POR_PREFIJO[m[1] + '-'] : null;
+  if(fn) fn();
+}
+
+// El selector de color personalizado no dispara 'change' sobre el input oculto,
+// así que envolvemos la función existente sin modificar su código original.
+const _cpElegirColorOriginal = cpElegirColor;
+cpElegirColor = function(inputId, color){
+  _cpElegirColorOriginal(inputId, color);
+  rpmGuardarValores();
+  rpmRegenerarPorId(inputId); // el color se aplica al instante
+};
+
+/* ---------- Diseños guardados de Rótulos (hasta 3) ---------- */
+const RPM_STORAGE_PRESETS_KEY = 'rpm_carteleria_rotulos_presets_v1';
+let rpmPresets = [null, null, null];
+
+function rpmCargarPresetsStorage(){
+  try{
+    const g = localStorage.getItem(RPM_STORAGE_PRESETS_KEY);
+    rpmPresets = g ? JSON.parse(g) : [null, null, null];
+  }catch(e){ rpmPresets = [null, null, null]; }
+}
+
+function rpmGuardarPresetsStorage(){
+  try{ localStorage.setItem(RPM_STORAGE_PRESETS_KEY, JSON.stringify(rpmPresets)); }
+  catch(e){ /* localStorage no disponible */ }
+}
+
+function rpmGuardarPreset(i){
+  let nombre = null;
+  try{
+    nombre = prompt('Nombre para este diseño (ej. "PPE chico", "Cables grande"):', rpmPresets[i] ? rpmPresets[i].nombre : ('Diseño ' + (i+1)));
+  }catch(e){ /* prompt bloqueado por el iframe */ }
+  if(nombre === null) return; // canceló, o el navegador bloqueó el cuadro
+  rpmPresets[i] = {
+    nombre: nombre.trim() || ('Diseño ' + (i+1)),
+    ancho: document.getElementById('r-ancho').value,
+    alto: document.getElementById('r-alto').value,
+    marco: document.getElementById('r-marco').value,
+    color: document.getElementById('r-color').value,
+    familia: document.getElementById('r-fuente-familia').value,
+    fuenteOtra: document.getElementById('r-fuente-otra').value,
+    modoFuente: document.getElementById('r-modo-fuente').value,
+    fuenteManual: document.getElementById('r-fuente-manual').value,
+    alineacion: document.getElementById('r-alineacion').value,
+    icono: document.getElementById('r-icono').value
+  };
+  rpmGuardarPresetsStorage();
+  rpmRenderPresets();
+}
+
+function rpmCargarPreset(i){
+  const p = rpmPresets[i];
+  if(!p) return;
+  document.getElementById('r-ancho').value = p.ancho;
+  document.getElementById('r-alto').value = p.alto;
+  document.getElementById('r-marco').value = p.marco;
+  document.getElementById('r-color').value = p.color;
+  const btnColor = document.querySelector('[data-target="r-color"]');
+  if(btnColor) btnColor.style.background = p.color;
+  document.getElementById('r-fuente-familia').value = p.familia;
+  document.getElementById('r-fuente-otra').value = p.fuenteOtra || '';
+  document.getElementById('r-modo-fuente').value = p.modoFuente;
+  document.getElementById('r-fuente-manual').value = p.fuenteManual;
+  document.getElementById('r-alineacion').value = p.alineacion;
+  document.getElementById('r-icono').value = p.icono;
+  toggleFuenteManual();
+  toggleFuenteOtra();
+  generarRotulos();
+  rpmGuardarValores();
+}
+
+function rpmBorrarPreset(i){
+  let ok = true;
+  try{ ok = confirm('¿Borrar este diseño guardado?'); }catch(e){ /* confirm bloqueado */ }
+  if(!ok) return;
+  rpmPresets[i] = null;
+  rpmGuardarPresetsStorage();
+  rpmRenderPresets();
+}
+
+function rpmRenderPresets(){
+  const cont = document.getElementById('r-presets');
+  if(!cont) return;
+  cont.innerHTML = '';
+  for(let i=0; i<3; i++){
+    const preset = rpmPresets[i];
+    const card = document.createElement('div');
+    card.style.cssText = 'border:1px solid #ddd;border-radius:8px;padding:8px 10px;min-width:150px;display:flex;flex-direction:column;gap:6px;background:#fafbfc;';
+
+    const nombre = document.createElement('div');
+    nombre.style.cssText = 'font-size:12px;font-weight:bold;color:#333;';
+    nombre.textContent = preset ? preset.nombre : ('Diseño ' + (i+1) + ' (vacío)');
+    card.appendChild(nombre);
+
+    const filaBtns = document.createElement('div');
+    filaBtns.style.cssText = 'display:flex;gap:6px;';
+
+    const btnGuardar = document.createElement('button');
+    btnGuardar.type = 'button';
+    btnGuardar.textContent = preset ? 'Regrabar' : 'Guardar acá';
+    btnGuardar.style.cssText = 'flex:1;font-size:11px;padding:5px 6px;border-radius:5px;border:1px solid #0B5CAB;background:white;color:#0B5CAB;cursor:pointer;';
+    btnGuardar.onclick = () => rpmGuardarPreset(i);
+    filaBtns.appendChild(btnGuardar);
+
+    if(preset){
+      const btnUsar = document.createElement('button');
+      btnUsar.type = 'button';
+      btnUsar.textContent = 'Usar';
+      btnUsar.style.cssText = 'flex:1;font-size:11px;padding:5px 6px;border-radius:5px;border:none;background:#0B5CAB;color:white;cursor:pointer;';
+      btnUsar.onclick = () => rpmCargarPreset(i);
+      filaBtns.appendChild(btnUsar);
+
+      const btnBorrar = document.createElement('button');
+      btnBorrar.type = 'button';
+      btnBorrar.textContent = '✕';
+      btnBorrar.title = 'Borrar este diseño guardado';
+      btnBorrar.style.cssText = 'font-size:11px;padding:5px 8px;border-radius:5px;border:1px solid #ccc;background:white;color:#a33;cursor:pointer;';
+      btnBorrar.onclick = () => rpmBorrarPreset(i);
+      filaBtns.appendChild(btnBorrar);
+    }
+
+    card.appendChild(filaBtns);
+    cont.appendChild(card);
+  }
+}
+
+// Al cargar la página: restaura los últimos valores guardados y regenera todo con ellos
+rpmRestaurarValores();
+toggleFuenteManual();
+toggleFuenteOtra();
+toggleFuenteManualRef();
+toggleFuenteManualRefTitulo(1);
+toggleFuenteManualRefTitulo(2);
+toggleAnchoDoble();
+rpmCargarPresetsStorage();
+rpmRenderPresets();
+aplicarTamanoHoja();
+generarCeldas();
+generarFilas();
+generarEstantes();
+generarRotulos();
+generarReferencias();
 </script>
 </body>
 </html>

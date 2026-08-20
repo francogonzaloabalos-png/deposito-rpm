@@ -872,11 +872,31 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
         }
 
         #editProductOverlay .modal-body {
             overflow-y: auto;
-            padding: 20px;
+            padding: 20px 20px 10px 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--line) transparent;
+        }
+
+        #editProductOverlay .modal-body::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #editProductOverlay .modal-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #editProductOverlay .modal-body::-webkit-scrollbar-thumb {
+            background: var(--line);
+            border-radius: 6px;
+        }
+
+        #editProductOverlay .modal-body::-webkit-scrollbar-thumb:hover {
+            background: var(--txt-faint);
         }
 
         #editProductOverlay .modal-actions {
@@ -884,6 +904,33 @@
             padding: 14px 20px;
             border-top: 1px solid var(--line);
             flex-shrink: 0;
+        }
+
+        #editProdCloseX {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            z-index: 20;
+            background: var(--bg-elev);
+            border: 1px solid var(--line);
+            font-size: 13px;
+            color: var(--txt-dim);
+            cursor: pointer;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.15s ease;
+        }
+
+        #editProdCloseX:hover {
+            color: var(--txt);
+            background: var(--hover-bg);
+            border-color: var(--accent);
         }
 
         .lightbox {
@@ -1308,12 +1355,10 @@
 
     <!-- Edit Product Modal -->
     <div class="overlay" id="editProductOverlay">
-        <div class="modal" style="max-width: 400px; width: 100%; position: relative;">
-            <button type="button" id="editProdCloseX"
-                style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; color: var(--txt-dim); cursor: pointer; line-height: 1; padding: 4px; border-radius: 6px; transition: color 0.15s;"
-                title="Cerrar ventana">✕</button>
+        <div class="modal" style="max-width: 400px; width: 100%;">
+            <button type="button" id="editProdCloseX" title="Cerrar ventana">✕</button>
             <div class="modal-body">
-            <h3 id="editProdTitle">Editar Producto</h3>
+            <h3 id="editProdTitle" style="padding-right: 32px;">Editar Producto</h3>
             <div class="sub" id="editProdSub"></div>
             <div class="field">
                 <label>Descripción del Producto</label>
@@ -2609,8 +2654,25 @@
         function clearSelectedProducts() {
             state.selectedIds.clear();
             state.batchDraftQtys = {};
+            if (state.stockUi.sortKey === 'seleccion') {
+                state.stockUi.sortKey = state.stockUi.prevSortKey || 'familia';
+                state.stockUi.sortDir = state.stockUi.prevSortDir || 1;
+                document.querySelectorAll('#stickyStockTable thead th .arrow').forEach(a => a.textContent = '');
+                const activeTh = document.querySelector(`#stickyStockTable thead th[data-sort="${state.stockUi.sortKey}"]`);
+                if (activeTh) {
+                    const arrowEl = activeTh.querySelector('.arrow');
+                    if (arrowEl) arrowEl.textContent = state.stockUi.sortDir === 1 ? '▲' : '▼';
+                }
+            }
+            document.querySelectorAll('#stockTable .select-cb').forEach(cb => { cb.checked = false; });
+            document.querySelectorAll('#stockTable tr.row-selected').forEach(tr => {
+                tr.classList.remove('row-selected');
+                const badge = tr.querySelector('.pin-badge');
+                if (badge) badge.remove();
+            });
             renderStock();
-            showToast('Selección limpiada');
+            updateCartOrderBar();
+            showToast('Selección limpiada ✓');
         }
 
         let adjustBatchTipo = 'SALIDA';
