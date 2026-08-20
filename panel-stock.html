@@ -1352,6 +1352,10 @@
                 <label>Obra / destino (opcional)</label>
                 <input type="text" id="adjustObra" placeholder="Obra 1, Depósito, Mantenimiento…">
             </div>
+            <div class="field">
+                <label>Observaciones generales del envío (opcional)</label>
+                <input type="text" id="adjustObsGeneral" placeholder="Transporte, motivo o aclaración del envío…" style="text-transform:uppercase;">
+            </div>
             <div class="modal-err" id="adjustErr"></div>
             <div class="modal-actions">
                 <button class="btn ghost" id="adjustCancel">Cancelar</button>
@@ -1592,8 +1596,13 @@
                     </div>
                     <div>
                         <label>Observaciones del ítem</label>
-                        <input type="text" id="newProdObs" placeholder="Observaciones generales…" style="text-transform:uppercase;">
+                        <input type="text" id="newProdObs" placeholder="Observaciones de la pieza/ficha…" style="text-transform:uppercase;">
                     </div>
+                </div>
+
+                <div class="field">
+                    <label>Observaciones generales del envío (opcional - Movimientos)</label>
+                    <input type="text" id="newProdObsGeneral" placeholder="Transporte, motivo o aclaración del envío…" style="text-transform:uppercase;">
                 </div>
 
                 <div class="modal-err" id="newProdErr"></div>
@@ -1642,6 +1651,11 @@
             <div class="field">
                 <label>Obra / destino (opcional)</label>
                 <input type="text" id="adjustBatchObra" placeholder="Obra, Mantenimiento, etc.">
+            </div>
+
+            <div class="field">
+                <label>Observaciones generales del envío (opcional)</label>
+                <input type="text" id="adjustBatchObsGeneral" placeholder="Transporte, motivo o aclaración del envío…" style="text-transform:uppercase;">
             </div>
 
             <div class="modal-err" id="adjustBatchErr"></div>
@@ -2416,6 +2430,7 @@
             document.getElementById('newProdUbiObs').value = '';
             document.getElementById('newProdResponsable').value = '';
             document.getElementById('newProdObs').value = '';
+            document.getElementById('newProdObsGeneral').value = '';
             document.getElementById('newProdErr').style.display = 'none';
             document.getElementById('newProdUnidad').value = 'un';
             actualizarVisibilidadAclaracionUbi();
@@ -2534,6 +2549,7 @@
 
             const responsable = document.getElementById('newProdResponsable').value.trim().toUpperCase();
             const obs = document.getElementById('newProdObs').value.trim().toUpperCase();
+            const obsGeneralEnvio = document.getElementById('newProdObsGeneral').value.trim().toUpperCase();
 
             if (!zona) {
                 errBox.textContent = 'Seleccioná o ingresá una Zona / Depósito.';
@@ -2641,6 +2657,7 @@
                         fila: ubiFila,
                         responsable: responsable,
                         observaciones: obsFinal,
+                        obs_general: obsGeneralEnvio,
                         fotos_base64: newProductCurrentImages.map(x => x.base64)
                     };
                     const res = await apiPost(payload);
@@ -2758,16 +2775,10 @@
             const list = state.stock.filter(p => state.selectedIds.has(p.id));
             if (list.length === 0) return;
 
-            // Validación de depósitos
-            const zonas = new Set(list.map(p => p.zona));
-            if (zonas.size > 1) {
-                showToast('Los productos seleccionados pertenecen a distintos depósitos — filtrá por depósito.', true);
-                return;
-            }
-
             state.modalOpen = true;
             document.getElementById('adjustBatchResponsable').value = '';
             document.getElementById('adjustBatchObra').value = '';
+            document.getElementById('adjustBatchObsGeneral').value = '';
             document.getElementById('adjustBatchErr').style.display = 'none';
 
             // Rellenar lista de ítems con inputs individuales pre-cargados
@@ -2778,7 +2789,7 @@
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line-soft);">
                     <div style="flex: 1; min-width: 0; padding-right: 12px; text-align: left;">
                         <div style="font-weight: 600; font-size: 13px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${escapeHtml(p.descripcion)}</div>
-                        <div style="font-size: 11px; color: var(--txt-dim);">ID: ${escapeHtml(p.id)} | Stock actual: ${p.stock_actual}</div>
+                        <div style="font-size: 11px; color: var(--txt-dim);"><span style="color:var(--accent);font-weight:600;">${escapeHtml(p.zona || '')}</span> · ID: ${escapeHtml(p.id)} | Stock: ${p.stock_actual} ${escapeHtml(p.unidad || 'un')}</div>
                     </div>
                     <div style="flex-shrink: 0; display: flex; align-items: center; gap: 4px;">
                         <input type="number" class="batch-cant-input" data-id="${escapeAttr(p.id)}" min="0" step="1" value="${preVal}" style="width: 70px; padding: 6px 8px; border: 1.5px solid var(--line); border-radius: 6px; font-size: 13px; text-align: right; background: var(--bg-card); color: var(--txt); margin: 0;">
@@ -2816,8 +2827,9 @@
             const list = state.stock.filter(p => state.selectedIds.has(p.id));
             if (list.length === 0) return;
 
-            const responsable = document.getElementById('adjustBatchResponsable').value.trim();
-            const obra = document.getElementById('adjustBatchObra').value.trim();
+            const responsable = document.getElementById('adjustBatchResponsable').value.trim().toUpperCase();
+            const obra = document.getElementById('adjustBatchObra').value.trim().toUpperCase();
+            const obsGeneral = document.getElementById('adjustBatchObsGeneral').value.trim().toUpperCase();
             const errBox = document.getElementById('adjustBatchErr');
             errBox.style.display = 'none';
 
@@ -2855,6 +2867,7 @@
                     fecha: new Date().toLocaleString('es-AR'),
                     responsable,
                     obra,
+                    obs_general: obsGeneral,
                     items
                 };
 
@@ -2991,6 +3004,7 @@
             document.getElementById('adjustCantidad').value = '';
             document.getElementById('adjustResponsable').value = '';
             document.getElementById('adjustObra').value = '';
+            document.getElementById('adjustObsGeneral').value = '';
             document.getElementById('adjustErr').style.display = 'none';
             document.getElementById('adjustOverlay').dataset.id = id;
             selectTipo('SALIDA');
@@ -3012,8 +3026,9 @@
 
         async function confirmAdjust() {
             const cantidad = Number(document.getElementById('adjustCantidad').value);
-            const responsable = document.getElementById('adjustResponsable').value.trim();
-            const obra = document.getElementById('adjustObra').value.trim();
+            const responsable = document.getElementById('adjustResponsable').value.trim().toUpperCase();
+            const obra = document.getElementById('adjustObra').value.trim().toUpperCase();
+            const obsGeneral = document.getElementById('adjustObsGeneral').value.trim().toUpperCase();
             const errBox = document.getElementById('adjustErr');
 
             if (!cantidad || cantidad <= 0) { errBox.textContent = 'Ingresá una cantidad válida.'; errBox.style.display = 'block'; return; }
@@ -3032,6 +3047,7 @@
                     tipo_movimiento: adjustTipo,
                     fecha: new Date().toLocaleString('es-AR'),
                     responsable, obra,
+                    obs_general: obsGeneral,
                     items: [{ id: p.id, cantidad }],
                 };
                 const resp = await apiPost(payload);
