@@ -2583,202 +2583,203 @@
             renderNewProdFotos();
         }
 
-        async function confirmNewProduct() {
-            const errBox = document.getElementById('newProdErr');
-            errBox.style.display = 'none';
+// ============================================================
+// REEMPLAZAR la función confirmNewProduct() completa por esta versión.
+// Motivo: dejar de armar un texto "obsFinal" con datos duplicados y
+// mandar cada dato en su propio campo, tal como lo espera el
+// Codigo.gs corregido (que arma el Obs. ítem limpio del lado del
+// servidor y guarda la factura en su propia columna).
+// ============================================================
+async function confirmNewProduct() {
+    const errBox = document.getElementById('newProdErr');
+    errBox.style.display = 'none';
 
-            // ── Tipo de alta ────────────────────────────────────────────
-            const tipoAlta = document.getElementById('newProdTipoAlta').value; // 'DEPOSITO' | 'RETIRO'
-            const esRetiro = tipoAlta === 'RETIRO';
-            const labelTipoAlta = esRetiro
-                ? 'Ingreso inicial / Alta - Retiro'
-                : 'Ingreso inicial / Alta - Depósito';
+    // ── Tipo de alta ────────────────────────────────────────────
+    const tipoAlta = document.getElementById('newProdTipoAlta').value; // 'DEPOSITO' | 'RETIRO'
+    const esRetiro = tipoAlta === 'RETIRO';
 
-            // ── Lugar de retiro (solo en modo RETIRO) ──────────────────
-            const lugarRetiro = esRetiro
-                ? document.getElementById('newProdLugarRetiro').value.trim().toUpperCase()
-                : '';
+    // ── Lugar de retiro (solo en modo RETIRO) ──────────────────
+    const lugarRetiro = esRetiro
+        ? document.getElementById('newProdLugarRetiro').value.trim().toUpperCase()
+        : '';
 
-            // ── Factura (opcional en ambos modos) ──────────────────────
-            const factura = document.getElementById('newProdFactura').value.trim().toUpperCase();
+    // ── Factura (opcional en ambos modos) — viaja SOLA, sin prefijo ──
+    const factura = document.getElementById('newProdFactura').value.trim().toUpperCase();
 
-            // ── Zona (solo requerida en modo DEPÓSITO) ─────────────────
-            const selZona = document.getElementById('newProdZona').value;
-            const customZona = document.getElementById('newProdZonaCustom').value.trim().toUpperCase();
-            const zona = esRetiro ? '' : (selZona === '__OTRA__' ? customZona : selZona).trim().toUpperCase();
+    // ── Zona (solo requerida en modo DEPÓSITO) ─────────────────
+    const selZona = document.getElementById('newProdZona').value;
+    const customZona = document.getElementById('newProdZonaCustom').value.trim().toUpperCase();
+    const zona = esRetiro ? '' : (selZona === '__OTRA__' ? customZona : selZona).trim().toUpperCase();
 
-            const desc = document.getElementById('newProdDesc').value.trim().toUpperCase();
-            const marca = document.getElementById('newProdMarca').value.trim().toUpperCase() || '—';
+    const desc = document.getElementById('newProdDesc').value.trim().toUpperCase();
+    const marca = document.getElementById('newProdMarca').value.trim().toUpperCase() || '—';
 
-            const selFam = document.getElementById('newProdFamiliaSel').value;
-            const customFam = document.getElementById('newProdFamiliaCustom').value.trim().toUpperCase();
-            const familia = (selFam === '__OTRA__' ? customFam : selFam).trim().toUpperCase() || 'VARIOS';
+    const selFam = document.getElementById('newProdFamiliaSel').value;
+    const customFam = document.getElementById('newProdFamiliaCustom').value.trim().toUpperCase();
+    const familia = (selFam === '__OTRA__' ? customFam : selFam).trim().toUpperCase() || 'VARIOS';
 
-            const unidad = document.getElementById('newProdUnidad').value;
-            const stockInicial = Number(document.getElementById('newProdStockInicial').value) || 0;
-            const stockMin = Number(document.getElementById('newProdStockMin').value) || 0;
+    const unidad = document.getElementById('newProdUnidad').value;
+    const stockInicial = Number(document.getElementById('newProdStockInicial').value) || 0;
+    const stockMin = Number(document.getElementById('newProdStockMin').value) || 0;
 
-            // ── Ubicación física (solo relevante en modo DEPÓSITO) ─────
-            const selUbiDep = document.getElementById('newProdUbiDep').value;
-            const customUbiDep = document.getElementById('newProdUbiDepCustom').value.trim().toUpperCase();
-            const ubiDep = esRetiro ? '' : (selUbiDep === '__OTRO__' ? customUbiDep : selUbiDep).trim().toUpperCase();
-            const ubiEst = esRetiro ? '' : document.getElementById('newProdUbiEst').value.trim();
-            const ubiCol = esRetiro ? '' : document.getElementById('newProdUbiCol').value.trim();
-            const ubiFila = esRetiro ? '' : document.getElementById('newProdUbiFila').value.trim().toUpperCase();
+    // ── Ubicación física (solo relevante en modo DEPÓSITO) ─────
+    const selUbiDep = document.getElementById('newProdUbiDep').value;
+    const customUbiDep = document.getElementById('newProdUbiDepCustom').value.trim().toUpperCase();
+    const ubiDep = esRetiro ? '' : (selUbiDep === '__OTRO__' ? customUbiDep : selUbiDep).trim().toUpperCase();
+    const ubiEst = esRetiro ? '' : document.getElementById('newProdUbiEst').value.trim();
+    const ubiCol = esRetiro ? '' : document.getElementById('newProdUbiCol').value.trim();
+    const ubiFila = esRetiro ? '' : document.getElementById('newProdUbiFila').value.trim().toUpperCase();
 
-            const responsable = document.getElementById('newProdResponsable').value.trim().toUpperCase();
-            const obs = document.getElementById('newProdObs').value.trim().toUpperCase();
-            const obsGeneralEnvio = document.getElementById('newProdObsGeneral').value.trim().toUpperCase();
+    const responsable = document.getElementById('newProdResponsable').value.trim().toUpperCase();
+    const obs = document.getElementById('newProdObs').value.trim().toUpperCase();
+    const obsGeneralEnvio = document.getElementById('newProdObsGeneral').value.trim().toUpperCase();
 
-            // ── Validaciones ───────────────────────────────────────────
-            if (!desc) {
-                errBox.textContent = 'La descripción del producto es obligatoria.';
+    // ── Validaciones ───────────────────────────────────────────
+    if (!desc) {
+        errBox.textContent = 'La descripción del producto es obligatoria.';
+        errBox.style.display = 'block';
+        return;
+    }
+    if (esRetiro && !lugarRetiro) {
+        errBox.textContent = 'Indicá el lugar de retiro / proveedor.';
+        errBox.style.display = 'block';
+        return;
+    }
+    if (!esRetiro && !zona) {
+        errBox.textContent = 'Seleccioná o ingresá una Zona / Depósito.';
+        errBox.style.display = 'block';
+        return;
+    }
+
+    // ── Aclaración de ubicación (solo en modo DEPÓSITO) ───────
+    // Viaja SOLA como "ubicacion_aclaracion" — el backend decide si va
+    // al Obs. ítem (solo si además falta estante/columna/fila).
+    let aclaracionUbi = '';
+    if (!esRetiro) {
+        const tieneEstanteriaCompleta = ubiEst !== '' && ubiCol !== '' && ubiFila !== '';
+        if (!tieneEstanteriaCompleta) {
+            aclaracionUbi = document.getElementById('newProdUbiObs').value.trim().toUpperCase();
+            if (!aclaracionUbi) {
+                errBox.textContent = 'Al no indicar Estante, Columna y Fila exactos, debés ingresar la Aclaración de Ubicación física obligatoria.';
                 errBox.style.display = 'block';
                 return;
-            }
-            if (esRetiro && !lugarRetiro) {
-                errBox.textContent = 'Indicá el lugar de retiro / proveedor.';
-                errBox.style.display = 'block';
-                return;
-            }
-            if (!esRetiro && !zona) {
-                errBox.textContent = 'Seleccioná o ingresá una Zona / Depósito.';
-                errBox.style.display = 'block';
-                return;
-            }
-
-            // ── Aclaración de ubicación (solo en modo DEPÓSITO) ───────
-            let aclaracionUbi = '';
-            if (!esRetiro) {
-                const tieneEstanteriaCompleta = ubiEst !== '' && ubiCol !== '' && ubiFila !== '';
-                if (!tieneEstanteriaCompleta) {
-                    aclaracionUbi = document.getElementById('newProdUbiObs').value.trim().toUpperCase();
-                    if (!aclaracionUbi) {
-                        errBox.textContent = 'Al no indicar Estante, Columna y Fila exactos, debés ingresar la Aclaración de Ubicación física obligatoria.';
-                        errBox.style.display = 'block';
-                        return;
-                    }
-                }
-            }
-
-            // ── Construir Observaciones acumulativas ───────────────────
-            // Siempre empieza con "Alta de producto nuevo"
-            const partsObs = ['Alta de producto nuevo', labelTipoAlta];
-            if (!esRetiro) {
-                if (ubiDep)  partsObs.push('Depósito: ' + ubiDep);
-                if (zona)    partsObs.push('Zona: ' + zona);
-                const ubicStr = [ubiEst, ubiCol, ubiFila].filter(Boolean).join('-');
-                if (ubicStr) partsObs.push('Ubicación: E' + ubiEst + '-C' + ubiCol + '-F' + ubiFila);
-                if (aclaracionUbi) partsObs.push('Ubicación aclaración: ' + aclaracionUbi);
-            } else {
-                partsObs.push('Retiro: ' + lugarRetiro);
-            }
-            if (factura) partsObs.push('Factura: ' + factura);
-            if (obs)     partsObs.push(obs);
-
-            const obsFinal = partsObs.join(' | ');
-
-            // ── Campo "obra" del movimiento ────────────────────────────
-            const obraMovimiento = labelTipoAlta;
-
-            const btnConfirm = document.getElementById('newProdConfirm');
-            btnConfirm.disabled = true;
-            btnConfirm.textContent = 'Registrando…';
-
-            try {
-                // Generar ID local para reflejar al instante
-                const maxNum = state.stock.reduce((max, p) => {
-                    const m = String(p.id || '').match(/PROD-(\d+)/i);
-                    return m ? Math.max(max, parseInt(m[1], 10)) : max;
-                }, 0);
-                const localId = 'PROD-' + String(maxNum + 1).padStart(3, '0');
-
-                const fotosDrive = newProductCurrentImages.map(x => x.dataUrl).join('||');
-                const nuevoProducto = {
-                    id: localId,
-                    zona: zona,
-                    familia: familia,
-                    marca: marca,
-                    descripcion: desc,
-                    unidad: unidad,
-                    entradas: stockInicial > 0 ? stockInicial : 0,
-                    salidas: 0,
-                    devoluciones: 0,
-                    stock_actual: stockInicial,
-                    stock_minimo: stockMin,
-                    estado: stockInicial <= stockMin ? 'REPONER' : 'OK',
-                    ult_mov: stockInicial > 0 ? 'ENTRADA' : 'ALTA',
-                    ult_fecha: new Date().toLocaleDateString('es-AR'),
-                    ult_hora: horaAhora(),
-                    ubicacion_deposito: ubiDep,
-                    ubicacion_estante: ubiEst,
-                    ubicacion_columna: ubiCol,
-                    ubicacion_fila: ubiFila,
-                    imagen: fotosDrive,
-                    ult_obs: obsFinal
-                };
-
-                // Agregar localmente
-                state.stock.unshift(nuevoProducto);
-
-                if (stockInicial > 0) {
-                    state.mov.unshift({
-                        fecha: new Date().toLocaleDateString('es-AR') + ' ' + horaAhora(),
-                        tipo: 'ENTRADA',
-                        zona: zona,
-                        descripcion: desc,
-                        cantidad: stockInicial,
-                        responsable: responsable || 'ALTA DE PRODUCTO',
-                        obra: obraMovimiento
-                    });
-                }
-
-                closeNewProductModal();
-                buildZoneChips();
-                populateFamiliaFilter();
-                renderAll();
-                showSuccessModal(`¡Producto "${desc}" registrado con éxito! (ID: ${localId})`);
-
-                // Sincronizar en Apps Script si no es demo
-                if (!isDemo) {
-                    const payload = {
-                        accion: 'crear-producto',
-                        zona: zona,
-                        familia: familia,
-                        marca: marca,
-                        descripcion: desc,
-                        unidad: unidad,
-                        stock_inicial: stockInicial,
-                        stock_minimo: stockMin,
-                        deposito: ubiDep,
-                        estante: ubiEst,
-                        columna: ubiCol,
-                        fila: ubiFila,
-                        responsable: responsable,
-                        observaciones: obsFinal,
-                        obs_general: obsGeneralEnvio,
-                        tipo_alta: tipoAlta,
-                        lugar_retiro: lugarRetiro,
-                        factura: factura,
-                        fotos_base64: newProductCurrentImages.map(x => x.base64)
-                    };
-                    const res = await apiPost(payload);
-                    if (res && res.ok && res.id) {
-                        nuevoProducto.id = res.id;
-                        renderStock();
-                        showToast(`Guardado en la nube con ID ${res.id} ✓`);
-                    } else if (res && !res.ok) {
-                        showToast('Error al guardar en la nube: ' + (res.error || ''), true);
-                    }
-                }
-            } catch (e) {
-                console.error("Error al registrar producto:", e);
-                showToast('Error al registrar el producto', true);
-            } finally {
-                btnConfirm.disabled = false;
-                btnConfirm.textContent = 'Registrar Producto';
             }
         }
+    }
+
+    // ── Etiqueta de Obra, SOLO para reflejar en pantalla al instante ──
+    // (el backend recalcula esto mismo a partir de tipo_alta; no se manda)
+    const obraMovimiento = esRetiro
+        ? 'Ingreso inicial / Alta - Retiro'
+        : 'Ingreso inicial / Alta - Depósito';
+
+    // ── Obs. ítem local, SOLO para reflejar en pantalla al instante ──
+    // (el backend arma la versión real que se guarda en la planilla)
+    let obsItemLocalParts = [];
+    if (esRetiro && lugarRetiro) obsItemLocalParts.push('Retiro: ' + lugarRetiro);
+    if (!esRetiro && aclaracionUbi) obsItemLocalParts.push(aclaracionUbi);
+    if (obs) obsItemLocalParts.push(obs);
+    const obsItemLocal = obsItemLocalParts.join(' | ');
+
+    const btnConfirm = document.getElementById('newProdConfirm');
+    btnConfirm.disabled = true;
+    btnConfirm.textContent = 'Registrando…';
+
+    try {
+        // Generar ID local para reflejar al instante
+        const maxNum = state.stock.reduce((max, p) => {
+            const m = String(p.id || '').match(/PROD-(\d+)/i);
+            return m ? Math.max(max, parseInt(m[1], 10)) : max;
+        }, 0);
+        const localId = 'PROD-' + String(maxNum + 1).padStart(3, '0');
+
+        const fotosDrive = newProductCurrentImages.map(x => x.dataUrl).join('||');
+        const nuevoProducto = {
+            id: localId,
+            zona: zona,
+            familia: familia,
+            marca: marca,
+            descripcion: desc,
+            unidad: unidad,
+            entradas: stockInicial > 0 ? stockInicial : 0,
+            salidas: 0,
+            devoluciones: 0,
+            stock_actual: stockInicial,
+            stock_minimo: stockMin,
+            estado: stockInicial <= stockMin ? 'REPONER' : 'OK',
+            ult_mov: stockInicial > 0 ? 'ENTRADA' : 'ALTA',
+            ult_fecha: new Date().toLocaleDateString('es-AR'),
+            ult_hora: horaAhora(),
+            ubicacion_deposito: ubiDep,
+            ubicacion_estante: ubiEst,
+            ubicacion_columna: ubiCol,
+            ubicacion_fila: ubiFila,
+            imagen: fotosDrive,
+            ult_obs: obsItemLocal
+        };
+
+        // Agregar localmente
+        state.stock.unshift(nuevoProducto);
+
+        if (stockInicial > 0) {
+            state.mov.unshift({
+                fecha: new Date().toLocaleDateString('es-AR') + ' ' + horaAhora(),
+                tipo: 'ENTRADA',
+                zona: zona,
+                descripcion: desc,
+                cantidad: stockInicial,
+                responsable: responsable || 'ALTA DE PRODUCTO',
+                obra: obraMovimiento
+            });
+        }
+
+        closeNewProductModal();
+        buildZoneChips();
+        populateFamiliaFilter();
+        renderAll();
+        showSuccessModal(`¡Producto "${desc}" registrado con éxito! (ID: ${localId})`);
+
+        // Sincronizar en Apps Script si no es demo
+        if (!isDemo) {
+            const payload = {
+                accion: 'crear-producto',
+                zona: zona,
+                familia: familia,
+                marca: marca,
+                descripcion: desc,
+                unidad: unidad,
+                stock_inicial: stockInicial,
+                stock_minimo: stockMin,
+                deposito: ubiDep,
+                estante: ubiEst,
+                columna: ubiCol,
+                fila: ubiFila,
+                responsable: responsable,
+                observaciones: obs,                 // ← observación libre, SIN concatenar nada más
+                obs_general: obsGeneralEnvio,
+                tipo_alta: tipoAlta,                // 'DEPOSITO' | 'RETIRO' — el backend arma "Obra" con esto
+                lugar_retiro: lugarRetiro,
+                ubicacion_aclaracion: aclaracionUbi, // ← nuevo nombre de campo, va suelto
+                factura: factura,                    // ← va a su propia columna, sin prefijo
+                fotos_base64: newProductCurrentImages.map(x => x.base64)
+            };
+            const res = await apiPost(payload);
+            if (res && res.ok && res.id) {
+                nuevoProducto.id = res.id;
+                renderStock();
+                showToast(`Guardado en la nube con ID ${res.id} ✓`);
+            } else if (res && !res.ok) {
+                showToast('Error al guardar en la nube: ' + (res.error || ''), true);
+            }
+        }
+    } catch (e) {
+        console.error("Error al registrar producto:", e);
+        showToast('Error al registrar el producto', true);
+    } finally {
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = 'Registrar Producto';
+    }
+}
 
         // ============================================================
         // BATCH ACTIONS (CARRITO / SELECCIONADOS)
