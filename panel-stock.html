@@ -1474,47 +1474,31 @@
                 <h3 style="padding-right: 32px;">Registrar Nuevo Producto</h3>
                 <div class="sub">Ingresá los datos del nuevo producto para darlo de alta en el sistema.</div>
                 
-                <div class="field"
-                    style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 10px 0 14px 0;">
-                    <div
-                        style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
-                        <span>🏗️</span> Obra / Origen de Alta <span style="color:var(--bad-fg);">*</span>
+                <!-- ===== TIPO DE INGRESO / ALTA ===== -->
+                <div class="field" style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px;">
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                        <span>📦</span> Tipo de ingreso / alta <span style="color:var(--bad-fg);">*</span>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <div>
-                            <label style="font-size: 10px; color: var(--txt-faint);">Tipo de Ingreso</label>
-                            <select id="newProdTipoAlta" onchange="actualizarInterfazObraAlta()" style="width:100%;">
-                                <option value="DEPOSITO">🏢 Depósito / Obra</option>
-                                <option value="RETIRO">🚚 Retiro (Proveedor / Corralón)</option>
-                            </select>
-                        </div>
-                        <div id="newProdObraWrap">
-                            <label style="font-size: 10px; color: var(--txt-faint);">Obra / Destino</label>
-                            <select id="newProdObraSel" onchange="toggleCustomObraInput(this)" style="width:100%;">
-                                <option value="OBRA 1">Obra 1</option>
-                                <option value="OBRA 2">Obra 2</option>
-                                <option value="DEPÓSITO CENTRAL">Depósito Central</option>
-                                <option value="TALLER">Taller</option>
-                                <option value="__OTRA__">➕ Otra obra/destino...</option>
-                            </select>
-                            <input type="text" id="newProdObraCustom" placeholder="Nombre de obra o destino..." style="display:none; margin-top:4px; text-transform:uppercase;">
-                        </div>
-                        <div id="newProdRetiroWrap" style="display:none;">
-                            <label style="font-size: 10px; color: var(--txt-faint);">Lugar de Retiro (Origen)</label>
-                            <select id="newProdRetiroSel" onchange="toggleCustomRetiroInput(this); autoActualizarZonaSiRetiro();" style="width:100%;">
-                                <option value="PROVEEDOR CORRALONES">Proveedor Corralones</option>
-                                <option value="PROVEEDOR SCHNEIDER">Proveedor Schneider</option>
-                                <option value="PROVEEDOR PHILIPS">Proveedor Philips</option>
-                                <option value="CORRALÓN CENTRAL">Corralón Central</option>
-                                <option value="COMPRAS DIRECTAS">Compras Directas</option>
-                                <option value="__OTRO__">➕ Otro lugar de retiro...</option>
-                            </select>
-                            <input type="text" id="newProdRetiroCustom" placeholder="Escribir lugar de retiro..." oninput="autoActualizarZonaSiRetiro()" style="display:none; margin-top:4px; text-transform:uppercase;">
-                        </div>
+                    <select id="newProdTipoAlta" onchange="npTipoAltaChanged()" style="width:100%;">
+                        <option value="DEPOSITO">Ingreso inicial / Alta - Depósito</option>
+                        <option value="RETIRO">Ingreso inicial / Alta - Retiro</option>
+                    </select>
+
+                    <!-- Lugar de retiro (solo visible en modo RETIRO) -->
+                    <div id="newProdRetiroWrap" style="display:none; margin-top:10px;">
+                        <label style="font-size:11px; font-weight:700; color:var(--txt-dim);">Lugar de retiro / proveedor <span style="color:var(--bad-fg);">*</span></label>
+                        <input type="text" id="newProdLugarRetiro" placeholder="Ej: Corralón El Amigo, Corralón Omega…" style="text-transform:uppercase; margin-top:4px;">
+                    </div>
+
+                    <!-- N.º de factura (opcional, siempre visible) -->
+                    <div style="margin-top:10px;">
+                        <label style="font-size:11px; font-weight:700; color:var(--txt-dim);">N.º de factura <span style="font-weight:400; color:var(--txt-faint);">(opcional)</span></label>
+                        <input type="text" id="newProdFactura" placeholder="Ej: FC-0001-00012345" style="margin-top:4px; text-transform:uppercase;">
                     </div>
                 </div>
 
-                <div class="field">
+                <!-- ===== DEPÓSITO / ZONA (oculto en modo RETIRO) ===== -->
+                <div id="newProdZonaWrap" class="field">
                     <label>Depósito / Zona <span style="color:var(--bad-fg);">*</span></label>
                     <select id="newProdZona" onchange="toggleCustomZonaInput(this)" style="width:100%;">
                         <option value="">Cargando zonas...</option>
@@ -1566,7 +1550,8 @@
                     </div>
                 </div>
 
-                <div class="field"
+                <!-- ===== UBICACIÓN FÍSICA (oculto en modo RETIRO) ===== -->
+                <div id="newProdUbicacionWrap" class="field"
                     style="background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 12px 0;">
                     <div
                         style="font-size: 10.5px; font-weight: 700; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
@@ -2252,11 +2237,12 @@
             p.ubicacion_estante = nuevaUbiEst;
             p.ubicacion_columna = nuevaUbiCol;
             p.ubicacion_fila = nuevaUbiFila;
-            let obsGuardar = nuevaObs;
-            if (p.ult_obs && p.ult_obs.includes('ALTA DE PRODUCTO NUEVO') && !nuevaObs.includes('ALTA DE PRODUCTO NUEVO')) {
-                obsGuardar = p.ult_obs + (nuevaObs ? (' / ' + nuevaObs) : '');
+            // Observaciones acumulativas: nunca borrar el historial anterior
+            if (nuevaObs) {
+                const historialPrevio = (p.ult_obs || '').trim();
+                p.ult_obs = historialPrevio ? (historialPrevio + ' | ' + nuevaObs) : nuevaObs;
             }
-            p.ult_obs = obsGuardar;
+            // Si nuevaObs está vacío, no tocar p.ult_obs (conservar todo el historial)
             p.estado = p.stock_actual <= p.stock_minimo ? 'REPONER' : 'OK';
 
             closeEditProductModal();
@@ -2463,81 +2449,31 @@
             wrap.style.display = completo ? 'none' : 'block';
         }
 
-        function toggleCustomObraInput(sel) {
-            const customInput = document.getElementById('newProdObraCustom');
-            if (!customInput) return;
-            if (sel.value === '__OTRA__') {
-                customInput.style.display = 'block';
-                customInput.focus();
-            } else {
-                customInput.style.display = 'none';
-            }
-        }
-
-        function toggleCustomRetiroInput(sel) {
-            const customInput = document.getElementById('newProdRetiroCustom');
-            if (!customInput) return;
-            if (sel.value === '__OTRO__') {
-                customInput.style.display = 'block';
-                customInput.focus();
-            } else {
-                customInput.style.display = 'none';
-            }
-        }
-
-        function actualizarInterfazObraAlta() {
+        // Reacciona al cambio de Tipo de Alta (Depósito / Retiro)
+        function npTipoAltaChanged() {
             const tipo = document.getElementById('newProdTipoAlta')?.value;
-            const obraWrap = document.getElementById('newProdObraWrap');
+            const esRetiro = tipo === 'RETIRO';
+
+            // Mostrar/ocultar bloque de lugar de retiro
             const retiroWrap = document.getElementById('newProdRetiroWrap');
-            if (!obraWrap || !retiroWrap) return;
-            if (tipo === 'RETIRO') {
-                obraWrap.style.display = 'none';
-                retiroWrap.style.display = 'block';
-                autoActualizarZonaSiRetiro();
-            } else {
-                obraWrap.style.display = 'block';
-                retiroWrap.style.display = 'none';
-            }
+            if (retiroWrap) retiroWrap.style.display = esRetiro ? 'block' : 'none';
+
+            // Mostrar/ocultar bloque Depósito / Zona
+            const zonaWrap = document.getElementById('newProdZonaWrap');
+            if (zonaWrap) zonaWrap.style.display = esRetiro ? 'none' : 'block';
+
+            // Mostrar/ocultar bloque Ubicación física
+            const ubicWrap = document.getElementById('newProdUbicacionWrap');
+            if (ubicWrap) ubicWrap.style.display = esRetiro ? 'none' : 'block';
         }
 
-        function autoActualizarZonaSiRetiro() {
-            const tipo = document.getElementById('newProdTipoAlta')?.value;
-            if (tipo !== 'RETIRO') return;
-            const selRetiro = document.getElementById('newProdRetiroSel')?.value;
-            const customRetiro = (document.getElementById('newProdRetiroCustom')?.value || '').trim().toUpperCase();
-            const lugarRetiro = (selRetiro === '__OTRO__' ? customRetiro : selRetiro).trim().toUpperCase();
-            if (!lugarRetiro) return;
 
-            const selZona = document.getElementById('newProdZona');
-            if (!selZona) return;
-            const optMatch = Array.from(selZona.options).find(o => o.value.toUpperCase() === lugarRetiro);
-            if (optMatch) {
-                selZona.value = optMatch.value;
-                toggleCustomZonaInput(selZona);
-            } else {
-                selZona.value = '__OTRA__';
-                toggleCustomZonaInput(selZona);
-                document.getElementById('newProdZonaCustom').value = lugarRetiro;
-            }
-        }
 
         function openNewProductModal() {
             state.modalOpen = true;
             newProductCurrentImages = [];
 
             // Limpiar campos
-            if (document.getElementById('newProdTipoAlta')) document.getElementById('newProdTipoAlta').value = 'DEPOSITO';
-            if (document.getElementById('newProdObraSel')) document.getElementById('newProdObraSel').value = 'OBRA 1';
-            if (document.getElementById('newProdObraCustom')) {
-                document.getElementById('newProdObraCustom').value = '';
-                document.getElementById('newProdObraCustom').style.display = 'none';
-            }
-            if (document.getElementById('newProdRetiroSel')) document.getElementById('newProdRetiroSel').value = 'PROVEEDOR CORRALONES';
-            if (document.getElementById('newProdRetiroCustom')) {
-                document.getElementById('newProdRetiroCustom').value = '';
-                document.getElementById('newProdRetiroCustom').style.display = 'none';
-            }
-            actualizarInterfazObraAlta();
 
             document.getElementById('newProdDesc').value = '';
             document.getElementById('newProdMarca').value = '';
@@ -2555,6 +2491,11 @@
             document.getElementById('newProdObsGeneral').value = '';
             document.getElementById('newProdErr').style.display = 'none';
             document.getElementById('newProdUnidad').value = 'un';
+            // Nuevos campos
+            document.getElementById('newProdTipoAlta').value = 'DEPOSITO';
+            document.getElementById('newProdLugarRetiro').value = '';
+            document.getElementById('newProdFactura').value = '';
+            npTipoAltaChanged();          // ajustar visibilidad según tipo default
             actualizarVisibilidadAclaracionUbi();
 
             // Poblar zonas creadas
@@ -2646,32 +2587,25 @@
             const errBox = document.getElementById('newProdErr');
             errBox.style.display = 'none';
 
-            const tipoAlta = document.getElementById('newProdTipoAlta').value;
-            const selObra = document.getElementById('newProdObraSel').value;
-            const customObra = document.getElementById('newProdObraCustom').value.trim().toUpperCase();
-            const obraNombre = (selObra === '__OTRA__' ? customObra : selObra).trim().toUpperCase();
+            // ── Tipo de alta ────────────────────────────────────────────
+            const tipoAlta = document.getElementById('newProdTipoAlta').value; // 'DEPOSITO' | 'RETIRO'
+            const esRetiro = tipoAlta === 'RETIRO';
+            const labelTipoAlta = esRetiro
+                ? 'Ingreso inicial / Alta - Retiro'
+                : 'Ingreso inicial / Alta - Depósito';
 
-            const selRetiro = document.getElementById('newProdRetiroSel').value;
-            const customRetiro = document.getElementById('newProdRetiroCustom').value.trim().toUpperCase();
-            const retiroNombre = (selRetiro === '__OTRO__' ? customRetiro : selRetiro).trim().toUpperCase();
+            // ── Lugar de retiro (solo en modo RETIRO) ──────────────────
+            const lugarRetiro = esRetiro
+                ? document.getElementById('newProdLugarRetiro').value.trim().toUpperCase()
+                : '';
 
-            let detalleObra = '';
-            if (tipoAlta === 'RETIRO') {
-                detalleObra = 'RETIRO: ' + (retiroNombre || 'PROVEEDOR CORRALONES');
-            } else {
-                detalleObra = obraNombre || 'DEPÓSITO CENTRAL';
-            }
+            // ── Factura (opcional en ambos modos) ──────────────────────
+            const factura = document.getElementById('newProdFactura').value.trim().toUpperCase();
 
-            const obraMovimiento = 'PRODUCTO NUEVO / ALTA - ' + detalleObra;
-
-            let selZona = document.getElementById('newProdZona').value;
-            let customZona = document.getElementById('newProdZonaCustom').value.trim().toUpperCase();
-            let zona = (selZona === '__OTRA__' ? customZona : selZona).trim().toUpperCase();
-
-            // Si se selecciona Retiro, auto-escribir la zona con el lugar de retiro (ej: PROVEEDOR CORRALONES)
-            if (tipoAlta === 'RETIRO' && retiroNombre) {
-                zona = retiroNombre;
-            }
+            // ── Zona (solo requerida en modo DEPÓSITO) ─────────────────
+            const selZona = document.getElementById('newProdZona').value;
+            const customZona = document.getElementById('newProdZonaCustom').value.trim().toUpperCase();
+            const zona = esRetiro ? '' : (selZona === '__OTRA__' ? customZona : selZona).trim().toUpperCase();
 
             const desc = document.getElementById('newProdDesc').value.trim().toUpperCase();
             const marca = document.getElementById('newProdMarca').value.trim().toUpperCase() || '—';
@@ -2684,53 +2618,68 @@
             const stockInicial = Number(document.getElementById('newProdStockInicial').value) || 0;
             const stockMin = Number(document.getElementById('newProdStockMin').value) || 0;
 
+            // ── Ubicación física (solo relevante en modo DEPÓSITO) ─────
             const selUbiDep = document.getElementById('newProdUbiDep').value;
             const customUbiDep = document.getElementById('newProdUbiDepCustom').value.trim().toUpperCase();
-            const ubiDep = (selUbiDep === '__OTRO__' ? customUbiDep : selUbiDep).trim().toUpperCase();
-
-            const ubiEst = document.getElementById('newProdUbiEst').value.trim();
-            const ubiCol = document.getElementById('newProdUbiCol').value.trim();
-            let ubiFila = document.getElementById('newProdUbiFila').value.trim().toUpperCase();
+            const ubiDep = esRetiro ? '' : (selUbiDep === '__OTRO__' ? customUbiDep : selUbiDep).trim().toUpperCase();
+            const ubiEst = esRetiro ? '' : document.getElementById('newProdUbiEst').value.trim();
+            const ubiCol = esRetiro ? '' : document.getElementById('newProdUbiCol').value.trim();
+            const ubiFila = esRetiro ? '' : document.getElementById('newProdUbiFila').value.trim().toUpperCase();
 
             const responsable = document.getElementById('newProdResponsable').value.trim().toUpperCase();
             const obs = document.getElementById('newProdObs').value.trim().toUpperCase();
             const obsGeneralEnvio = document.getElementById('newProdObsGeneral').value.trim().toUpperCase();
 
-            if (!zona) {
-                errBox.textContent = 'Seleccioná o ingresá una Zona / Depósito (o lugar de retiro).';
-                errBox.style.display = 'block';
-                return;
-            }
+            // ── Validaciones ───────────────────────────────────────────
             if (!desc) {
                 errBox.textContent = 'La descripción del producto es obligatoria.';
                 errBox.style.display = 'block';
                 return;
             }
+            if (esRetiro && !lugarRetiro) {
+                errBox.textContent = 'Indicá el lugar de retiro / proveedor.';
+                errBox.style.display = 'block';
+                return;
+            }
+            if (!esRetiro && !zona) {
+                errBox.textContent = 'Seleccioná o ingresá una Zona / Depósito.';
+                errBox.style.display = 'block';
+                return;
+            }
 
-            // Validación de ubicación y aclaración obligatoria si no tiene estante/columna/fila completos
-            const tieneEstanteriaCompleta = ubiEst !== '' && ubiCol !== '' && ubiFila !== '';
+            // ── Aclaración de ubicación (solo en modo DEPÓSITO) ───────
             let aclaracionUbi = '';
-            if (!tieneEstanteriaCompleta) {
-                aclaracionUbi = document.getElementById('newProdUbiObs').value.trim().toUpperCase();
-                if (!aclaracionUbi) {
-                    errBox.textContent = 'Al no indicar Estante, Columna y Fila exactos, debés ingresar la Aclaración de Ubicación física obligatoria.';
-                    errBox.style.display = 'block';
-                    return;
+            if (!esRetiro) {
+                const tieneEstanteriaCompleta = ubiEst !== '' && ubiCol !== '' && ubiFila !== '';
+                if (!tieneEstanteriaCompleta) {
+                    aclaracionUbi = document.getElementById('newProdUbiObs').value.trim().toUpperCase();
+                    if (!aclaracionUbi) {
+                        errBox.textContent = 'Al no indicar Estante, Columna y Fila exactos, debés ingresar la Aclaración de Ubicación física obligatoria.';
+                        errBox.style.display = 'block';
+                        return;
+                    }
                 }
             }
 
-            // Concatenar en el campo Observaciones iniciando con el Alta de Producto Nuevo
-            const obsAltaPrefix = 'ALTA DE PRODUCTO NUEVO (' + obraMovimiento + ')';
-            let obsFinal = obsAltaPrefix;
-            if (aclaracionUbi) {
-                obsFinal += ' / [UBICACIÓN: ' + aclaracionUbi + ']';
+            // ── Construir Observaciones acumulativas ───────────────────
+            // Siempre empieza con "Alta de producto nuevo"
+            const partsObs = ['Alta de producto nuevo', labelTipoAlta];
+            if (!esRetiro) {
+                if (ubiDep)  partsObs.push('Depósito: ' + ubiDep);
+                if (zona)    partsObs.push('Zona: ' + zona);
+                const ubicStr = [ubiEst, ubiCol, ubiFila].filter(Boolean).join('-');
+                if (ubicStr) partsObs.push('Ubicación: E' + ubiEst + '-C' + ubiCol + '-F' + ubiFila);
+                if (aclaracionUbi) partsObs.push('Ubicación aclaración: ' + aclaracionUbi);
+            } else {
+                partsObs.push('Retiro: ' + lugarRetiro);
             }
-            if (obs) {
-                obsFinal += ' / ' + obs;
-            }
-            if (obsGeneralEnvio) {
-                obsFinal += ' / [ENVÍO: ' + obsGeneralEnvio + ']';
-            }
+            if (factura) partsObs.push('Factura: ' + factura);
+            if (obs)     partsObs.push(obs);
+
+            const obsFinal = partsObs.join(' | ');
+
+            // ── Campo "obra" del movimiento ────────────────────────────
+            const obraMovimiento = labelTipoAlta;
 
             const btnConfirm = document.getElementById('newProdConfirm');
             btnConfirm.disabled = true;
@@ -2772,16 +2721,17 @@
                 // Agregar localmente
                 state.stock.unshift(nuevoProducto);
 
-                // Registrar movimiento inicial con la Obra formateada con el prefijo "PRODUCTO NUEVO / ALTA - ..."
-                state.mov.unshift({
-                    fecha: new Date().toLocaleDateString('es-AR') + ' ' + horaAhora(),
-                    tipo: 'ENTRADA',
-                    zona: zona,
-                    descripcion: desc,
-                    cantidad: stockInicial > 0 ? stockInicial : 1,
-                    responsable: responsable || 'ALTA DE PRODUCTO',
-                    obra: obraMovimiento
-                });
+                if (stockInicial > 0) {
+                    state.mov.unshift({
+                        fecha: new Date().toLocaleDateString('es-AR') + ' ' + horaAhora(),
+                        tipo: 'ENTRADA',
+                        zona: zona,
+                        descripcion: desc,
+                        cantidad: stockInicial,
+                        responsable: responsable || 'ALTA DE PRODUCTO',
+                        obra: obraMovimiento
+                    });
+                }
 
                 closeNewProductModal();
                 buildZoneChips();
@@ -2807,6 +2757,9 @@
                         responsable: responsable,
                         observaciones: obsFinal,
                         obs_general: obsGeneralEnvio,
+                        tipo_alta: tipoAlta,
+                        lugar_retiro: lugarRetiro,
+                        factura: factura,
                         fotos_base64: newProductCurrentImages.map(x => x.base64)
                     };
                     const res = await apiPost(payload);
@@ -3267,8 +3220,7 @@
                 { key: 'stock_actual', label: 'Stock Actual' },
                 { key: 'estado', label: 'Estado' },
                 { key: 'ult_mov', label: 'Últ. Movimiento' },
-                { key: 'ult_fecha', label: 'Fecha Últ. Mov.' },
-                { key: 'ult_obs', label: 'Observaciones del Envío / Alta' }
+                { key: 'ult_fecha', label: 'Fecha Últ. Mov.' }
             ];
 
             const tableHeaderHtml = headers.map(h =>
@@ -3295,7 +3247,6 @@
                     <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: center; font-family: Calibri, Arial, sans-serif; font-weight: bold; background-color: ${estadoBg}; color: ${estadoColor};">${escapeHtml(p.estado)}</td>
                     <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.ult_mov || '—')}</td>
                     <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml((p.ult_fecha || '') + ' ' + (p.ult_hora || ''))}</td>
-                    <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Calibri, Arial, sans-serif;">${escapeHtml(p.ult_obs || '—')}</td>
                 </tr>`;
             }).join('');
 
