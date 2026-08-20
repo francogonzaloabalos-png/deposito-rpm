@@ -2237,12 +2237,14 @@
             p.ubicacion_estante = nuevaUbiEst;
             p.ubicacion_columna = nuevaUbiCol;
             p.ubicacion_fila = nuevaUbiFila;
-            // Observaciones acumulativas: nunca borrar el historial anterior
+            // La observación se reemplaza con el valor actual del campo, sin
+            // concatenar con lo que ya estaba guardado — así coincide con lo
+            // que realmente se guarda en el backend vía "actualizar-observacion"
+            // (que también sobreescribe, no concatena).
             if (nuevaObs) {
-                const historialPrevio = (p.ult_obs || '').trim();
-                p.ult_obs = historialPrevio ? (historialPrevio + ' | ' + nuevaObs) : nuevaObs;
+                p.ult_obs = nuevaObs;
             }
-            // Si nuevaObs está vacío, no tocar p.ult_obs (conservar todo el historial)
+            // Si el campo queda vacío, no se toca p.ult_obs (no se borra por accidente).el historial) 
             p.estado = p.stock_actual <= p.stock_minimo ? 'REPONER' : 'OK';
 
             closeEditProductModal();
