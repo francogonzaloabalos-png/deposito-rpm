@@ -1523,8 +1523,8 @@
                         <input type="text" id="newProdMarcaCustom" placeholder="Escribir marca..." oninput="this.value=this.value.toUpperCase()" style="display:none; margin-top:4px; text-transform:uppercase;">
                     </div>
                     <div>
-                        <label>Familia</label>
-                        <select id="newProdFamiliaSel" onchange="toggleCustomFamiliaInput(this)" style="width:100%;">
+                        <label>Familia <span style="color:var(--bad-fg);">*</span></label>
+                        <select id="newProdFamiliaSel" onchange="toggleCustomFamiliaInput(this)" style="width:100%;"></select>
                             <option value="">Seleccionar o escribir...</option>
                         </select>
                         <input type="text" id="newProdFamiliaCustom" placeholder="Escribir familia..." oninput="this.value=this.value.toUpperCase()" style="display:none; margin-top:4px; text-transform:uppercase;">
@@ -2675,7 +2675,7 @@ async function confirmNewProduct() {
 
     const selFam = document.getElementById('newProdFamiliaSel').value;
     const customFam = document.getElementById('newProdFamiliaCustom').value.trim().toUpperCase();
-    const familia = (selFam === '__OTRA__' ? customFam : selFam).trim().toUpperCase() || 'VARIOS';
+    const familia = (selFam === '__OTRA__' ? customFam : selFam).trim().toUpperCase();
 
     const unidad = document.getElementById('newProdUnidad').value;
     const stockInicialVal = document.getElementById('newProdStockInicial').value.trim();
@@ -2712,6 +2712,17 @@ async function confirmNewProduct() {
         return;
     }
     const stockInicial = Number(stockInicialVal);
+
+    if (!familia) {
+        errBox.textContent = 'Seleccioná o ingresá una Familia.';
+        errBox.style.display = 'block';
+        return;
+    }
+    if (!responsable) {
+        errBox.textContent = 'Ingresá el responsable que carga el producto.';
+        errBox.style.display = 'block';
+        return;
+    }
 
     if (esRetiro && !lugarRetiro) {
         errBox.textContent = 'Indicá el lugar de retiro / proveedor.';
