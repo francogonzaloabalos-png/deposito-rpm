@@ -2596,7 +2596,6 @@
 async function confirmNewProduct() {
     const errBox = document.getElementById('newProdErr');
     errBox.style.display = 'none';
-    alert('FOTOS EN MEMORIA AL EMPEZAR A GUARDAR: ' + newProductCurrentImages.length);
 
     // ── Tipo de alta ────────────────────────────────────────────
     const tipoAlta = document.getElementById('newProdTipoAlta').value; // 'DEPOSITO' | 'RETIRO'
@@ -2771,13 +2770,12 @@ async function confirmNewProduct() {
                 fotos_base64: fotosParaEnviar.map(x => x.base64)
             };
             const res = await apiPost(payload);
-            alert('RESPUESTA DEL SERVIDOR:\n\n' + JSON.stringify(res, null, 2));
             if (res && res.ok && res.id) {
                 nuevoProducto.id = res.id;
                 // Reemplazamos el preview local (base64) por el link real de Drive
                 if (res.imagen) {
                     nuevoProducto.imagen = res.imagen;
-                } else if (newProductCurrentImages.length > 0) {
+                } else if (fotosParaEnviar.length > 0) {
                     // Fallback: si el backend no procesó las fotos en crear-producto,
                     // las subimos mediante actualizar-imagen para garantizar que queden en Drive
                     let subidas = [];
