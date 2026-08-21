@@ -2797,9 +2797,7 @@ async function confirmNewProduct() {
                 }
                 renderStock();
                 if (res.error_fotos) {
-                    alert('⚠️ PRODUCTO GUARDADO (ID ' + res.id + '), PERO LA FOTO NO SE PUDO SUBIR.\n\nError exacto:\n' + res.error_fotos);
-                } else if (newProductCurrentImages.length > 0 && !res.imagen) {
-                    alert('⚠️ El producto se guardó pero no llegó ningún link de imagen en la respuesta (res.imagen vacío), aunque no se reportó error_fotos.');
+                    showToast(`Producto guardado (ID ${res.id}), pero la foto no se pudo subir: ${res.error_fotos}`, true);
                 } else {
                     showToast(`Guardado en la nube con ID ${res.id} ✓`);
                 }
