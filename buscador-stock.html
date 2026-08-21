@@ -80,10 +80,9 @@ body {
 }
 .filter-select option { background: var(--bg-elev); color: var(--txt); }
 
-.zone-chips { display: flex; gap: 7px; overflow-x: auto; padding: 10px 2px 2px; -webkit-overflow-scrolling: touch; }
-.zone-chips::-webkit-scrollbar { display: none; }
+.zone-chips { display: flex; flex-wrap: wrap; gap: 7px; padding: 10px 0 4px; }
 .zone-chip {
-  flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 20px;
   border: 1.5px solid var(--line); background: var(--bg-card); color: var(--txt-dim); cursor: pointer;
   white-space: nowrap; transition: all .12s;
 }
@@ -353,14 +352,14 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQVmgnoPG86r8L
 const POLL_MS = 25000;
 
 // Pestañas de acceso directo a cada formulario propio de depósito.
-// AJUSTAR: reemplazar por el nombre real de archivo de cada HTML en el
-// repositorio (ya no son links a Google Sites — son archivos hermanos).
 const DEPOSITOS_TABS = [
-  { nombre: '5A — Eléctrico',      icon: '⚡', url: 'deposito-5a.html' },
-  { nombre: '4 — Iluminación',     icon: '💡', url: 'deposito-4-iluminacion.html' },
-  { nombre: 'Filtros / 5B',        icon: '🧰', url: 'deposito-5b-filtros.html' },
-  { nombre: '4 — Gabinetes',       icon: '📦', url: 'deposito-4-gabinetes.html' },
-  { nombre: 'Cables',              icon: '🔌', url: 'deposito-cables.html' },
+  { nombre: '5A — Eléctrico',          icon: '⚡', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/5A.html' },
+  { nombre: '4 — Iluminación',         icon: '💡', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/4-iluminacion.html' },
+  { nombre: '4 — Lámparas y focos',    icon: '💡', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/4-lamparas.html' },
+  { nombre: '4 — Gabinetes y cajas',   icon: '📦', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/4-gabinetes-y-cajas.html' },
+  { nombre: '4 — Cables',              icon: '🔌', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/4-cables.html' },
+  { nombre: '5B — Filtros',            icon: '🧰', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/5B-filtros.html' },
+  { nombre: '5B — Ropa y EPP',         icon: '🦺', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/5B-ropa-y-epp.html' },
 ];
 
 const RESPONSABLES = ['Fernando', 'Pamela'];

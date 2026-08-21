@@ -1414,7 +1414,6 @@
                             <option value="2">2</option>
                             <option value="3">3</option>
                             <option value="4">4</option>
-                            <option value="5">5</option>
                             <option value="5A">5A</option>
                             <option value="5B">5B</option>
                             <option value="5C">5C</option>
@@ -1514,15 +1513,21 @@
 
                 <div class="field" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div>
-                        <label>Marca</label>
-                        <input type="text" id="newProdMarca" placeholder="Ej: Schneider, Philips…" style="text-transform:uppercase;">
+                        <label>Marca <span style="color:var(--bad-fg);">*</span></label>
+                        <select id="newProdMarcaSel" onchange="toggleCustomMarcaInput(this)" style="width:100%;">
+                            <option value="">— Seleccionar Marca —</option>
+                            <option value="GENÉRICA">Genérica</option>
+                            <option value="NO ESPECIFICADA">No especificada</option>
+                            <option value="__OTRA__">➕ Otra marca (escribir)...</option>
+                        </select>
+                        <input type="text" id="newProdMarcaCustom" placeholder="Escribir marca..." oninput="this.value=this.value.toUpperCase()" style="display:none; margin-top:4px; text-transform:uppercase;">
                     </div>
                     <div>
                         <label>Familia</label>
                         <select id="newProdFamiliaSel" onchange="toggleCustomFamiliaInput(this)" style="width:100%;">
                             <option value="">Seleccionar o escribir...</option>
                         </select>
-                        <input type="text" id="newProdFamiliaCustom" placeholder="Escribir familia..." style="display:none; margin-top:4px; text-transform:uppercase;">
+                        <input type="text" id="newProdFamiliaCustom" placeholder="Escribir familia..." oninput="this.value=this.value.toUpperCase()" style="display:none; margin-top:4px; text-transform:uppercase;">
                     </div>
                 </div>
 
@@ -1542,12 +1547,14 @@
                         </select>
                     </div>
                     <div>
-                        <label>Stock Inicial</label>
-                        <input type="number" id="newProdStockInicial" min="0" step="1" value="0" placeholder="0">
+                        <label>Stock Inicial <span style="color:var(--bad-fg);">*</span></label>
+                        <input type="number" id="newProdStockInicial" min="0" step="1" placeholder="0">
                     </div>
                     <div>
                         <label>Stock Mínimo</label>
-                        <input type="number" id="newProdStockMin" min="0" step="1" value="0" placeholder="0">
+                        <input type="number" id="newProdStockMin" min="0" step="1" value="0" placeholder="0"
+                            onfocus="if(this.value==='0') this.value='';"
+                            onblur="if(this.value.trim()==='') this.value='0';">
                     </div>
                 </div>
 
@@ -1569,7 +1576,6 @@
                                 <option value="2">2</option>
                                 <option value="3">3</option>
                                 <option value="4">4</option>
-                                <option value="5">5</option>
                                 <option value="5A">5A</option>
                                 <option value="5B">5B</option>
                                 <option value="5C">5C</option>
@@ -2420,6 +2426,17 @@
             }
         }
 
+        function toggleCustomMarcaInput(sel) {
+            const customInput = document.getElementById('newProdMarcaCustom');
+            if (!customInput) return;
+            if (sel.value === '__OTRA__') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+
         function toggleCustomFamiliaInput(sel) {
             const customInput = document.getElementById('newProdFamiliaCustom');
             if (!customInput) return;
@@ -2448,8 +2465,13 @@
             const fila = (document.getElementById('newProdUbiFila')?.value || '').trim();
             const wrap = document.getElementById('newProdUbiAclaracionWrap');
             if (!wrap) return;
-            const completo = est !== '' && col !== '' && fila !== '';
-            wrap.style.display = completo ? 'none' : 'block';
+
+            const tieneEstanteriaCompleta = est !== '' && col !== '' && fila !== '';
+            wrap.style.display = tieneEstanteriaCompleta ? 'none' : 'block';
+            if (tieneEstanteriaCompleta) {
+                const inpObs = document.getElementById('newProdUbiObs');
+                if (inpObs) inpObs.value = '';
+            }
         }
 
         // Reacciona al cambio de Tipo de Alta (Depósito / Retiro)
@@ -2457,15 +2479,29 @@
             const tipo = document.getElementById('newProdTipoAlta')?.value;
             const esRetiro = tipo === 'RETIRO';
 
-            // Mostrar/ocultar bloque de lugar de retiro
+            // Lugar de retiro: solo visible en modo RETIRO
             const retiroWrap = document.getElementById('newProdRetiroWrap');
-            if (retiroWrap) retiroWrap.style.display = esRetiro ? 'block' : 'none';
+            if (retiroWrap) {
+                retiroWrap.style.display = esRetiro ? 'block' : 'none';
+                if (!esRetiro) {
+                    const inp = document.getElementById('newProdLugarRetiro');
+                    if (inp) inp.value = '';
+                }
+            }
 
-            // Mostrar/ocultar bloque Depósito / Zona
+            // Zona / Depósito: oculto en modo RETIRO
             const zonaWrap = document.getElementById('newProdZonaWrap');
-            if (zonaWrap) zonaWrap.style.display = esRetiro ? 'none' : 'block';
+            if (zonaWrap) {
+                zonaWrap.style.display = esRetiro ? 'none' : 'block';
+                if (esRetiro) {
+                    const selZ = document.getElementById('newProdZona');
+                    if (selZ) selZ.value = '';
+                    const inpZ = document.getElementById('newProdZonaCustom');
+                    if (inpZ) { inpZ.value = ''; inpZ.style.display = 'none'; }
+                }
+            }
 
-            // Mostrar/ocultar bloque Ubicación física
+            // Ubicación física (estante/col/fila/dep): oculto en modo RETIRO
             const ubicWrap = document.getElementById('newProdUbicacionWrap');
             if (ubicWrap) ubicWrap.style.display = esRetiro ? 'none' : 'block';
         }
@@ -2477,10 +2513,8 @@
             newProductCurrentImages = [];
 
             // Limpiar campos
-
             document.getElementById('newProdDesc').value = '';
-            document.getElementById('newProdMarca').value = '';
-            document.getElementById('newProdStockInicial').value = '0';
+            document.getElementById('newProdStockInicial').value = '';
             document.getElementById('newProdStockMin').value = '0';
             document.getElementById('newProdUbiDep').value = '';
             document.getElementById('newProdUbiDepCustom').value = '';
@@ -2494,6 +2528,24 @@
             document.getElementById('newProdObsGeneral').value = '';
             document.getElementById('newProdErr').style.display = 'none';
             document.getElementById('newProdUnidad').value = 'un';
+
+            // Poblar marcas existentes + opciones fijas
+            const selMarca = document.getElementById('newProdMarcaSel');
+            const marcasRegistradas = Array.from(new Set(state.stock.map(p => (p.marca || '').trim()).filter(m => m && m !== '—' && m !== '-' && m !== 'GENÉRICA' && m !== 'NO ESPECIFICADA'))).sort();
+            let optsMarca = '<option value="">-- Seleccionar Marca --</option>';
+            optsMarca += '<option value="GENÉRICA">Genérica</option>';
+            optsMarca += '<option value="NO ESPECIFICADA">No especificada</option>';
+            if (marcasRegistradas.length > 0) {
+                marcasRegistradas.forEach(m => {
+                    optsMarca += `<option value="${escapeAttr(m)}">${escapeHtml(m)}</option>`;
+                });
+            }
+            optsMarca += '<option value="__OTRA__">➕ Otra marca (escribir)...</option>';
+            selMarca.innerHTML = optsMarca;
+            selMarca.value = '';
+            toggleCustomMarcaInput(selMarca);
+            document.getElementById('newProdMarcaCustom').value = '';
+
             // Nuevos campos
             document.getElementById('newProdTipoAlta').value = 'DEPOSITO';
             document.getElementById('newProdLugarRetiro').value = '';
@@ -2615,14 +2667,18 @@ async function confirmNewProduct() {
     const zona = esRetiro ? '' : (selZona === '__OTRA__' ? customZona : selZona).trim().toUpperCase();
 
     const desc = document.getElementById('newProdDesc').value.trim().toUpperCase();
-    const marca = document.getElementById('newProdMarca').value.trim().toUpperCase() || '—';
+
+    // ── Marca ──────────────────────────────────────────────────
+    const selMarca = document.getElementById('newProdMarcaSel').value;
+    const customMarca = document.getElementById('newProdMarcaCustom').value.trim().toUpperCase();
+    const marca = (selMarca === '__OTRA__' ? customMarca : selMarca).trim().toUpperCase();
 
     const selFam = document.getElementById('newProdFamiliaSel').value;
     const customFam = document.getElementById('newProdFamiliaCustom').value.trim().toUpperCase();
     const familia = (selFam === '__OTRA__' ? customFam : selFam).trim().toUpperCase() || 'VARIOS';
 
     const unidad = document.getElementById('newProdUnidad').value;
-    const stockInicial = Number(document.getElementById('newProdStockInicial').value) || 0;
+    const stockInicialVal = document.getElementById('newProdStockInicial').value.trim();
     const stockMin = Number(document.getElementById('newProdStockMin').value) || 0;
 
     // ── Ubicación física (solo relevante en modo DEPÓSITO) ─────
@@ -2643,6 +2699,20 @@ async function confirmNewProduct() {
         errBox.style.display = 'block';
         return;
     }
+    if (!marca) {
+        errBox.textContent = selMarca === '__OTRA__'
+            ? 'Ingresá el nombre de la marca.'
+            : 'Seleccioná o ingresá una Marca obligatoria.';
+        errBox.style.display = 'block';
+        return;
+    }
+    if (stockInicialVal === '' || isNaN(Number(stockInicialVal)) || Number(stockInicialVal) < 0) {
+        errBox.textContent = 'El Stock Inicial es obligatorio (ingresá 0 o un valor mayor).';
+        errBox.style.display = 'block';
+        return;
+    }
+    const stockInicial = Number(stockInicialVal);
+
     if (esRetiro && !lugarRetiro) {
         errBox.textContent = 'Indicá el lugar de retiro / proveedor.';
         errBox.style.display = 'block';
