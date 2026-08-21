@@ -2596,6 +2596,7 @@
 async function confirmNewProduct() {
     const errBox = document.getElementById('newProdErr');
     errBox.style.display = 'none';
+    alert('FOTOS EN MEMORIA AL EMPEZAR A GUARDAR: ' + newProductCurrentImages.length);
 
     // ── Tipo de alta ────────────────────────────────────────────
     const tipoAlta = document.getElementById('newProdTipoAlta').value; // 'DEPOSITO' | 'RETIRO'
