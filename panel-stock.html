@@ -1313,6 +1313,7 @@
                                     <th data-sort="cantidad">Cant. <span class="arrow"></span></th>
                                     <th data-sort="responsable">Responsable <span class="arrow"></span></th>
                                     <th data-sort="obra">Obra / destino <span class="arrow"></span></th>
+                                    <th data-sort="factura">N.º Factura <span class="arrow"></span></th>
                                 </tr>
                             </thead>
                         </table>
@@ -2768,8 +2769,18 @@ async function confirmNewProduct() {
             const res = await apiPost(payload);
             if (res && res.ok && res.id) {
                 nuevoProducto.id = res.id;
+                // Reemplazamos el preview local (base64) por el link real de Drive
+                // que devolvió el backend, así la miniatura no desaparece en el
+                // próximo refresco de datos si el backend guardó algo distinto.
+                if (res.imagen !== undefined) {
+                    nuevoProducto.imagen = res.imagen;
+                }
                 renderStock();
-                showToast(`Guardado en la nube con ID ${res.id} ✓`);
+                if (res.error_fotos) {
+                    showToast(`Producto guardado (ID ${res.id}), pero la foto no se pudo subir: ${res.error_fotos}`, true);
+                } else {
+                    showToast(`Guardado en la nube con ID ${res.id} ✓`);
+                }
             } else if (res && !res.ok) {
                 showToast('Error al guardar en la nube: ' + (res.error || ''), true);
             }
@@ -3026,7 +3037,7 @@ async function confirmNewProduct() {
             const body = document.getElementById('movBody');
 
             if (list.length === 0) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="6">No hay movimientos que coincidan con el filtro.</td></tr>`;
+                body.innerHTML = `<tr class="empty-row"><td colspan="7">No hay movimientos que coincidan con el filtro.</td></tr>`;
             } else {
                 body.innerHTML = list.map(m => {
                     const tipoClass = m.tipo === 'ENTRADA' ? 'entrada' : (m.tipo === 'SALIDA' ? 'salida' : 'devolucion');
@@ -3038,6 +3049,7 @@ async function confirmNewProduct() {
         <td>${m.cantidad ?? ''}</td>
         <td class="marca-cell">${escapeHtml(m.responsable || '—')}</td>
         <td class="marca-cell">${escapeHtml(m.obra || '—')}</td>
+        <td class="id-tag">${escapeHtml(m.factura || '—')}</td>
       </tr>`;
                 }).join('');
             }
