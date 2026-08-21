@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Buscador General — Depósitos RPM</title>
+<style>
+/* ============================================================
+   1.1 RESET Y VARIABLES BASE
+   Mismos nombres de variable que Panel Stock, para que ambos
+   productos se sientan de la misma familia visual aunque uno
+   sea desktop y este sea mobile-first.
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+
+:root {
+  --bg: #0f172a;
+  --bg-elev: #1e293b;
+  --bg-card: #1e293b;
+  --line: #334155;
+  --line-soft: #1e293b;
+  --txt: #f1f5f9;
+  --txt-dim: #cbd5e1;
+  --txt-faint: #475569;
+  --accent: #3b82f6;
+  --accent-soft: #1e3a8a;
+  --amber: #FCD34D;
+  --ok-fg: #4ade80;
+  --ok-bg: #052e16;
+  --bad-fg: #f87171;
+  --bad-bg: #2d0b0b;
+  --devol-bg: #1e3a8a;
+  --devol-fg: #60a5fa;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  padding-bottom: 24px;
+}
+
+/* ============================================================
+   1.2 ENCABEZADO
+   ============================================================ */
+.header { padding: 20px 16px 14px; text-align: center; }
+.header-eyebrow { font-size: 11px; font-weight: 700; color: var(--txt-faint); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+.header-title { font-size: 21px; font-weight: 800; color: var(--txt); letter-spacing: -0.5px; }
+.header-refresh {
+  margin-top: 10px; appearance: none; background: var(--bg-elev); border: 1.5px solid var(--line);
+  color: var(--accent); font-size: 12.5px; font-weight: 700; padding: 7px 14px; border-radius: 8px;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.header-refresh:disabled { opacity: .5; cursor: wait; }
+.divider { height: 1px; background: var(--line-soft); margin: 0 16px 14px; }
+
+/* ============================================================
+   1.3 BUSCADOR + FILTROS (sticky)
+   ============================================================ */
+.search-wrap { position: sticky; top: 0; z-index: 15; background: var(--bg); padding: 0 16px 10px; }
+
+.search-box {
+  display: flex; align-items: center; gap: 10px; background: var(--bg-card);
+  border-radius: 14px; padding: 0 16px; border: 1.5px solid transparent; transition: border-color .15s;
+}
+.search-box:focus-within { border-color: var(--accent); }
+.search-icon { font-size: 18px; color: var(--txt-faint); flex-shrink: 0; }
+.search-box input {
+  flex: 1; border: none; outline: none; background: transparent; color: var(--txt);
+  font-size: 15px; padding: 13px 0; font-family: inherit;
+}
+.search-box input::placeholder { color: var(--txt-faint); }
+
+.filters-row { display: flex; gap: 8px; margin-top: 8px; }
+.filter-select {
+  flex: 1; background: var(--bg-card); border: 1.5px solid var(--line); border-radius: 10px;
+  color: var(--txt); font-size: 12.5px; font-weight: 600; padding: 9px 8px; font-family: inherit;
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+}
+.filter-select option { background: var(--bg-elev); color: var(--txt); }
+
+.zone-chips { display: flex; gap: 7px; overflow-x: auto; padding: 10px 2px 2px; -webkit-overflow-scrolling: touch; }
+.zone-chips::-webkit-scrollbar { display: none; }
+.zone-chip {
+  flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 20px;
+  border: 1.5px solid var(--line); background: var(--bg-card); color: var(--txt-dim); cursor: pointer;
+  white-space: nowrap; transition: all .12s;
+}
+.zone-chip.active { background: var(--accent-soft); border-color: var(--accent); color: var(--txt); }
+
+.search-meta { font-size: 12px; color: var(--txt-faint); margin-top: 8px; padding-left: 4px; }
+
+/* ============================================================
+   1.4 RESULTADOS
+   ============================================================ */
+.results { padding: 4px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+
+.estado-inicial, .estado-vacio, .estado-cargando, .estado-error {
+  text-align: center; padding: 40px 24px; color: var(--txt-faint); font-size: 13px;
+}
+.estado-icon { font-size: 30px; margin-bottom: 10px; }
+.estado-error { color: var(--bad-fg); }
+.estado-error .estado-error-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+.estado-error .estado-error-msg { font-size: 12px; color: var(--txt-dim); margin-bottom: 16px; }
+.btn-retry {
+  appearance: none; background: var(--accent); border: none; color: #fff; font-size: 13px;
+  font-weight: 700; padding: 9px 18px; border-radius: 8px; cursor: pointer;
+}
+.spinner {
+  width: 30px; height: 30px; border: 3px solid var(--bg-elev); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.card { background: var(--bg-card); border-radius: 14px; padding: 14px 16px; cursor: pointer; transition: background .12s; }
+.card:active { background: #263147; }
+.card.en-carrito-entrada { border-left: 4px solid #16a34a; }
+.card.en-carrito-salida  { border-left: 4px solid #dc2626; }
+
+.card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 5px; }
+.card-familia { font-size: 12px; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: .8px; flex: 1; }
+.card-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
+.card-status.ok { background: var(--ok-bg); color: var(--ok-fg); }
+.card-status.reponer { background: var(--bad-bg); color: var(--bad-fg); }
+
+.card-desc { font-size: 15px; font-weight: 600; color: var(--txt); line-height: 1.3; margin-bottom: 4px; }
+.card-info { font-size: 12px; color: #94a3b8; margin-bottom: 3px; line-height: 1.4; }
+.card-info strong { color: var(--txt-dim); font-weight: 700; }
+.card-info-obs { font-size: 11.5px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+.card-info-obs .vacia { color: #64748b; font-style: italic; }
+
+.badge-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.card-zona { display: inline-flex; align-items: center; gap: 4px; background: var(--bg); color: #7dd3fc; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+.card-ubic { display: inline-flex; align-items: center; gap: 4px; background: var(--bg); color: #fbbf24; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+.badge-carrito { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+.badge-carrito-entrada { background: var(--ok-bg); color: var(--ok-fg); }
+.badge-carrito-salida  { background: #3b1414; color: #fca5a5; }
+.badge-foto { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; background: #1e3a5f; color: #93c5fd; }
+
+.card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.card-id { font-size: 11px; color: var(--txt-faint); }
+.card-qty { font-size: 18px; font-weight: 800; }
+.card-qty.ok { color: var(--ok-fg); }
+.card-qty.reponer { color: var(--bad-fg); }
+.card-qty.zero { color: #dc2626; }
+
+.btn-mov {
+  width: 100%; height: 38px; padding: 0 14px; border-radius: 10px; color: white; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 10px; background: var(--accent);
+}
+.btn-mov:active { background: #1d4ed8; }
+
+.card-link-form {
+  display: block; text-align: center; margin-top: 8px; font-size: 11px; font-weight: 600;
+  color: var(--txt-faint); text-decoration: none;
+}
+
+/* Mini-confirm (elegir tipo, cantidad, agregar) — mismo patrón que los formularios de depósito */
+.mini-confirm { margin-top: 8px; padding: 10px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; }
+.mini-confirm-titulo { font-size: 12px; font-weight: 700; color: var(--txt-dim); margin-bottom: 8px; }
+.mini-confirm-stepper { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.mini-confirm-stepper button {
+  width: 32px; height: 32px; border-radius: 6px; border: 1.5px solid var(--line);
+  background: var(--bg-elev); color: var(--txt); font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.mini-confirm-input {
+  width: 56px; height: 32px; text-align: center; border-radius: 6px; border: 1.5px solid var(--line);
+  background: var(--bg-elev); color: var(--txt); font-size: 16px; font-weight: 700;
+}
+.mini-confirm-unidad { font-size: 12px; color: #94a3b8; font-weight: 600; margin-left: 2px; }
+.mini-confirm-tipo { display: flex; gap: 8px; margin-bottom: 10px; }
+.mini-confirm-tipo button {
+  flex: 1; padding: 8px; border-radius: 6px; border: 1.5px solid var(--line); background: var(--bg-elev);
+  color: var(--txt); font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.mini-confirm-acciones { display: flex; gap: 8px; }
+.mini-confirm-acciones button { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; }
+.mini-confirm-acciones .btn-mini-ok { background: var(--accent); color: white; }
+.mini-confirm-acciones .btn-mini-cancel { background: var(--line); color: var(--txt-dim); }
+
+/* ============================================================
+   1.5 BARRA DE CARRITO FLOTANTE
+   ============================================================ */
+.barra-carrito {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; background: #020617;
+  color: white; padding: 12px 16px; align-items: center; justify-content: space-between;
+  box-shadow: 0 -4px 12px rgba(0,0,0,.4);
+}
+.barra-carrito.visible { display: flex; }
+.barra-carrito.tipo-salida { background: #7f1d1d; }
+.barra-carrito-texto { font-size: 14px; font-weight: 700; }
+.barra-carrito-btns { display: flex; gap: 8px; }
+.barra-carrito-btns button { padding: 8px 14px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; }
+.btn-carrito-confirmar { background: #16a34a; color: white; }
+.btn-carrito-vaciar { background: rgba(255,255,255,.15); color: white; }
+
+/* ============================================================
+   1.6 MODALES / OVERLAYS / TOAST
+   ============================================================ */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 24px; }
+.modal-box { background: var(--bg-elev); border-radius: 14px; padding: 20px; max-width: 380px; width: 100%; text-align: center; max-height: 88vh; overflow-y: auto; }
+.modal-box p { font-size: 14px; color: #e2e8f0; margin-bottom: 16px; font-weight: 600; }
+.modal-lista { max-height: 160px; overflow-y: auto; margin-bottom: 12px; }
+.modal-lista-item { text-align: left; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--line); color: var(--txt); }
+.modal-lista-item .fam { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; }
+.modal-lista-item .zona { font-size: 11px; color: #7dd3fc; margin-top: 2px; }
+.modal-label { display: block; text-align: left; font-size: 11px; font-weight: 700; color: var(--txt-dim); margin-bottom: 4px; }
+.modal-box select, .modal-box input[type="text"] {
+  width: 100%; padding: 9px 10px; border: 1.5px solid var(--line); border-radius: 8px; margin-bottom: 12px;
+  background: var(--bg); color: var(--txt); font-size: 14px; font-family: inherit;
+}
+.modal-btn { display: block; width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.modal-btn.primary { background: var(--accent); color: white; }
+.modal-btn.cancel { background: transparent; color: #94a3b8; }
+
+/* Detalle de producto (solo lectura) */
+.detail-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 55; display: none; flex-direction: column; }
+.detail-overlay.show { display: flex; }
+.detail-topbar { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 54px; border-bottom: 1px solid var(--line-soft); }
+.detail-topbar-back { background: none; border: none; color: var(--accent); font-size: 26px; cursor: pointer; line-height: 1; }
+.detail-topbar-title { font-size: 14px; font-weight: 600; color: #64748b; }
+.detail-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+.detail-card { background: var(--bg-card); border-radius: 16px; padding: 20px; margin-bottom: 10px; }
+.detail-family { font-size: 13px; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+.detail-desc { font-size: 18px; font-weight: 700; color: var(--txt); line-height: 1.3; margin-bottom: 4px; }
+.detail-img-preview { display: flex; gap: 8px; margin-bottom: 10px; }
+.detail-img-preview img { flex: 1; max-width: 48%; border-radius: 10px; cursor: zoom-in; border: 1px solid var(--line); }
+.detail-stock-card { background: var(--bg-card); border-radius: 16px; padding: 24px 20px; margin-bottom: 10px; text-align: center; }
+.detail-stock-label { font-size: 11px; font-weight: 700; color: var(--txt-faint); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.detail-stock-num { font-size: 64px; font-weight: 800; line-height: 1; }
+.detail-stock-unit { font-size: 13px; color: var(--txt-faint); margin-top: 4px; }
+.detail-state-badge { display: inline-block; margin-top: 16px; font-size: 13px; font-weight: 800; padding: 6px 22px; border-radius: 30px; letter-spacing: 1px; text-transform: uppercase; }
+.detail-min { margin-top: 10px; font-size: 12px; color: var(--txt-faint); }
+.detail-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.detail-stat { background: var(--bg-card); border-radius: 12px; padding: 14px 8px; text-align: center; }
+.detail-stat-num { font-size: 24px; font-weight: 700; }
+.detail-stat-label { font-size: 10px; color: var(--txt-faint); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+.detail-stat.ent .detail-stat-num { color: var(--ok-fg); }
+.detail-stat.sal .detail-stat-num { color: var(--bad-fg); }
+.detail-stat.dev .detail-stat-num { color: var(--devol-fg); }
+.detail-last { background: var(--bg-card); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: #64748b; line-height: 1.8; }
+.detail-last strong { color: var(--txt); }
+
+.zoom-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.9); display: none; align-items: center; justify-content: center; z-index: 70; cursor: zoom-out; padding: 24px; }
+.zoom-overlay.show { display: flex; }
+.zoom-overlay img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+
+.toast-dep {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%); color: white; padding: 10px 18px;
+  border-radius: 10px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  z-index: 1002; max-width: 90%; text-align: center;
+}
+
+/* ============================================================
+   1.7 ACCESO DIRECTO A CADA DEPÓSITO (QR físico / formulario propio)
+   ============================================================ */
+.tabs-section { padding: 20px 16px 6px; }
+.tabs-title { font-size: 10px; font-weight: 700; color: var(--txt-faint); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.tabs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+.tab-link {
+  display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1.5px solid var(--line);
+  border-radius: 12px; padding: 14px 16px; font-size: 14px; font-weight: 700; color: var(--txt-dim);
+  text-decoration: none; transition: border-color .15s, background .15s;
+}
+.tab-link:active { border-color: var(--accent); background: #263147; }
+.tab-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+.tab-arrow { margin-left: auto; color: var(--line); font-size: 18px; }
+
+.footer { text-align: center; font-size: 11px; color: var(--line); padding: 8px 16px 12px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     2.1 ENCABEZADO
+     ============================================================ -->
+<div class="header">
+  <div class="header-eyebrow">RPM Construcciones</div>
+  <div class="header-title">🔍 Buscador General de Depósitos</div>
+  <button class="header-refresh" id="btnRefresh" onclick="cargarStock()">↻ Actualizar datos</button>
+</div>
+<div class="divider"></div>
+
+<!-- ============================================================
+     2.2 BUSCADOR + FILTROS
+     ============================================================ -->
+<div class="search-wrap">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="search" id="search-input" placeholder="Buscar producto en todos los depósitos..." oninput="onBuscar()">
+  </div>
+  <div class="filters-row">
+    <select class="filter-select" id="filter-familia" onchange="onBuscar()">
+      <option value="">Todas las familias</option>
+    </select>
+    <select class="filter-select" id="filter-estado" onchange="onBuscar()">
+      <option value="">Todos los estados</option>
+      <option value="OK">OK</option>
+      <option value="REPONER">Reponer</option>
+    </select>
+  </div>
+  <div class="zone-chips" id="zone-chips"></div>
+  <div class="search-meta" id="search-meta"></div>
+</div>
+
+<!-- ============================================================
+     2.3 RESULTADOS
+     ============================================================ -->
+<div class="results" id="results">
+  <div class="estado-inicial">
+    Escribí un producto (ej. "térmica") para buscarlo en todos los depósitos a la vez, o elegí un depósito arriba.
+  </div>
+</div>
+
+<!-- ============================================================
+     2.4 ACCESO DIRECTO A CADA FORMULARIO DE DEPÓSITO
+     ============================================================ -->
+<div class="tabs-section">
+  <div class="tabs-title">Ir directo a un depósito</div>
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<div class="footer">RPM Stock · Buscador unificado — solo búsqueda y movimientos, sin edición de ficha</div>
+
+<!-- Barra de carrito -->
+<div class="barra-carrito" id="barra_carrito">
+  <div class="barra-carrito-texto" id="barra_carrito_texto"></div>
+  <div class="barra-carrito-btns">
+    <button class="btn-carrito-vaciar" onclick="vaciarCarritoRapido()">Vaciar</button>
+    <button class="btn-carrito-confirmar" onclick="abrirModalConfirmarCarrito()">Confirmar</button>
+  </div>
+</div>
+
+<!-- Detalle de producto (solo lectura) -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-topbar">
+    <button class="detail-topbar-back" onclick="closeDetail()">‹</button>
+    <span class="detail-topbar-title">Detalle de producto</span>
+  </div>
+  <div class="detail-scroll" id="detail-body"></div>
+</div>
+
+<div class="zoom-overlay" id="zoom-overlay" onclick="this.classList.remove('show')">
+  <img id="zoom-img" src="" alt="">
+</div>
+
+<script>
+// ============================================================
+// 3.1 CONFIG
+// ============================================================
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQVmgnoPG86r8LKnkdMn0yP17FGvoLj02LSNz8BC_mhZzEmJZgV_jgpLFArInlgUOx/exec";
+const POLL_MS = 25000;
+
+// Pestañas de acceso directo a cada formulario propio de depósito.
+// AJUSTAR: reemplazar por el nombre real de archivo de cada HTML en el
+// repositorio (ya no son links a Google Sites — son archivos hermanos).
+const DEPOSITOS_TABS = [
+  { nombre: '5A — Eléctrico',      icon: '⚡', url: 'deposito-5a.html' },
+  { nombre: '4 — Iluminación',     icon: '💡', url: 'deposito-4-iluminacion.html' },
+  { nombre: 'Filtros / 5B',        icon: '🧰', url: 'deposito-5b-filtros.html' },
+  { nombre: '4 — Gabinetes',       icon: '📦', url: 'deposito-4-gabinetes.html' },
+  { nombre: 'Cables',              icon: '🔌', url: 'deposito-cables.html' },
+];
+
+const RESPONSABLES = ['Fernando', 'Pamela'];
+
+// ============================================================
+// 3.2 ESTADO
+// ============================================================
+let stockData = [];
+let cargado = false;
+let debounceTimer = null;
+let carritoRapido = { tipo: null, items: [] };
+let zonaActiva = '';
+let modalAbierto = false;
+let pollingTimer = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTabs();
+  cargarStock();
+  pollingTimer = setInterval(() => { if (!modalAbierto) cargarStock(true); }, POLL_MS);
+});
+
+// ============================================================
+// 3.3 UTILIDADES COMUNES
+// ============================================================
+function toastDep(mensaje, tipo = 'info') {
+  const existente = document.getElementById('toast_dep');
+  if (existente) existente.remove();
+  const toast = document.createElement('div');
+  toast.id = 'toast_dep';
+  toast.className = 'toast-dep';
+  toast.style.background = tipo === 'error' ? '#dc2626' : (tipo === 'ok' ? '#16a34a' : '#1a1a2e');
+  toast.textContent = mensaje;
+  document.body.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3200);
+}
+
+function normalizeText(str) {
+  if (!str) return '';
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function matchesSearch(item, query, fields) {
+  if (!query) return true;
+  const rawQuery = normalizeText(query).trim();
+  if (!rawQuery) return true;
+  const textFields = fields.map(f => item[f] || '').filter(Boolean);
+  const targetNorm = normalizeText(textFields.join(' '));
+  const targetAlphaNum = targetNorm.replace(/[^a-z0-9]/g, '');
+  const queryAlphaNum = rawQuery.replace(/[^a-z0-9]/g, '');
+  if (queryAlphaNum && targetAlphaNum.includes(queryAlphaNum)) return true;
+  const queryTokens = rawQuery.split(/[^a-z0-9]+/).filter(Boolean);
+  if (queryTokens.length > 0) {
+    const allTokensMatch = queryTokens.every(token => {
+      if (targetNorm.includes(token)) return true;
+      if (targetAlphaNum.includes(token)) return true;
+      const subChunks = token.match(/[a-z]+|\d+/g);
+      if (subChunks && subChunks.length > 1) return subChunks.every(c => targetAlphaNum.includes(c));
+      return false;
+    });
+    if (allTokensMatch) return true;
+  }
+  return false;
+}
+
+function parsearImagenes(campo) {
+  if (!campo) return [];
+  return campo.split('||').map(s => s.trim()).filter(Boolean);
+}
+
+function abrirZoomImagen(src) {
+  document.getElementById('zoom-img').src = src;
+  document.getElementById('zoom-overlay').classList.add('show');
+}
+
+function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+// ============================================================
+// 3.4 PESTAÑAS DE DEPÓSITOS
+// ============================================================
+function renderTabs() {
+  const cont = document.getElementById('tabs');
+  cont.innerHTML = DEPOSITOS_TABS.map(d =>
+    `<a class="tab-link" href="${d.url}">
+       <span class="tab-icon">${d.icon}</span>${d.nombre}<span class="tab-arrow">›</span>
+     </a>`
+  ).join('');
+}
+
+// ============================================================
+// 3.5 CARGA DE STOCK (todos los depósitos juntos)
+// ============================================================
+async function cargarStock(silencioso) {
+  const btn = document.getElementById('btnRefresh');
+  try {
+    if (!silencioso && btn) { btn.disabled = true; btn.textContent = '↻ Cargando...'; }
+    const resp = await fetch(APPS_SCRIPT_URL + '?action=json'); // sin "zona" = trae todo
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Error del servidor');
+
+    const nuevo = data.productos || [];
+    const huboCambios = JSON.stringify(nuevo) !== JSON.stringify(stockData);
+    stockData = nuevo;
+    cargado = true;
+
+    if (!silencioso || huboCambios) {
+      buildFamiliaSelect();
+      buildZoneChips();
+      onBuscar();
+    }
+    if (!silencioso) toastDep('✅ Stock de depósitos actualizado', 'ok');
+  } catch (err) {
+    cargado = false;
+    if (!silencioso) {
+      document.getElementById('results').innerHTML = `
+        <div class="estado-error">
+          <div class="estado-icon">⚠️</div>
+          <div class="estado-error-title">No se pudo conectar con el servidor</div>
+          <div class="estado-error-msg">${escapeHtml(err.message || 'Corte temporal de conexión o tiempo de espera agotado.')}</div>
+          <button class="btn-retry" onclick="cargarStock()">🔄 Reintentar conexión</button>
+        </div>`;
+    }
+  } finally {
+    if (!silencioso && btn) { btn.disabled = false; btn.textContent = '↻ Actualizar datos'; }
+  }
+}
+
+function buildFamiliaSelect() {
+  const familias = [...new Set(stockData.map(p => p.familia).filter(Boolean))].sort();
+  const sel = document.getElementById('filter-familia');
+  const actual = sel.value;
+  sel.innerHTML = '<option value="">Todas las familias</option>' + familias.map(f => `<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join('');
+  if (familias.includes(actual)) sel.value = actual;
+}
+
+function buildZoneChips() {
+  const zonas = [...new Set(stockData.map(p => p.zona).filter(Boolean))].sort();
+  const cont = document.getElementById('zone-chips');
+  const chips = [`<button class="zone-chip${zonaActiva===''?' active':''}" data-zona="">Todos<span></span></button>`];
+  zonas.forEach(z => chips.push(`<button class="zone-chip${zonaActiva===z?' active':''}" data-zona="${escapeHtml(z)}">${escapeHtml(z)}</button>`));
+  cont.innerHTML = chips.join('');
+  cont.querySelectorAll('.zone-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      zonaActiva = btn.dataset.zona;
+      cont.querySelectorAll('.zone-chip').forEach(b => b.classList.toggle('active', b === btn));
+      onBuscar();
+    });
+  });
+}
+
+// ============================================================
+// 3.6 BÚSQUEDA Y RENDER DE RESULTADOS
+// ============================================================
+function onBuscar() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(renderResultados, 150);
+}
+
+function renderResultados() {
+  const cont = document.getElementById('results');
+  const meta = document.getElementById('search-meta');
+  const query = document.getElementById('search-input').value;
+  const familia = document.getElementById('filter-familia').value;
+  const estado = document.getElementById('filter-estado').value;
+
+  if (!cargado) {
+    cont.innerHTML = `<div class="estado-cargando"><div class="spinner"></div>Cargando inventario de todos los depósitos...</div>`;
+    meta.textContent = '';
+    return;
+  }
+
+  const hayFiltro = query.trim() || familia || estado || zonaActiva;
+  if (!hayFiltro) {
+    cont.innerHTML = `<div class="estado-inicial">Escribí un producto (ej. "térmica") para buscarlo en todos los depósitos a la vez, o elegí un depósito arriba.</div>`;
+    meta.textContent = '';
+    return;
+  }
+
+  let resultados = stockData;
+  if (zonaActiva) resultados = resultados.filter(p => p.zona === zonaActiva);
+  if (familia) resultados = resultados.filter(p => p.familia === familia);
+  if (estado) resultados = resultados.filter(p => p.estado === estado);
+  if (query.trim()) resultados = resultados.filter(p => matchesSearch(p, query, ['descripcion','marca','familia','zona','id']));
+
+  resultados = resultados.slice().sort((a, b) => String(a.descripcion||'').localeCompare(String(b.descripcion||''), undefined, { numeric: true }));
+
+  meta.textContent = resultados.length ? `${resultados.length} resultado${resultados.length!==1?'s':''}` : '';
+
+  if (resultados.length === 0) {
+    cont.innerHTML = `<div class="estado-vacio"><div class="estado-icon">🔎</div>Sin resultados para esa búsqueda</div>`;
+    return;
+  }
+
+  cont.innerHTML = resultados.map(p => buildCardHtml(p)).join('');
+
+  // Wire events (movimiento, detalle)
+  resultados.forEach(p => {
+    const card = document.getElementById('card_' + p.id);
+    if (!card) return;
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.btn-mov') || e.target.closest('.mini-confirm')) return;
+      openDetail(p.id);
+    });
+    const btn = card.querySelector('.btn-mov');
+    if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); iniciarAjusteRapido(p.id); });
+  });
+}
+
+function buildCardHtml(p) {
+  const isLow = p.estado === 'REPONER';
+  const isZero = Number(p.stock_actual) <= 0;
+  const qtyClass = isZero ? 'zero' : (isLow ? 'reponer' : 'ok');
+  const stClass = isLow ? 'reponer' : 'ok';
+  const ubicTxt = [p.ubicacion_deposito, p.ubicacion_estante, p.ubicacion_columna, p.ubicacion_fila].filter(Boolean).join(' / ');
+  const numFotos = parsearImagenes(p.imagen).length;
+  return `<div class="card ${claseCarritoItem(p.id)}" id="card_${escapeHtml(p.id)}">
+    <div class="card-top">
+      <span class="card-familia">${escapeHtml(p.familia)}</span>
+      <span class="card-status ${stClass}">${escapeHtml(p.estado)}</span>
+    </div>
+    <div class="card-desc">${escapeHtml(p.descripcion)}${numFotos>0?`<span class="badge-foto">📷 ${numFotos}</span>`:''}${renderBadgeCarrito(p.id)}</div>
+    <div class="card-info"><strong>Marca:</strong> ${escapeHtml(p.marca || '—')}</div>
+    <div class="card-info-obs">${p.ult_obs ? `📝 ${escapeHtml(p.ult_obs)}` : '<span class="vacia">Sin observaciones</span>'}</div>
+    <div class="badge-row">
+      <span class="card-zona">📍 ${escapeHtml(p.zona)}</span>
+      ${ubicTxt ? `<span class="card-ubic">🗂️ ${escapeHtml(ubicTxt)}</span>` : ''}
+    </div>
+    <div class="card-bottom">
+      <span class="card-id">${escapeHtml(p.id)}</span>
+      <span class="card-qty ${qtyClass}">${p.stock_actual} ${escapeHtml(p.unidad || 'u.')}</span>
+    </div>
+    <button class="btn-mov">↕ Hacer movimiento</button>
+    <div id="mini_confirm_${escapeHtml(p.id)}" onclick="event.stopPropagation()"></div>
+  </div>`;
+}
+
+// ============================================================
+// 3.7 DETALLE DE PRODUCTO (SOLO LECTURA — no se edita ficha acá)
+// ============================================================
+function openDetail(idProducto) {
+  const p = stockData.find(x => x.id === idProducto);
+  if (!p) return;
+  const isLow = p.estado === 'REPONER';
+  const isZero = Number(p.stock_actual) <= 0;
+  const colNum = isZero ? '#dc2626' : (isLow ? '#ea580c' : '#16a34a');
+  const colBadge = isLow ? '#dc2626' : '#16a34a';
+  const bgBadge = isLow ? '#fee2e2' : '#dcfce7';
+  const ubicTxt = [p.ubicacion_deposito, p.ubicacion_estante, p.ubicacion_columna, p.ubicacion_fila].filter(Boolean).join(' / ') || 'Sin ubicación';
+  const imgs = parsearImagenes(p.imagen);
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-card">
+      <div class="detail-family">${escapeHtml(p.familia)}</div>
+      <div class="detail-desc">${escapeHtml(p.descripcion)}${imgs.length>0?`<span class="badge-foto">📷 ${imgs.length}</span>`:''}</div>
+      <div class="card-info"><strong>Marca:</strong> ${escapeHtml(p.marca || '—')}</div>
+      <div class="card-info-obs" style="margin-top:6px;">${p.ult_obs ? `📝 <strong>Observaciones:</strong> ${escapeHtml(p.ult_obs)}` : '<span class="vacia">Sin observación</span>'}</div>
+      <div class="badge-row">
+        <span class="card-zona">📍 ${escapeHtml(p.zona)}</span>
+        <span class="card-ubic">🗂️ ${escapeHtml(ubicTxt)}</span>
+      </div>
+    </div>
+    ${imgs.length>0 ? `<div class="detail-img-preview">${imgs.map(src=>`<img src="${escapeHtml(src)}" onclick="abrirZoomImagen('${escapeHtml(src)}')">`).join('')}</div>` : ''}
+    <div class="detail-stock-card">
+      <div class="detail-stock-label">Stock actual</div>
+      <div class="detail-stock-num" style="color:${colNum}">${p.stock_actual}</div>
+      <div class="detail-stock-unit">${escapeHtml(p.unidad || 'unidades')}</div>
+      <div class="detail-state-badge" style="background:${bgBadge};color:${colBadge}">${escapeHtml(p.estado)}</div>
+      ${p.stock_minimo > 0 ? `<div class="detail-min">Mínimo: ${p.stock_minimo} ${escapeHtml(p.unidad||'u.')}</div>` : ''}
+    </div>
+    <div class="detail-stats">
+      <div class="detail-stat ent"><div class="detail-stat-num">${p.entradas ?? 0}</div><div class="detail-stat-label">Entradas</div></div>
+      <div class="detail-stat sal"><div class="detail-stat-num">${p.salidas ?? 0}</div><div class="detail-stat-label">Salidas</div></div>
+      <div class="detail-stat dev"><div class="detail-stat-num">${p.devoluciones ?? 0}</div><div class="detail-stat-label">Devol.</div></div>
+    </div>
+    ${p.ult_mov ? `<div class="detail-last">
+      Último movimiento: <strong>${escapeHtml(p.ult_mov)}</strong><br>
+      Fecha: <strong>${escapeHtml(p.ult_fecha||'')}</strong> &nbsp;|&nbsp; Hora: <strong>${escapeHtml(p.ult_hora||'')}</strong>
+      ${p.ult_mov_obs ? `<br>📝 <strong>Observación del envío:</strong> ${escapeHtml(p.ult_mov_obs)}` : ''}
+    </div>` : ''}
+  `;
+  document.getElementById('detail-overlay').classList.add('show');
+}
+function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); }
+
+// ============================================================
+// 3.8 CARRITO RÁPIDO — elegir tipo, cantidad (stepper) y agregar
+// ============================================================
+function obtenerItemCarrito(id) { return carritoRapido.items.find(it => it.id === id); }
+
+function renderBadgeCarrito(id) {
+  const item = obtenerItemCarrito(id);
+  if (!item) return '';
+  const clase = carritoRapido.tipo === 'SALIDA' ? 'badge-carrito-salida' : 'badge-carrito-entrada';
+  return `<span class="badge-carrito ${clase}">🛒 ${item.cantidad} ${item.unidad}</span>`;
+}
+function claseCarritoItem(id) {
+  const item = obtenerItemCarrito(id);
+  if (!item) return '';
+  return carritoRapido.tipo === 'SALIDA' ? 'en-carrito-salida' : 'en-carrito-entrada';
+}
+
+function iniciarAjusteRapido(idProducto) {
+  document.querySelectorAll('[id^="mini_confirm_"]').forEach(el => el.innerHTML = '');
+  const cont = document.getElementById('mini_confirm_' + idProducto);
+  if (!cont) return;
+
+  if (!carritoRapido.tipo) {
+    cont.innerHTML = `
+      <div class="mini-confirm">
+        <div class="mini-confirm-titulo">¿Qué tipo de movimiento vas a registrar?</div>
+        <div class="mini-confirm-tipo">
+          <button type="button" onclick="elegirTipoDesdeItem('${idProducto}','ENTRADA')">Entrada</button>
+          <button type="button" onclick="elegirTipoDesdeItem('${idProducto}','SALIDA')">Salida</button>
+          <button type="button" onclick="elegirTipoDesdeItem('${idProducto}','DEVOLUCIÓN')">Devolución</button>
+        </div>
+        <div class="mini-confirm-acciones">
+          <button class="btn-mini-cancel" onclick="cerrarMiniConfirm('${idProducto}')">Cancelar</button>
+        </div>
+      </div>`;
+    return;
+  }
+  mostrarStepperMovimiento(idProducto);
+}
+
+function elegirTipoDesdeItem(idProducto, tipo) {
+  carritoRapido.tipo = tipo;
+  mostrarStepperMovimiento(idProducto);
+}
+
+function mostrarStepperMovimiento(idProducto) {
+  const cont = document.getElementById('mini_confirm_' + idProducto);
+  if (!cont) return;
+  const producto = stockData.find(p => p.id === idProducto);
+  const unidad = producto?.unidad || 'un';
+  cont.innerHTML = `
+    <div class="mini-confirm">
+      <div class="mini-confirm-titulo">Movimiento: ${carritoRapido.tipo}</div>
+      <div class="mini-confirm-stepper">
+        <button type="button" onclick="ajustarCantidadMini('${idProducto}',-1)">−</button>
+        <input type="number" inputmode="numeric" min="1" class="mini-confirm-input" id="mini_cant_${idProducto}" value="1">
+        <button type="button" onclick="ajustarCantidadMini('${idProducto}',1)">+</button>
+        <span class="mini-confirm-unidad">${escapeHtml(unidad)}</span>
+      </div>
+      <div class="mini-confirm-acciones">
+        <button class="btn-mini-cancel" onclick="volverATipoMovimiento('${idProducto}')">Cancelar</button>
+        <button class="btn-mini-ok" onclick="confirmarAgregarCarrito('${idProducto}')">Agregar</button>
+      </div>
+    </div>`;
+}
+
+function ajustarCantidadMini(idProducto, delta) {
+  const input = document.getElementById('mini_cant_' + idProducto);
+  let val = (parseInt(input.value, 10) || 1) + delta;
+  if (val < 1) val = 1;
+  input.value = val;
+}
+
+function cerrarMiniConfirm(idProducto) {
+  const cont = document.getElementById('mini_confirm_' + idProducto);
+  if (cont) cont.innerHTML = '';
+}
+
+function volverATipoMovimiento(idProducto) {
+  if (carritoRapido.items.length > 0) {
+    toastDep('⚠ Vaciá el carrito para cambiar el tipo de movimiento', 'error');
+    cerrarMiniConfirm(idProducto);
+    return;
+  }
+  carritoRapido.tipo = null;
+  iniciarAjusteRapido(idProducto);
+}
+
+function confirmarAgregarCarrito(idProducto) {
+  const cantidad = parseInt(document.getElementById('mini_cant_' + idProducto).value, 10) || 1;
+  const producto = stockData.find(p => p.id === idProducto);
+  if (!producto) return;
+
+  const existente = carritoRapido.items.find(it => it.id === idProducto);
+  if (existente) {
+    existente.cantidad += cantidad;
+  } else {
+    carritoRapido.items.push({
+      id: idProducto,
+      familia: producto.familia,
+      marca: producto.marca,
+      descripcion: producto.descripcion,
+      unidad: producto.unidad || 'un',
+      cantidad,
+      zona: producto.zona,
+      ubicacion: [producto.ubicacion_deposito, producto.ubicacion_estante, producto.ubicacion_columna, producto.ubicacion_fila].filter(Boolean).join(' / ') || 'Sin ubicación',
+    });
+  }
+  cerrarMiniConfirm(idProducto);
+  actualizarBarraCarrito();
+  renderResultados();
+  toastDep('✅ Agregado al carrito', 'ok');
+}
+
+function actualizarBarraCarrito() {
+  const barra = document.getElementById('barra_carrito');
+  const texto = document.getElementById('barra_carrito_texto');
+  if (carritoRapido.items.length === 0) { barra.classList.remove('visible'); return; }
+  const total = carritoRapido.items.length;
+  const emoji = carritoRapido.tipo === 'SALIDA' ? '🔴' : '🟢';
+  texto.textContent = `${emoji} ${total} producto${total !== 1 ? 's' : ''} para ${carritoRapido.tipo}`;
+  barra.classList.toggle('tipo-salida', carritoRapido.tipo === 'SALIDA');
+  barra.classList.add('visible');
+}
+
+function vaciarCarritoRapido() {
+  carritoRapido = { tipo: null, items: [] };
+  actualizarBarraCarrito();
+  renderResultados();
+}
+
+// ============================================================
+// 3.9 CONFIRMAR Y ENVIAR (agrupa por zona, un envío por depósito)
+// ============================================================
+function abrirModalConfirmarCarrito() {
+  if (carritoRapido.items.length === 0) return;
+  modalAbierto = true;
+
+  const listaHtml = carritoRapido.items.map(it => `
+    <div class="modal-lista-item">
+      <div class="fam">${escapeHtml(it.familia)}</div>
+      ${escapeHtml(it.descripcion)} ${it.marca && it.marca !== 'No especificado' ? `— <span style="color:#94a3b8;">${escapeHtml(it.marca)}</span>` : ''} — <strong>${it.cantidad} ${escapeHtml(it.unidad)}</strong>
+      <div class="zona">📍 ${escapeHtml(it.zona)} · 🗂️ ${escapeHtml(it.ubicacion)}</div>
+    </div>`).join('');
+
+  const optsResp = RESPONSABLES.map(r => `<option>${escapeHtml(r)}</option>`).join('') + `<option value="OTRO">Otro...</option>`;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <p>Confirmar ${carritoRapido.tipo} (${carritoRapido.items.length} producto${carritoRapido.items.length !== 1 ? 's' : ''})</p>
+      <div class="modal-lista">${listaHtml}</div>
+      <label class="modal-label">Responsable</label>
+      <select id="carrito_responsable"><option value="">— Seleccioná —</option>${optsResp}</select>
+      <input type="text" id="carrito_responsable_otro" placeholder="Escribí el nombre" style="display:none;">
+      <label class="modal-label">Obra o destino</label>
+      <input type="text" id="carrito_obra" placeholder="Ej: Depósito, Obra 1, SUETRA...">
+      <label class="modal-label">Observaciones <span style="font-weight:400;color:#64748b;">(opcional)</span></label>
+      <input type="text" id="carrito_obs_general" placeholder="Aclaración sobre este envío">
+      <button class="modal-btn primary" id="btn_confirmar_carrito">Registrar movimiento</button>
+      <button class="modal-btn cancel" id="btn_cancelar_carrito">Cancelar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#carrito_responsable').onchange = function () {
+    document.getElementById('carrito_responsable_otro').style.display = this.value === 'OTRO' ? 'block' : 'none';
+  };
+  overlay.querySelector('#btn_cancelar_carrito').onclick = () => { overlay.remove(); modalAbierto = false; };
+  overlay.querySelector('#btn_confirmar_carrito').onclick = () => enviarCarritoRapidoMaestro(overlay);
+
+  // Mayúsculas en vivo para campos de texto libre (estándar del proyecto)
+  ['carrito_responsable_otro', 'carrito_obra', 'carrito_obs_general'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('input', function () {
+      const pos = this.selectionStart;
+      this.value = this.value.toUpperCase();
+      if (this.setSelectionRange) this.setSelectionRange(pos, pos);
+    });
+  });
+}
+
+async function enviarCarritoRapidoMaestro(overlay) {
+  let responsable = document.getElementById('carrito_responsable').value;
+  if (responsable === 'OTRO') responsable = document.getElementById('carrito_responsable_otro').value.trim();
+  const obra = document.getElementById('carrito_obra').value.trim();
+  const obsGeneral = document.getElementById('carrito_obs_general').value.trim();
+
+  if (!responsable || !obra) { toastDep('⚠ Completá Responsable y Obra', 'error'); return; }
+
+  const btn = overlay.querySelector('#btn_confirmar_carrito');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  const grupos = {};
+  carritoRapido.items.forEach(it => {
+    if (!grupos[it.zona]) grupos[it.zona] = [];
+    grupos[it.zona].push(it);
+  });
+
+  const fecha = new Date().toLocaleString('es-AR', { hour12: false });
+
+  const resultados = await Promise.allSettled(
+    Object.entries(grupos).map(([zona, items]) => {
+      const payload = {
+        accion: 'ajuste-rapido',
+        zona,
+        tipo_movimiento: carritoRapido.tipo,
+        responsable, obra,
+        obs_general: obsGeneral,
+        fecha,
+        items: items.map(it => ({ id: it.id, familia: it.familia, marca: it.marca, descripcion: it.descripcion, cantidad: it.cantidad, unidad: it.unidad })),
+      };
+      return fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+      }).then(r => r.json()).then(r => ({ zona, r }));
+    })
+  );
+
+  overlay.remove();
+  modalAbierto = false;
+
+  const fallidos = [];
+  resultados.forEach(res => {
+    if (res.status === 'rejected' || !res.value.r.ok) {
+      fallidos.push(res.value ? res.value.zona : '(desconocido)');
+    }
+  });
+
+  if (fallidos.length === 0) {
+    toastDep(`✅ ${carritoRapido.tipo} registrada en ${Object.keys(grupos).length} depósito${Object.keys(grupos).length !== 1 ? 's' : ''}`, 'ok');
+  } else {
+    toastDep(`⚠ Falló en: ${fallidos.join(', ')}. El resto se registró OK.`, 'error');
+  }
+
+  vaciarCarritoRapido();
+  cargarStock();
+}
+</script>
+</body>
+</html>

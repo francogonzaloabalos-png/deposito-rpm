@@ -2770,10 +2770,30 @@ async function confirmNewProduct() {
             if (res && res.ok && res.id) {
                 nuevoProducto.id = res.id;
                 // Reemplazamos el preview local (base64) por el link real de Drive
-                // que devolvió el backend, así la miniatura no desaparece en el
-                // próximo refresco de datos si el backend guardó algo distinto.
-                if (res.imagen !== undefined) {
+                if (res.imagen) {
                     nuevoProducto.imagen = res.imagen;
+                } else if (newProductCurrentImages.length > 0) {
+                    // Fallback: si el backend no procesó las fotos en crear-producto,
+                    // las subimos mediante actualizar-imagen para garantizar que queden en Drive
+                    let subidas = [];
+                    for (let i = 0; i < newProductCurrentImages.length; i++) {
+                        try {
+                            const resFoto = await apiPost({
+                                accion: 'actualizar-imagen',
+                                id: res.id,
+                                foto_base64: newProductCurrentImages[i].base64,
+                                modo: i === 0 ? 'reemplazar' : 'agregar'
+                            });
+                            if (resFoto && resFoto.ok && resFoto.imagen) {
+                                subidas = resFoto.imagen.split('||').map(s => s.trim()).filter(Boolean);
+                            }
+                        } catch (errFoto) {
+                            console.error("Error subiendo foto de nuevo producto:", errFoto);
+                        }
+                    }
+                    if (subidas.length > 0) {
+                        nuevoProducto.imagen = subidas.join('||');
+                    }
                 }
                 renderStock();
                 if (res.error_fotos) {
