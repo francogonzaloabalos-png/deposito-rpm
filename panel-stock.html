@@ -2767,6 +2767,7 @@ async function confirmNewProduct() {
                 fotos_base64: newProductCurrentImages.map(x => x.base64)
             };
             const res = await apiPost(payload);
+            alert('RESPUESTA DEL SERVIDOR:\n\n' + JSON.stringify(res, null, 2));
             if (res && res.ok && res.id) {
                 nuevoProducto.id = res.id;
                 // Reemplazamos el preview local (base64) por el link real de Drive
