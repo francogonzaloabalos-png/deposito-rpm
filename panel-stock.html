@@ -2690,6 +2690,9 @@ async function confirmNewProduct() {
     btnConfirm.textContent = 'Registrando…';
 
     try {
+        // Copia de las fotos ANTES de que closeNewProductModal() las borre
+        const fotosParaEnviar = newProductCurrentImages.slice();
+
         // Generar ID local para reflejar al instante
         const maxNum = state.stock.reduce((max, p) => {
             const m = String(p.id || '').match(/PROD-(\d+)/i);
@@ -2697,7 +2700,7 @@ async function confirmNewProduct() {
         }, 0);
         const localId = 'PROD-' + String(maxNum + 1).padStart(3, '0');
 
-        const fotosDrive = newProductCurrentImages.map(x => x.dataUrl).join('||');
+        const fotosDrive = fotosParaEnviar.map(x => x.dataUrl).join('||');
         const nuevoProducto = {
             id: localId,
             zona: zona,
@@ -2765,7 +2768,7 @@ async function confirmNewProduct() {
                 lugar_retiro: lugarRetiro,
                 ubicacion_aclaracion: aclaracionUbi, // ← nuevo nombre de campo, va suelto
                 factura: factura,                    // ← va a su propia columna, sin prefijo
-                fotos_base64: newProductCurrentImages.map(x => x.base64)
+                fotos_base64: fotosParaEnviar.map(x => x.base64)
             };
             const res = await apiPost(payload);
             alert('RESPUESTA DEL SERVIDOR:\n\n' + JSON.stringify(res, null, 2));
@@ -2778,12 +2781,12 @@ async function confirmNewProduct() {
                     // Fallback: si el backend no procesó las fotos en crear-producto,
                     // las subimos mediante actualizar-imagen para garantizar que queden en Drive
                     let subidas = [];
-                    for (let i = 0; i < newProductCurrentImages.length; i++) {
+                    for (let i = 0; i < fotosParaEnviar.length; i++) {
                         try {
                             const resFoto = await apiPost({
                                 accion: 'actualizar-imagen',
                                 id: res.id,
-                                foto_base64: newProductCurrentImages[i].base64,
+                                foto_base64: fotosParaEnviar[i].base64,
                                 modo: i === 0 ? 'reemplazar' : 'agregar'
                             });
                             if (resFoto && resFoto.ok && resFoto.imagen) {
