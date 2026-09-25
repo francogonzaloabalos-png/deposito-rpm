@@ -1290,7 +1290,7 @@
         <div id="panel-mov" style="display:none;">
             <div class="toolbar">
                 <div class="search-box"><input type="text" id="movSearch"
-                        placeholder="Buscar por producto, responsable u obra…"></div>
+                        placeholder="Buscar por producto, marca, familia, ubicación, responsable u obra…"></div>
                 <select class="filter-select" id="filterTipo">
                     <option value="">Todos los tipos</option>
                     <option value="ENTRADA">Entrada</option>
@@ -1309,7 +1309,10 @@
                                 <tr>
                                     <th data-sort="fecha">Fecha <span class="arrow"></span></th>
                                     <th data-sort="tipo">Tipo <span class="arrow"></span></th>
+                                    <th data-sort="familia">Familia <span class="arrow"></span></th>
                                     <th data-sort="descripcion">Producto <span class="arrow"></span></th>
+                                    <th data-sort="marca">Marca <span class="arrow"></span></th>
+                                    <th data-sort="ubicacion">Ubicación <span class="arrow"></span></th>
                                     <th data-sort="cantidad">Cant. <span class="arrow"></span></th>
                                     <th data-sort="responsable">Responsable <span class="arrow"></span></th>
                                     <th data-sort="obra">Obra / destino <span class="arrow"></span></th>
@@ -1763,12 +1766,12 @@
             { id: 'PROD-010', zona: 'Cables', familia: 'Cable Unipolar', marca: 'Pirelli', descripcion: '2.5mm² unipolar rojo Presentación Rollo 100m', unidad: 'rollo', entradas: 6, salidas: 5, devoluciones: 0, stock_actual: 1, stock_minimo: 2, estado: 'REPONER', ult_mov: 'SALIDA', ult_fecha: '01/08/2026', ult_hora: '09:30', ubicacion_deposito: '1', ubicacion_estante: '2', ubicacion_columna: '4', ubicacion_fila: 'C', imagen: '' },
         ];
         const DEMO_MOV = [
-            { fecha: '09/08/2026 14:32', tipo: 'SALIDA', zona: 'Depósito 5A', descripcion: 'Disyuntor diferencial 2P 40A 30mA', cantidad: 2, responsable: 'Fernando', obra: 'Obra 1' },
-            { fecha: '08/08/2026 09:15', tipo: 'ENTRADA', zona: 'Depósito 5A', descripcion: 'Fusible NH1 100A 500V', cantidad: 10, responsable: 'Pamela', obra: 'Depósito' },
-            { fecha: '07/08/2026 17:48', tipo: 'DEVOLUCIÓN', zona: 'Depósito 5A', descripcion: 'Bornera fija bipolar 25A', cantidad: 4, responsable: 'Fernando', obra: 'Obra 2' },
-            { fecha: '06/08/2026 11:02', tipo: 'SALIDA', zona: 'Depósito 5A', descripcion: 'Contactor 3P 25A bobina 220V AC', cantidad: 3, responsable: 'Pamela', obra: 'Mantenimiento' },
-            { fecha: '05/08/2026 08:40', tipo: 'ENTRADA', zona: 'Depósito 5A', descripcion: 'Fuente LED 24V 100W IP65', cantidad: 6, responsable: 'Fernando', obra: 'Depósito' },
-            { fecha: '04/08/2026 16:20', tipo: 'SALIDA', zona: 'Iluminación', descripcion: 'Tira LED 24V 5m IP65 blanco cálido', cantidad: 8, responsable: 'Pamela', obra: 'Obra 1' },
+            { fecha: '09/08/2026 14:32', tipo: 'SALIDA', zona: 'Depósito 5A', familia: 'Disyuntor Diferencial', descripcion: 'Disyuntor diferencial 2P 40A 30mA', marca: 'ABB', ubicacion: '4 / 3 / 1 / A', cantidad: 2, responsable: 'Fernando', obra: 'Obra 1' },
+            { fecha: '08/08/2026 09:15', tipo: 'ENTRADA', zona: 'Depósito 5A', familia: 'Fusible', descripcion: 'Fusible NH1 100A 500V', marca: 'SICA', ubicacion: '4 / 6 / 3 / F', cantidad: 10, responsable: 'Pamela', obra: 'Depósito' },
+            { fecha: '07/08/2026 17:48', tipo: 'DEVOLUCIÓN', zona: 'Depósito 5A', familia: 'Bornera Fija', descripcion: 'Bornera fija bipolar 25A', marca: 'Weidmüller', ubicacion: '4 / 5 / 2 / D', cantidad: 4, responsable: 'Fernando', obra: 'Obra 2' },
+            { fecha: '06/08/2026 11:02', tipo: 'SALIDA', zona: 'Depósito 5A', familia: 'Contactor', descripcion: 'Contactor 3P 25A bobina 220V AC', marca: 'Chint', ubicacion: '4 / 2 / 9 / A', cantidad: 3, responsable: 'Pamela', obra: 'Mantenimiento' },
+            { fecha: '05/08/2026 08:40', tipo: 'ENTRADA', zona: 'Depósito 5A', familia: 'Fuente de Alimentación', descripcion: 'Fuente LED 24V 100W IP65', marca: 'Mean Well', ubicacion: '4 / 1 / 8 / C', cantidad: 6, responsable: 'Fernando', obra: 'Depósito' },
+            { fecha: '04/08/2026 16:20', tipo: 'SALIDA', zona: 'Iluminación', familia: 'Tira LED', descripcion: 'Tira LED 24V 5m IP65 blanco cálido', marca: 'Osram', ubicacion: '2 / 1 / 3 / A', cantidad: 8, responsable: 'Pamela', obra: 'Obra 1' },
         ];
 
         // ============================================================
@@ -1981,15 +1984,60 @@
             return list;
         }
 
+        function getMovProductInfo(m) {
+            let p = null;
+            if (m.id) {
+                p = state.stock.find(x => x.id === m.id);
+            }
+            if (!p && m.descripcion) {
+                const descNorm = (m.descripcion || '').trim().toLowerCase();
+                if (m.zona) {
+                    p = state.stock.find(x => (x.descripcion || '').trim().toLowerCase() === descNorm && x.zona === m.zona);
+                }
+                if (!p) {
+                    p = state.stock.find(x => (x.descripcion || '').trim().toLowerCase() === descNorm);
+                }
+            }
+
+            const familia = (m.familia || (p ? p.familia : '') || '').trim();
+            const marca = (m.marca || (p ? p.marca : '') || '').trim();
+
+            let ubi = (m.ubicacion || '').trim();
+            if (!ubi && (m.ubicacion_deposito || m.ubicacion_estante || m.ubicacion_columna || m.ubicacion_fila)) {
+                ubi = ubicacionStr(m);
+            }
+            if (!ubi && p) {
+                ubi = ubicacionStr(p);
+            }
+
+            return {
+                familia: familia || '—',
+                marca: marca || '—',
+                ubicacion: ubi || '—'
+            };
+        }
+
         function movFiltrado() {
             const ui = state.movUi;
             let list = zonaFiltrado(state.mov);
             if (ui.tipo) list = list.filter(m => m.tipo === ui.tipo);
             if (ui.search) {
-                list = list.filter(m => matchesSearch(m, ui.search, ['descripcion', 'responsable', 'obra']));
+                list = list.filter(m => {
+                    const info = getMovProductInfo(m);
+                    const itemConInfo = {
+                        ...m,
+                        familia: info.familia !== '—' ? info.familia : '',
+                        marca: info.marca !== '—' ? info.marca : '',
+                        ubicacion: info.ubicacion !== '—' ? info.ubicacion : ''
+                    };
+                    return matchesSearch(itemConInfo, ui.search, ['descripcion', 'responsable', 'obra', 'familia', 'marca', 'ubicacion', 'factura']);
+                });
             }
             list = list.slice().sort((a, b) => {
-                let va = a[ui.sortKey], vb = b[ui.sortKey];
+                const infoA = getMovProductInfo(a);
+                const infoB = getMovProductInfo(b);
+                let va = a[ui.sortKey] ?? (ui.sortKey === 'familia' ? infoA.familia : ui.sortKey === 'marca' ? infoA.marca : ui.sortKey === 'ubicacion' ? infoA.ubicacion : '');
+                let vb = b[ui.sortKey] ?? (ui.sortKey === 'familia' ? infoB.familia : ui.sortKey === 'marca' ? infoB.marca : ui.sortKey === 'ubicacion' ? infoB.ubicacion : '');
                 if (ui.sortKey === 'fecha') { va = fechaAOrden(a.fecha); vb = fechaAOrden(b.fecha); }
                 if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * ui.sortDir;
                 return String(va || '').localeCompare(String(vb || ''), undefined, { numeric: true }) * ui.sortDir;
@@ -3141,16 +3189,21 @@ async function confirmNewProduct() {
             const body = document.getElementById('movBody');
 
             if (list.length === 0) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="7">No hay movimientos que coincidan con el filtro.</td></tr>`;
+                body.innerHTML = `<tr class="empty-row"><td colspan="10">No hay movimientos que coincidan con el filtro.</td></tr>`;
             } else {
                 body.innerHTML = list.map(m => {
                     const tipoClass = m.tipo === 'ENTRADA' ? 'entrada' : (m.tipo === 'SALIDA' ? 'salida' : 'devolucion');
+                    const info = getMovProductInfo(m);
+                    const loc = info.ubicacion;
                     return `
       <tr>
         <td class="id-tag">${escapeHtml(formatearFechaMov(m.fecha))}</td>
         <td><span class="mov-pill ${tipoClass}">${escapeHtml(m.tipo || '')}</span></td>
+        <td>${info.familia && info.familia !== '—' ? `<span class="fam-badge">${escapeHtml(info.familia)}</span>` : '<span style="color:var(--txt-faint);">—</span>'}</td>
         <td class="desc-cell">${escapeHtml(m.descripcion || '')}</td>
-        <td>${m.cantidad ?? ''}</td>
+        <td class="marca-cell">${escapeHtml(info.marca)}</td>
+        <td>${loc && loc !== '—' ? `<span class="loc-tag">${escapeHtml(loc)}</span>` : `<span class="loc-empty">—</span>`}</td>
+        <td style="font-weight:700;">${m.cantidad ?? ''}</td>
         <td class="marca-cell">${escapeHtml(m.responsable || '—')}</td>
         <td class="marca-cell">${escapeHtml(m.obra || '—')}</td>
         <td class="id-tag">${escapeHtml(m.factura || '—')}</td>
