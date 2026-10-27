@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -351,18 +351,18 @@ body {
 // ============================================================
 // 3.1 CONFIG
 // ============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQVmgnoPG86r8LKnkdMn0yP17FGvoLj02LSNz8BC_mhZzEmJZgV_jgpLFArInlgUOx/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5o6UAwEEJUs727rnHvchCL97Z66QlVJ1UZZg5y12_-1qkgs9_gXBX1Bj-8LUmoosd/exec";
 const POLL_MS = 25000;
 
 // Pestañas de acceso directo a cada formulario propio de depósito.
 const DEPOSITOS_TABS = [
-  { nombre: '5A — Eléctrico',          icon: '⚡', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/5A.html' },
-  { nombre: '4 — Iluminación',         icon: '💡', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/4-iluminacion.html' },
-  { nombre: '4 — Lámparas y focos',    icon: '💡', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/4-lamparas.html' },
-  { nombre: '4 — Gabinetes y cajas',   icon: '📦', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/4-gabinetes-y-cajas.html' },
-  { nombre: '4 — Cables',              icon: '🔌', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/4-cables.html' },
-  { nombre: '5B — Filtros',            icon: '🧰', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/5B-filtros.html' },
-  { nombre: '5B — Ropa y EPP',         icon: '🦺', url: 'https://francogonzaloabalos-png.github.io/deposito-rpm/5B-ropa-y-epp.html' },
+  { nombre: '5A — Eléctrico',          icon: '⚡', url: 'https://rpmconstrucciones.github.io/DEPOSITO/5A.html' },
+  { nombre: '4 — Iluminación',         icon: '💡', url: 'https://rpmconstrucciones.github.io/DEPOSITO/4-iluminacion.html' },
+  { nombre: '4 — Lámparas y focos',    icon: '💡', url: 'https://rpmconstrucciones.github.io/DEPOSITO/4-lamparas.html' },
+  { nombre: '4 — Gabinetes y cajas',   icon: '📦', url: 'https://rpmconstrucciones.github.io/DEPOSITO/4-gabinetes-y-cajas.html' },
+  { nombre: '4 — Cables',              icon: '🔌', url: 'https://rpmconstrucciones.github.io/DEPOSITO/4-cables.html' },
+  { nombre: '5B — Filtros',            icon: '🧰', url: 'https://rpmconstrucciones.github.io/DEPOSITO/5B-filtros.html' },
+  { nombre: '5B — Ropa y EPP',         icon: '🦺', url: 'https://rpmconstrucciones.github.io/DEPOSITO/5B-ropa-y-epp.html' },
 ];
 
 const RESPONSABLES = ['Fernando', 'Pamela'];
@@ -829,6 +829,10 @@ function abrirModalConfirmarCarrito() {
 }
 
 async function enviarCarritoRapidoMaestro(overlay) {
+  if (!navigator.onLine) {
+    mostrarCartelFallaConexion(() => enviarCarritoRapidoMaestro(overlay));
+    return;
+  }
   let responsable = document.getElementById('carrito_responsable').value;
   if (responsable === 'OTRO') responsable = document.getElementById('carrito_responsable_otro').value.trim();
   const obra = document.getElementById('carrito_obra').value.trim();
@@ -847,44 +851,134 @@ async function enviarCarritoRapidoMaestro(overlay) {
 
   const fecha = new Date().toLocaleString('es-AR', { hour12: false });
 
-  const resultados = await Promise.allSettled(
-    Object.entries(grupos).map(([zona, items]) => {
-      const payload = {
-        accion: 'ajuste-rapido',
-        zona,
-        tipo_movimiento: carritoRapido.tipo,
-        responsable, obra,
-        obs_general: obsGeneral,
-        fecha,
-        items: items.map(it => ({ id: it.id, familia: it.familia, marca: it.marca, descripcion: it.descripcion, cantidad: it.cantidad, unidad: it.unidad })),
-      };
-      return fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-      }).then(r => r.json()).then(r => ({ zona, r }));
-    })
-  );
+  try {
+    const resultados = await Promise.allSettled(
+      Object.entries(grupos).map(([zona, items]) => {
+        const payload = {
+          accion: 'ajuste-rapido',
+          zona,
+          tipo_movimiento: carritoRapido.tipo,
+          responsable, obra,
+          obs_general: obsGeneral,
+          fecha,
+          items: items.map(it => ({ id: it.id, familia: it.familia, marca: it.marca, descripcion: it.descripcion, cantidad: it.cantidad, unidad: it.unidad })),
+        };
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 20000);
+        return fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+          signal: ctrl.signal
+        }).then(r => { clearTimeout(tid); return r.json(); }).then(r => ({ zona, r }))
+          .catch(err => { clearTimeout(tid); throw err; });
+      })
+    );
 
-  overlay.remove();
-  modalAbierto = false;
+    const fallidos = [];
+    let todosFallaRed = true;
+    resultados.forEach(res => {
+      if (res.status === 'rejected' || !res.value?.r?.ok) {
+        fallidos.push(res.value ? res.value.zona : '(desconocido)');
+      } else {
+        todosFallaRed = false;
+      }
+    });
 
-  const fallidos = [];
-  resultados.forEach(res => {
-    if (res.status === 'rejected' || !res.value.r.ok) {
-      fallidos.push(res.value ? res.value.zona : '(desconocido)');
+    if (fallidos.length > 0 && todosFallaRed) {
+      btn.disabled = false; btn.textContent = 'Confirmar y registrar';
+      mostrarCartelFallaConexion(() => enviarCarritoRapidoMaestro(overlay));
+      return;
     }
-  });
 
-  if (fallidos.length === 0) {
-    toastDep(`✅ ${carritoRapido.tipo} registrada en ${Object.keys(grupos).length} depósito${Object.keys(grupos).length !== 1 ? 's' : ''}`, 'ok');
-  } else {
-    toastDep(`⚠ Falló en: ${fallidos.join(', ')}. El resto se registró OK.`, 'error');
+    overlay.remove();
+    modalAbierto = false;
+
+    if (fallidos.length === 0) {
+      toastDep(`✅ ${carritoRapido.tipo} registrada en ${Object.keys(grupos).length} depósito${Object.keys(grupos).length !== 1 ? 's' : ''}`, 'ok');
+    } else {
+      toastDep(`⚠ Falló en: ${fallidos.join(', ')}. El resto se registró OK.`, 'error');
+    }
+
+    vaciarCarritoRapido();
+    cargarStock();
+  } catch (err) {
+    btn.disabled = false; btn.textContent = 'Confirmar y registrar';
+    mostrarCartelFallaConexion(() => enviarCarritoRapidoMaestro(overlay));
   }
-
-  vaciarCarritoRapido();
-  cargarStock();
 }
 </script>
+<script src="conexion-protegida.js"></script>
+  <!-- AUTO MAYUSCULAS - RPM CONSTRUCCIONES -->
+  <style>
+    input:not([type="password"]):not([type="email"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not(.no-mayus),
+    textarea:not(.no-mayus),
+    select:not(.no-mayus),
+    select:not(.no-mayus) option {
+      text-transform: uppercase !important;
+    }
+  </style>
+  <script>
+    (function () {
+      function convertirElemento(el) {
+        if (!el || !el.matches) return;
+        if (el.matches("input:not([type='password']):not([type='email']):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']):not(.no-mayus), textarea:not(.no-mayus)")) {
+          var upper = (el.value || '').toUpperCase();
+          if (el.value !== upper) {
+            var start = el.selectionStart;
+            var end = el.selectionEnd;
+            el.value = upper;
+            if (el.setSelectionRange && start !== null && end !== null) {
+              try { el.setSelectionRange(start, end); } catch (_) {}
+            }
+          }
+        }
+      }
+      document.addEventListener("input", function (e) { convertirElemento(e.target); }, true);
+      document.addEventListener("change", function (e) { convertirElemento(e.target); }, true);
+
+      function mayusPayloadCliente(obj, key) {
+        if (obj === null || obj === undefined) return obj;
+        if (typeof obj === 'string') {
+          var k = String(key || '').toLowerCase();
+          if (['token','idtoken','_txid','firma_base64','foto_base64','fotos_base64','imagen_base64','base64','imagen','foto','url','email','accion','action'].indexOf(k) !== -1) {
+            return obj;
+          }
+          if (/^data:image\//i.test(obj) || /^https?:\/\//i.test(obj)) return obj;
+          return obj.trim().toUpperCase();
+        }
+        if (Array.isArray(obj)) {
+          var kArr = String(key || '').toLowerCase();
+          if (['fotos_base64','base64','imagenes','fotos'].indexOf(kArr) !== -1) return obj;
+          return obj.map(function(item) { return mayusPayloadCliente(item, key); });
+        }
+        if (typeof obj === 'object') {
+          var res = {};
+          for (var p in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, p)) {
+              res[p] = mayusPayloadCliente(obj[p], p);
+            }
+          }
+          return res;
+        }
+        return obj;
+      }
+
+      if (typeof window.fetch === 'function') {
+        var _fetchOrig = window.fetch;
+        window.fetch = function(url, init) {
+          if (init && init.body && typeof init.body === 'string') {
+            try {
+              var parsed = JSON.parse(init.body);
+              if (parsed && typeof parsed === 'object') {
+                init.body = JSON.stringify(mayusPayloadCliente(parsed));
+              }
+            } catch (_) {}
+          }
+          return _fetchOrig.apply(this, arguments);
+        };
+      }
+    })();
+  </script>
 </body>
 </html>

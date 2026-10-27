@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Depósito 5B — Filtros — RPM</title>
+<title>Registro de Filtros — RPM</title>
 <style>
 /* ============================================================
    1.1 RESET Y VARIABLES BASE
@@ -527,7 +527,7 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
 <div id="screen-home" class="screen active">
   <div class="home-eyebrow">RPM Construcciones</div>
   <div class="home-zone">🔩 Registro de Filtros</div>
-  <div class="home-sub">📦 Depósito 5B</div>
+  <div class="home-sub">📦 Filtros y Repuestos</div>
 
   <button class="home-btn home-btn-stock" onclick="goStock()">
     <div class="home-btn-icon">📋</div>
@@ -547,7 +547,7 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
     <span class="home-btn-arrow">›</span>
   </button>
 
-  <a href="https://francogonzaloabalos-png.github.io/deposito-rpm/buscador-stock.html" class="home-btn-back">
+  <a href="https://rpmconstrucciones.github.io/DEPOSITO/buscador-stock.html" class="home-btn-back">
     <div class="home-btn-back-icon">🔍</div>
     <div class="home-btn-back-text">Volver al buscador general</div>
     <span class="home-btn-back-arrow">›</span>
@@ -561,7 +561,7 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
   <div class="topbar">
     <button class="topbar-back" onclick="goHome()">‹</button>
     <span class="topbar-title">Stock actual</span>
-    <span class="topbar-badge">📍 Dep. 5B</span>
+    <span class="topbar-badge">📍 Filtros</span>
   </div>
   
   <div class="barra-carrito" id="barra_carrito">
@@ -783,8 +783,8 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
 // 3.1 CONFIG
 // ============================================================
 const CONFIG = {
-  zona: "Depósito 5B",
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzQVmgnoPG86r8LKnkdMn0yP17FGvoLj02LSNz8BC_mhZzEmJZgV_jgpLFArInlgUOx/exec",
+  zona: "FILTROS Y REPUESTOS",
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbw5o6UAwEEJUs727rnHvchCL97Z66QlVJ1UZZg5y12_-1qkgs9_gXBX1Bj-8LUmoosd/exec",
   storageKey: "rpm_borrador_deposito_filtros",
   pollingIntervalMs: 25000,
   ubicacion: {
@@ -1905,6 +1905,10 @@ async function enviarCarritoRapido(overlay){
   if(responsable==="OTRO")responsable=document.getElementById("carrito_responsable_otro").value.trim();
   let obra=document.getElementById("carrito_obra").value;
   if(obra==="OTRO")obra=document.getElementById("carrito_obra_otro").value.trim();
+  if(!navigator.onLine){
+    mostrarCartelFallaConexion(()=>enviarCarritoRapido(overlay));
+    return;
+  }
   const obsGeneral=document.getElementById("carrito_obs_general").value.trim();
   if(!responsable||!obra){toastDep("⚠ Completá Responsable y Obra","error");return;}
   const btn=overlay.querySelector("#btn_confirmar_carrito");
@@ -1918,17 +1922,30 @@ async function enviarCarritoRapido(overlay){
     fecha:new Date().toLocaleString("es-AR",{hour12:false}),
     items:carritoRapido.items.map(it=>({id:it.id,familia:it.familia,marca:it.marca,descripcion:it.descripcion,cantidad:it.cantidad,unidad:it.unidad}))
   };
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), 20000);
   try{
-    const resp=await fetch(APPS_SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const resp=await fetch(APPS_SCRIPT_URL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload),
+      signal: ctrl.signal
+    });
+    clearTimeout(tid);
     const resultado=await resp.json();
+    if(!resultado.ok){
+      btn.disabled=false;btn.textContent="Registrar movimiento";
+      toastDep(`❌ Error: ${resultado.error}`,"error");
+      return;
+    }
     overlay.remove();
-    if(!resultado.ok){toastDep(`❌ Error: ${resultado.error}`,"error");return;}
     toastDep(`✅ ${carritoRapido.tipo} registrada correctamente`,"ok");
     vaciarCarritoRapido();
     loadStock();
   }catch(e){
-    toastDep(`❌ Fallo de conexión: ${e.message}`,"error");
+    clearTimeout(tid);
     btn.disabled=false;btn.textContent="Registrar movimiento";
+    mostrarCartelFallaConexion(()=>enviarCarritoRapido(overlay));
   }
 }
 
@@ -2945,8 +2962,16 @@ async function submitForm() {
     total += 1;
   }
 
+  if (!navigator.onLine) {
+    mostrarCartelFallaConexion(() => submitForm());
+    return;
+  }
+
   const btn = document.getElementById('btn-submit');
   btn.disabled = true; btn.textContent = 'Enviando...';
+
+  const ctrlEnvio = new AbortController();
+  const tidEnvio = setTimeout(() => ctrlEnvio.abort(), 20000);
 
   try {
     await fetch(APPS_SCRIPT_URL, {
@@ -2954,16 +2979,19 @@ async function submitForm() {
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: ctrlEnvio.signal
     });
+    clearTimeout(tidEnvio);
     try { localStorage.removeItem(CONFIG.storageKey); } catch (e) {}
     document.getElementById('ov-ok-detail').textContent =
       `${tipo} registrada por ${resp} — ${total} filtro${total!==1?'s':''} guardado${total!==1?'s':''}.`;
     document.getElementById('ov-ok').classList.add('show');
     btn.style.display = 'none';
     stockLoaded = false;
-  } catch {
-    alert('Error al enviar. Verificá tu conexión.');
+  } catch (err) {
+    clearTimeout(tidEnvio);
     btn.disabled = false; btn.textContent = 'Registrar movimiento';
+    mostrarCartelFallaConexion(() => submitForm());
   }
 }
 
@@ -3052,5 +3080,77 @@ function revisarDeepLinkProducto() {
   intentarAbrir();
 }
 </script>
+<script src="conexion-protegida.js"></script>
+  <!-- AUTO MAYUSCULAS - RPM CONSTRUCCIONES -->
+  <style>
+    input:not([type="password"]):not([type="email"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not(.no-mayus),
+    textarea:not(.no-mayus),
+    select:not(.no-mayus),
+    select:not(.no-mayus) option {
+      text-transform: uppercase !important;
+    }
+  </style>
+  <script>
+    (function () {
+      function convertirElemento(el) {
+        if (!el || !el.matches) return;
+        if (el.matches("input:not([type='password']):not([type='email']):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']):not(.no-mayus), textarea:not(.no-mayus)")) {
+          var upper = (el.value || '').toUpperCase();
+          if (el.value !== upper) {
+            var start = el.selectionStart;
+            var end = el.selectionEnd;
+            el.value = upper;
+            if (el.setSelectionRange && start !== null && end !== null) {
+              try { el.setSelectionRange(start, end); } catch (_) {}
+            }
+          }
+        }
+      }
+      document.addEventListener("input", function (e) { convertirElemento(e.target); }, true);
+      document.addEventListener("change", function (e) { convertirElemento(e.target); }, true);
+
+      function mayusPayloadCliente(obj, key) {
+        if (obj === null || obj === undefined) return obj;
+        if (typeof obj === 'string') {
+          var k = String(key || '').toLowerCase();
+          if (['token','idtoken','_txid','firma_base64','foto_base64','fotos_base64','imagen_base64','base64','imagen','foto','url','email','accion','action'].indexOf(k) !== -1) {
+            return obj;
+          }
+          if (/^data:image\//i.test(obj) || /^https?:\/\//i.test(obj)) return obj;
+          return obj.trim().toUpperCase();
+        }
+        if (Array.isArray(obj)) {
+          var kArr = String(key || '').toLowerCase();
+          if (['fotos_base64','base64','imagenes','fotos'].indexOf(kArr) !== -1) return obj;
+          return obj.map(function(item) { return mayusPayloadCliente(item, key); });
+        }
+        if (typeof obj === 'object') {
+          var res = {};
+          for (var p in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, p)) {
+              res[p] = mayusPayloadCliente(obj[p], p);
+            }
+          }
+          return res;
+        }
+        return obj;
+      }
+
+      if (typeof window.fetch === 'function') {
+        var _fetchOrig = window.fetch;
+        window.fetch = function(url, init) {
+          if (init && init.body && typeof init.body === 'string') {
+            try {
+              var parsed = JSON.parse(init.body);
+              if (parsed && typeof parsed === 'object') {
+                init.body = JSON.stringify(mayusPayloadCliente(parsed));
+              }
+            } catch (_) {}
+          }
+          return _fetchOrig.apply(this, arguments);
+        };
+      }
+    })();
+  </script>
 </body>
 </html>

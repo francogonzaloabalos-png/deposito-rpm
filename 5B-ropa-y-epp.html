@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -387,6 +387,11 @@ select.err, input.err { border-color: #dc2626; background: #fff5f5; margin-botto
 
 .item-block { background: #f8f9ff; border: 1px solid #e0e4f0; border-radius: 9px; padding: 12px; margin-bottom: 10px; }
 .item-block-title { font-size: 11px; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+.accesorio-row {
+  background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px;
+  padding: 10px 12px; margin-bottom: 8px; position: relative;
+}
+.accesorio-row select { margin-bottom: 0; }
 
 .btn-add {
   width: 100%; padding: 10px; background: #f0f4ff;
@@ -554,7 +559,7 @@ select.err, input.err { border-color: #dc2626; background: #fff5f5; margin-botto
     <span class="home-btn-arrow">›</span>
   </button>
 
-  <a href="https://francogonzaloabalos-png.github.io/deposito-rpm/buscador-stock.html" class="home-btn-back">
+  <a href="https://rpmconstrucciones.github.io/DEPOSITO/buscador-stock.html" class="home-btn-back">
     <div class="home-btn-back-icon">🔍</div>
     <div class="home-btn-back-text">Volver al buscador general</div>
     <span class="home-btn-back-arrow">›</span>
@@ -748,7 +753,7 @@ select.err, input.err { border-color: #dc2626; background: #fff5f5; margin-botto
       </div>
 
       <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_arneses')" style="margin-top:8px">
-        🧗 Arneses y Cabos de Vida <span class="acordeon-arrow">▾</span>
+        🧗 Equipos de Altura y Sujeción <span class="acordeon-arrow">▾</span>
       </button>
       <div id="bloque_arneses" class="acordeon-body">
         <div id="items_arneses"></div>
@@ -936,7 +941,7 @@ select.err, input.err { border-color: #dc2626; background: #fff5f5; margin-botto
 // ============================================================
 const CONFIG = {
   zona: "Ropa y EPP",
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzQVmgnoPG86r8LKnkdMn0yP17FGvoLj02LSNz8BC_mhZzEmJZgV_jgpLFArInlgUOx/exec",
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbw5o6UAwEEJUs727rnHvchCL97Z66QlVJ1UZZg5y12_-1qkgs9_gXBX1Bj-8LUmoosd/exec",
   storageKey: "rpm_borrador_ropa_epp",
   pollingIntervalMs: 25000,
   ubicacion: {
@@ -1817,6 +1822,10 @@ async function enviarCarritoRapido(overlay){
   if(responsable==="OTRO")responsable=document.getElementById("carrito_responsable_otro").value.trim();
   let obra=document.getElementById("carrito_obra").value;
   if(obra==="OTRO")obra=document.getElementById("carrito_obra_otro").value.trim();
+  if(!navigator.onLine){
+    mostrarCartelFallaConexion(()=>enviarCarritoRapido(overlay));
+    return;
+  }
   const obsGeneral=document.getElementById("carrito_obs_general").value.trim();
   if(!responsable||!obra){toastDep("⚠ Completá Responsable y Obra","error");return;}
   const btn=overlay.querySelector("#btn_confirmar_carrito");
@@ -1830,17 +1839,30 @@ async function enviarCarritoRapido(overlay){
     fecha:new Date().toLocaleString("es-AR",{hour12:false}),
     items:carritoRapido.items.map(it=>({id:it.id,familia:it.familia,marca:it.marca,descripcion:it.descripcion,cantidad:it.cantidad,unidad:it.unidad}))
   };
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), 20000);
   try{
-    const resp=await fetch(APPS_SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const resp=await fetch(APPS_SCRIPT_URL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload),
+      signal: ctrl.signal
+    });
+    clearTimeout(tid);
     const resultado=await resp.json();
+    if(!resultado.ok){
+      btn.disabled=false;btn.textContent="Registrar movimiento";
+      toastDep(`❌ Error: ${resultado.error}`,"error");
+      return;
+    }
     overlay.remove();
-    if(!resultado.ok){toastDep(`❌ Error: ${resultado.error}`,"error");return;}
     toastDep(`✅ ${carritoRapido.tipo} registrada correctamente`,"ok");
     vaciarCarritoRapido();
     loadStock();
   }catch(e){
-    toastDep(`❌ Fallo de conexión: ${e.message}`,"error");
+    clearTimeout(tid);
     btn.disabled=false;btn.textContent="Registrar movimiento";
+    mostrarCartelFallaConexion(()=>enviarCarritoRapido(overlay));
   }
 }
 
@@ -1889,7 +1911,7 @@ const FAM_NAMES = {
   protectores:   '😷 Protectores',
   cascos:        '⛑️ Cascos',
   bolsos:        '🎒 Bolsos',
-  arneses:       '🧗 Arneses y Cabos',
+  arneses:       '🧗 Equipos de Altura y Sujeción',
   eslingas:      '🏗️ Eslingas',
   criquets:      '🔧 Criquets',
   botas:         '🥾 Botas de Goma',
@@ -1961,6 +1983,83 @@ function renderFotosItem(fam, n) {
       <button type="button" class="foto-slot-del" onclick="eliminarFotoItem('${fam}',${n},${i})" title="Eliminar">🗑️</button>
     </div>`).join('');
   if (btn) btn.style.display = fotos.length >= 2 ? 'none' : 'block';
+}
+
+const accesorioCounters = {};
+const ACCESORIOS_ARNES_OPTS = [
+  'Cabo de vida simple',
+  'Cabo de vida con doble mosquetón',
+  'Cabo de vida con doble amortiguador con doble mosquetón',
+  'Mosquetón individual',
+  'Línea de vida',
+  'Dispositivo antitrauma',
+  'Punto de anclaje tipo Eslinga',
+  'Otro'
+];
+
+function bloqueAccesoriosArnes(fam, n) {
+  return `
+    <div id="accesorios_bloque_${fam}_${n}" class="ubic-bloque" style="display:none;">
+      <div class="f-section-title">Accesorios adicionales</div>
+      <div class="ubic-bloque-help">Sumá los accesorios que van con este arnés (opcional).</div>
+      <div id="accesorios_lista_${fam}_${n}"></div>
+      <button type="button" class="btn-add" onclick="agregarAccesorioArnes('${fam}',${n})">+ Agregar accesorio</button>
+    </div>`;
+}
+
+function toggleAccesoriosArnes(fam, n) {
+  const tipoSel = document.querySelector(`[name="${fam}_tipo_${n}"]`);
+  const bloque  = document.getElementById(`accesorios_bloque_${fam}_${n}`);
+  if (!tipoSel || !bloque) return;
+
+  const esArnes = tipoSel.value === 'Arnés de seguridad';
+  bloque.style.display = esArnes ? 'block' : 'none';
+
+  if (esArnes) {
+    const key = `${fam}_${n}`;
+    if (!accesorioCounters[key]) agregarAccesorioArnes(fam, n);
+  } else {
+    const lista = document.getElementById(`accesorios_lista_${fam}_${n}`);
+    if (lista) lista.innerHTML = '';
+    accesorioCounters[`${fam}_${n}`] = 0;
+  }
+}
+
+function agregarAccesorioArnes(fam, n) {
+  const key = `${fam}_${n}`;
+  accesorioCounters[key] = (accesorioCounters[key] || 0) + 1;
+  const m = accesorioCounters[key];
+  const lista = document.getElementById(`accesorios_lista_${fam}_${n}`);
+  if (!lista) return;
+
+  const html = `
+    <div class="accesorio-row" id="accesorio_${fam}_${n}_${m}">
+      <button type="button" class="btn-del" onclick="quitarAccesorioArnes('${fam}',${n},${m})">✕</button>
+      <select data-accesorio-fam="${fam}">
+        <option value="">— Seleccioná accesorio —</option>${opts(ACCESORIOS_ARNES_OPTS)}
+      </select>
+      <input type="text" class="campo-otro-item" placeholder="Especificá cuál" data-accesorio-otro style="display:none;margin-top:8px;margin-bottom:0;">
+      <select data-accesorio-estado style="margin-top:8px;margin-bottom:0;">
+        <option value="">— Estado del accesorio —</option>
+        <option value="Nuevo">Nuevo</option>
+        <option value="Usado">Usado</option>
+      </select>
+    </div>`;
+  lista.insertAdjacentHTML('beforeend', html);
+
+  const fila   = document.getElementById(`accesorio_${fam}_${n}_${m}`);
+  const select = fila.querySelector('select');
+  const otro   = fila.querySelector('[data-accesorio-otro]');
+  forzarMayusculas(otro);
+  select.addEventListener('change', () => {
+    otro.style.display = select.value === 'Otro' ? 'block' : 'none';
+    if (select.value !== 'Otro') otro.value = '';
+  });
+}
+
+function quitarAccesorioArnes(fam, n, m) {
+  const el = document.getElementById(`accesorio_${fam}_${n}_${m}`);
+  if (el) el.remove();
 }
 
 function bloqueUbicacionItem(fam, n) {
@@ -2265,11 +2364,15 @@ function addItem(fam) {
     arneses: `
       ${lbl('arneses','tipo','Tipo de Equipo')}
       <select name="arneses_tipo_${n}" data-fam="arneses" data-campo="tipo">
-        <option value="">— Seleccioná —</option>${opts(['Arnés de seguridad completo','Arnés p/ casco soldador','Cabo de vida simple','Cabo de vida doble (dos ganchos)','Cabo de vida con amortiguador','Soga de vida','Línea de vida horizontal','Conector / Mosquetón de seguridad','Otro'])}</select>
+        <option value="">— Seleccioná —</option>${opts(['Arnés de seguridad','Cabo de vida simple','Cabo de vida con doble mosquetón','Cabo de vida con doble amortiguador con doble mosquetón','Mosquetón individual','Línea de vida','Dispositivo antitrauma','Punto de anclaje tipo Eslinga','Otro'])}</select>
       ${lbl('arneses','marca','Marca')}
       <select name="arneses_marca_${n}" data-fam="arneses" data-campo="marca">
         <option value="">— Seleccioná —</option>${opts(['Delta Plus','Caran','3M','Karam','Protecta','Sin marca','Otro'])}</select>
+      <label>Color <span class="opc">(opcional, solo aplicable para el punto de anclaje)</span></label>
+      <select name="arneses_color_${n}" data-fam="arneses" data-campo="color">
+        <option value="">— Seleccioná —</option>${opts(['Amarillo','Negro','Sin especificar','Otro'])}</select>
       ${campoEstado('arneses',n)}
+      <div id="accesorios_placeholder_arneses_${n}"></div>
       ${lbl('arneses','cantidad','Cantidad')}${qtyRow}
       <label>Observaciones</label>
       <input type="text" name="arneses_observaciones_${n}" placeholder="Ej: Longitud 1.5m, gancho giratorio, certificado IRAM...">`,
@@ -2527,6 +2630,13 @@ function addItem(fam) {
     });
 
     actualizarVisibilidadUbicacionItem(fam, n, document.getElementById('tipo_movimiento').value);
+
+    if (fam === 'arneses') {
+      const placeholder = bloque.querySelector(`#accesorios_placeholder_arneses_${n}`);
+      if (placeholder) placeholder.outerHTML = bloqueAccesoriosArnes(fam, n);
+      const tipoSel = bloque.querySelector(`[name="arneses_tipo_${n}"]`);
+      if (tipoSel) tipoSel.addEventListener('change', () => toggleAccesoriosArnes(fam, n));
+    }
   }
 }
 
@@ -2590,6 +2700,22 @@ function collectItems(fam) {
         data['observaciones'] = el.value;
       }
     });
+    if (fam === 'arneses') {
+      const accesorios = Array.from(block.querySelectorAll('[data-accesorio-fam="arneses"]'))
+        .map(sel => {
+          let val = sel.value;
+          if (val === 'Otro') {
+            const otro = sel.parentElement.querySelector('[data-accesorio-otro]');
+            val = otro && otro.value ? otro.value.trim() : '';
+          }
+          if (!val) return '';
+          const estadoSel = sel.parentElement.querySelector('[data-accesorio-estado]');
+          const estadoVal = estadoSel && estadoSel.value ? estadoSel.value.trim().toUpperCase() : '';
+          return estadoVal ? `${val} ${estadoVal}` : val;
+        })
+        .filter(Boolean);
+      if (accesorios.length) data.accesorios = accesorios.join(' + ');
+    }
     const fotosItem = fotosPendientes[`${fam}_${n}`];
     if (n && fotosItem && fotosItem.length) data.fotos_base64 = fotosItem;
     return Object.values(data).some(v => v) ? data : null;
@@ -2876,8 +3002,16 @@ async function submitForm() {
 
   const total = FAMILIES.reduce((s, f) => s + (payload[f]||[]).length, 0) + (nuevoDesc ? 1 : 0);
 
+  if (!navigator.onLine) {
+    mostrarCartelFallaConexion(() => submitForm());
+    return;
+  }
+
   const btn = document.getElementById('btn-submit');
   btn.disabled = true; btn.textContent = 'Enviando...';
+
+  const ctrlEnvio = new AbortController();
+  const tidEnvio = setTimeout(() => ctrlEnvio.abort(), 20000);
 
   try {
     await fetch(APPS_SCRIPT_URL, {
@@ -2885,16 +3019,19 @@ async function submitForm() {
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: ctrlEnvio.signal
     });
+    clearTimeout(tidEnvio);
     try { localStorage.removeItem(CONFIG.storageKey); } catch (e) {}
     document.getElementById('ov-ok-detail').textContent =
       `${tipo} registrada por ${resp} — ${total} producto${total!==1?'s':''} guardado${total!==1?'s':''}.`;
     document.getElementById('ov-ok').classList.add('show');
     btn.style.display = 'none';
     stockLoaded = false;
-  } catch {
-    alert('Error al enviar. Verificá tu conexión.');
+  } catch (err) {
+    clearTimeout(tidEnvio);
     btn.disabled = false; btn.textContent = 'Registrar movimiento';
+    mostrarCartelFallaConexion(() => submitForm());
   }
 }
 
@@ -2984,5 +3121,77 @@ function revisarDeepLinkProducto() {
   intentarAbrir();
 }
 </script>
+<script src="conexion-protegida.js"></script>
+  <!-- AUTO MAYUSCULAS - RPM CONSTRUCCIONES -->
+  <style>
+    input:not([type="password"]):not([type="email"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not(.no-mayus),
+    textarea:not(.no-mayus),
+    select:not(.no-mayus),
+    select:not(.no-mayus) option {
+      text-transform: uppercase !important;
+    }
+  </style>
+  <script>
+    (function () {
+      function convertirElemento(el) {
+        if (!el || !el.matches) return;
+        if (el.matches("input:not([type='password']):not([type='email']):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']):not(.no-mayus), textarea:not(.no-mayus)")) {
+          var upper = (el.value || '').toUpperCase();
+          if (el.value !== upper) {
+            var start = el.selectionStart;
+            var end = el.selectionEnd;
+            el.value = upper;
+            if (el.setSelectionRange && start !== null && end !== null) {
+              try { el.setSelectionRange(start, end); } catch (_) {}
+            }
+          }
+        }
+      }
+      document.addEventListener("input", function (e) { convertirElemento(e.target); }, true);
+      document.addEventListener("change", function (e) { convertirElemento(e.target); }, true);
+
+      function mayusPayloadCliente(obj, key) {
+        if (obj === null || obj === undefined) return obj;
+        if (typeof obj === 'string') {
+          var k = String(key || '').toLowerCase();
+          if (['token','idtoken','_txid','firma_base64','foto_base64','fotos_base64','imagen_base64','base64','imagen','foto','url','email','accion','action'].indexOf(k) !== -1) {
+            return obj;
+          }
+          if (/^data:image\//i.test(obj) || /^https?:\/\//i.test(obj)) return obj;
+          return obj.trim().toUpperCase();
+        }
+        if (Array.isArray(obj)) {
+          var kArr = String(key || '').toLowerCase();
+          if (['fotos_base64','base64','imagenes','fotos'].indexOf(kArr) !== -1) return obj;
+          return obj.map(function(item) { return mayusPayloadCliente(item, key); });
+        }
+        if (typeof obj === 'object') {
+          var res = {};
+          for (var p in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, p)) {
+              res[p] = mayusPayloadCliente(obj[p], p);
+            }
+          }
+          return res;
+        }
+        return obj;
+      }
+
+      if (typeof window.fetch === 'function') {
+        var _fetchOrig = window.fetch;
+        window.fetch = function(url, init) {
+          if (init && init.body && typeof init.body === 'string') {
+            try {
+              var parsed = JSON.parse(init.body);
+              if (parsed && typeof parsed === 'object') {
+                init.body = JSON.stringify(mayusPayloadCliente(parsed));
+              }
+            } catch (_) {}
+          }
+          return _fetchOrig.apply(this, arguments);
+        };
+      }
+    })();
+  </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1806,5 +1806,77 @@ generarEstantes();
 generarRotulos();
 generarReferencias();
 </script>
+<script src="conexion-protegida.js"></script>
+  <!-- AUTO MAYUSCULAS - RPM CONSTRUCCIONES -->
+  <style>
+    input:not([type="password"]):not([type="email"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not(.no-mayus),
+    textarea:not(.no-mayus),
+    select:not(.no-mayus),
+    select:not(.no-mayus) option {
+      text-transform: uppercase !important;
+    }
+  </style>
+  <script>
+    (function () {
+      function convertirElemento(el) {
+        if (!el || !el.matches) return;
+        if (el.matches("input:not([type='password']):not([type='email']):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']):not(.no-mayus), textarea:not(.no-mayus)")) {
+          var upper = (el.value || '').toUpperCase();
+          if (el.value !== upper) {
+            var start = el.selectionStart;
+            var end = el.selectionEnd;
+            el.value = upper;
+            if (el.setSelectionRange && start !== null && end !== null) {
+              try { el.setSelectionRange(start, end); } catch (_) {}
+            }
+          }
+        }
+      }
+      document.addEventListener("input", function (e) { convertirElemento(e.target); }, true);
+      document.addEventListener("change", function (e) { convertirElemento(e.target); }, true);
+
+      function mayusPayloadCliente(obj, key) {
+        if (obj === null || obj === undefined) return obj;
+        if (typeof obj === 'string') {
+          var k = String(key || '').toLowerCase();
+          if (['token','idtoken','_txid','firma_base64','foto_base64','fotos_base64','imagen_base64','base64','imagen','foto','url','email','accion','action'].indexOf(k) !== -1) {
+            return obj;
+          }
+          if (/^data:image\//i.test(obj) || /^https?:\/\//i.test(obj)) return obj;
+          return obj.trim().toUpperCase();
+        }
+        if (Array.isArray(obj)) {
+          var kArr = String(key || '').toLowerCase();
+          if (['fotos_base64','base64','imagenes','fotos'].indexOf(kArr) !== -1) return obj;
+          return obj.map(function(item) { return mayusPayloadCliente(item, key); });
+        }
+        if (typeof obj === 'object') {
+          var res = {};
+          for (var p in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, p)) {
+              res[p] = mayusPayloadCliente(obj[p], p);
+            }
+          }
+          return res;
+        }
+        return obj;
+      }
+
+      if (typeof window.fetch === 'function') {
+        var _fetchOrig = window.fetch;
+        window.fetch = function(url, init) {
+          if (init && init.body && typeof init.body === 'string') {
+            try {
+              var parsed = JSON.parse(init.body);
+              if (parsed && typeof parsed === 'object') {
+                init.body = JSON.stringify(mayusPayloadCliente(parsed));
+              }
+            } catch (_) {}
+          }
+          return _fetchOrig.apply(this, arguments);
+        };
+      }
+    })();
+  </script>
 </body>
 </html>

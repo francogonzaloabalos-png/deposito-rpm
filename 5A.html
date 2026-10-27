@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -576,7 +576,7 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
     <span class="home-btn-arrow">›</span>
   </button>
 
-  <a href="https://francogonzaloabalos-png.github.io/deposito-rpm/buscador-stock.html" class="home-btn-back">
+  <a href="https://rpmconstrucciones.github.io/DEPOSITO/buscador-stock.html" class="home-btn-back">
     <div class="home-btn-back-icon">🔍</div>
     <div class="home-btn-back-text">Volver al buscador general</div>
     <span class="home-btn-back-arrow">›</span>
@@ -856,11 +856,101 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
 
       <!-- TERMINALES / CONECTORES -->
       <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_terminales')" style="margin-top:8px">
-        🔧 Terminal / Conector <span class="acordeon-arrow">▾</span>
+        🔧 Terminales / Terminales Tubulares <span class="acordeon-arrow">▾</span>
       </button>
       <div id="bloque_terminales" class="acordeon-body">
         <div id="items_terminales"></div>
         <button class="btn-add" onclick="addItem('terminales')">+ Agregar terminal</button>
+      </div>
+
+      <!-- GRAMPAS -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_grampas')" style="margin-top:8px">
+        📎 Grampas <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_grampas" class="acordeon-body">
+        <div id="items_grampas"></div>
+        <button class="btn-add" onclick="addItem('grampas')">+ Agregar grampa</button>
+      </div>
+
+      <!-- MORDAZA PARA JABALINA -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_mordaza_jabalina')" style="margin-top:8px">
+        ⚓ Mordaza para Jabalina <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_mordaza_jabalina" class="acordeon-body">
+        <div id="items_mordaza_jabalina"></div>
+        <button class="btn-add" onclick="addItem('mordaza_jabalina')">+ Agregar mordaza</button>
+      </div>
+
+      <!-- BORNERA PASO BPN -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_bornera_bpn')" style="margin-top:8px">
+        🔗 Bornera Paso BPN <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_bornera_bpn" class="acordeon-body">
+        <div id="items_bornera_bpn"></div>
+        <button class="btn-add" onclick="addItem('bornera_bpn')">+ Agregar bornera BPN</button>
+      </div>
+
+      <!-- SEPARADOR PARA BORNERA -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_separador_bornera')" style="margin-top:8px">
+        ➖ Separador para Bornera <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_separador_bornera" class="acordeon-body">
+        <div id="items_separador_bornera"></div>
+        <button class="btn-add" onclick="addItem('separador_bornera')">+ Agregar separador</button>
+      </div>
+
+      <!-- ARANDELA -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_arandela')" style="margin-top:8px">
+        ⭕ Arandela <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_arandela" class="acordeon-body">
+        <div id="items_arandela"></div>
+        <button class="btn-add" onclick="addItem('arandela')">+ Agregar arandela</button>
+      </div>
+
+      <!-- PRENSA CABLE -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_prensa_cable')" style="margin-top:8px">
+        🔧 Prensa Cable <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_prensa_cable" class="acordeon-body">
+        <div id="items_prensa_cable"></div>
+        <button class="btn-add" onclick="addItem('prensa_cable')">+ Agregar prensa cable</button>
+      </div>
+
+      <!-- CINTA AISLADORA PVC -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_cinta_aisladora')" style="margin-top:8px">
+        🎞️ Cinta Aisladora PVC <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_cinta_aisladora" class="acordeon-body">
+        <div id="items_cinta_aisladora"></div>
+        <button class="btn-add" onclick="addItem('cinta_aisladora')">+ Agregar cinta aisladora</button>
+      </div>
+
+      <!-- CINTA AUTOSOLDABLE -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_cinta_autosoldable')" style="margin-top:8px">
+        🎞️ Cinta Autosoldable <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_cinta_autosoldable" class="acordeon-body">
+        <div id="items_cinta_autosoldable"></div>
+        <button class="btn-add" onclick="addItem('cinta_autosoldable')">+ Agregar cinta autosoldable</button>
+      </div>
+
+      <!-- PRECINTO PLÁSTICO -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_precinto_plastico')" style="margin-top:8px">
+        🏷️ Precinto Plástico <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_precinto_plastico" class="acordeon-body">
+        <div id="items_precinto_plastico"></div>
+        <button class="btn-add" onclick="addItem('precinto_plastico')">+ Agregar precinto</button>
+      </div>
+
+      <!-- PROLONGADOR -->
+      <button class="acordeon-btn" onclick="toggleAcordeon(this,'bloque_prolongador')" style="margin-top:8px">
+        🔌 Prolongador <span class="acordeon-arrow">▾</span>
+      </button>
+      <div id="bloque_prolongador" class="acordeon-body">
+        <div id="items_prolongador"></div>
+        <button class="btn-add" onclick="addItem('prolongador')">+ Agregar prolongador</button>
       </div>
 
       <!-- PRODUCTO NO LISTADO -->
@@ -871,6 +961,13 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
         <div class="badge-new">⚠ Temporal — agregar luego a la lista fija</div>
         <label>Descripción <span class="req">*</span></label>
         <input type="text" id="nuevo_descripcion" placeholder="Ej: Contactor 40A Schneider">
+        <label>Marca <span class="req">*</span></label>
+        <select id="nuevo_marca" onchange="showOther(this,'nuevo_marca_otro')">
+          <option value="">— Seleccioná —</option>
+          <option value="No especificado">No especificado</option>
+          <option value="OTRO">Otra marca (escribir)</option>
+        </select>
+        <input type="text" id="nuevo_marca_otro" class="campo-otro" placeholder="Escribí la marca">
         <label>Cantidad <span class="req">*</span></label>
         <div class="qty-unit">
           <input type="number" id="nuevo_cantidad" min="1" placeholder="0">
@@ -946,8 +1043,8 @@ button, .sc-icon-btn, .btn-mov { outline: none; }
 // a otro depósito. El resto del script es genérico.
 // ============================================================
 const CONFIG = {
-  zona: "Depósito 5A",
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzQVmgnoPG86r8LKnkdMn0yP17FGvoLj02LSNz8BC_mhZzEmJZgV_jgpLFArInlgUOx/exec",
+  zona: "INSUMOS Y MATERIAL ELÉCTRICO",
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbw5o6UAwEEJUs727rnHvchCL97Z66QlVJ1UZZg5y12_-1qkgs9_gXBX1Bj-8LUmoosd/exec",
   storageKey: "rpm_borrador_deposito_5a",
   pollingIntervalMs: 25000,
   ubicacion: {
@@ -1039,6 +1136,27 @@ function toastDep(mensaje, tipo = 'info') {
   setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3200);
 }
 
+function mostrarCartelFallaConexion(onReintentar) {
+  const anterior = document.querySelector('.modal-overlay-conexion');
+  if (anterior) anterior.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay modal-overlay-conexion';
+  overlay.innerHTML =
+    '<div class="modal-box">' +
+    '<p>⚠️ No se pudo confirmar el envío.<br>Verificá tu conexión e intentá de nuevo.</p>' +
+    '<button class="modal-btn primary" id="btn_reintentar_conexion">Reintentar</button>' +
+    '<button class="modal-btn cancel" id="btn_cerrar_conexion">Cerrar</button>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#btn_reintentar_conexion').onclick = () => {
+    overlay.remove();
+    if (typeof onReintentar === 'function') onReintentar();
+  };
+  overlay.querySelector('#btn_cerrar_conexion').onclick = () => overlay.remove();
+}
+
 function abrirZoomImagen(src) {
   const overlay = document.createElement('div');
   overlay.className = 'zoom-overlay';
@@ -1074,6 +1192,7 @@ let activeFamilia = '';
 let activeChips   = {};
 let carritoRapido = { tipo: null, items: [] };
 let tipoMovimientoStockGlobal = null;
+let txidCarritoActual = null;
 let stockPollingTimer = null;
 
 function iniciarPollingStock() {
@@ -1859,6 +1978,7 @@ function actualizarBarraCarrito(){
 function vaciarCarritoRapido(){
   carritoRapido={tipo:null,items:[]};
   tipoMovimientoStockGlobal=null;
+  txidCarritoActual=null;
   actualizarBarraCarrito();
   applyFilters();
 }
@@ -1903,14 +2023,27 @@ function abrirModalConfirmarCarrito(){
   forzarMayusculas(document.getElementById('carrito_obra_otro'));
 }
 async function enviarCarritoRapido(overlay){
+  const btn=overlay.querySelector("#btn_confirmar_carrito");
+  if(btn.disabled)return; // ya hay un envío en curso — ignora el toque repetido
+
   let responsable=document.getElementById("carrito_responsable").value;
   if(responsable==="OTRO")responsable=document.getElementById("carrito_responsable_otro").value.trim();
   let obra=document.getElementById("carrito_obra").value;
   if(obra==="OTRO")obra=document.getElementById("carrito_obra_otro").value.trim();
+
   const obsGeneral=document.getElementById("carrito_obs_general").value.trim();
   if(!responsable||!obra){toastDep("⚠ Completá Responsable y Obra","error");return;}
-  const btn=overlay.querySelector("#btn_confirmar_carrito");
+
   btn.disabled=true;btn.textContent="Enviando...";
+
+  if(!navigator.onLine){
+    btn.disabled=false;btn.textContent="Registrar movimiento";
+    mostrarCartelFallaConexion(()=>enviarCarritoRapido(overlay));
+    return;
+  }
+
+  if(!txidCarritoActual)txidCarritoActual=generarTxid();
+
   const payload={
     accion:"ajuste-rapido",
     zona:ZONA_FIJA,
@@ -1918,19 +2051,28 @@ async function enviarCarritoRapido(overlay){
     responsable,obra,
     obs_general:obsGeneral,
     fecha:new Date().toLocaleString("es-AR",{hour12:false}),
-    items:carritoRapido.items.map(it=>({id:it.id,familia:it.familia,marca:it.marca,descripcion:it.descripcion,cantidad:it.cantidad,unidad:it.unidad}))
+    items:carritoRapido.items.map(it=>({id:it.id,familia:it.familia,marca:it.marca,descripcion:it.descripcion,cantidad:it.cantidad,unidad:it.unidad})),
+    _txid: txidCarritoActual
   };
   try{
-    const resp=await fetch(APPS_SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const resp=await fetch(APPS_SCRIPT_URL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
     const resultado=await resp.json();
+    if(!resultado.ok){
+      btn.disabled=false;btn.textContent="Registrar movimiento";
+      toastDep(`❌ Error: ${resultado.error}`,"error");
+      return;
+    }
     overlay.remove();
-    if(!resultado.ok){toastDep(`❌ Error: ${resultado.error}`,"error");return;}
     toastDep(`✅ ${carritoRapido.tipo} registrada correctamente`,"ok");
     vaciarCarritoRapido();
     loadStock();
   }catch(e){
-    toastDep(`❌ Fallo de conexión: ${e.message}`,"error");
     btn.disabled=false;btn.textContent="Registrar movimiento";
+    mostrarCartelFallaConexion(()=>enviarCarritoRapido(overlay));
   }
 }
 
@@ -1941,7 +2083,9 @@ async function enviarCarritoRapido(overlay){
 const counters = {
   termicas:0, disyuntores:0, guardamotores:0, borneras:0, borneras_barra:0,
   fusibles:0, portafusibles:0, fuentes:0, fuentes_led:0,
-  dmx:0, contactores:0, pulsadores:0, ojosbuey:0, bloqueaux:0, terminales:0
+  dmx:0, contactores:0, pulsadores:0, ojosbuey:0, bloqueaux:0, terminales:0,
+  grampas:0, mordaza_jabalina:0, bornera_bpn:0, separador_bornera:0, arandela:0,
+  prensa_cable:0, cinta_aisladora:0, cinta_autosoldable:0, precinto_plastico:0, prolongador:0
 };
 const FAMILIES = Object.keys(counters);
 
@@ -1960,7 +2104,17 @@ borneras_barra:[['marca','Marca'],['tipo','Tipo'],['puntos','Cantidad de puntos/
   pulsadores:   [['marca','Marca'],['tipo','Tipo'],['color','Color'],['contacto','Contacto'],['cantidad','Cantidad']],
   ojosbuey:     [['marca','Marca'],['color','Color'],['tension','Tensión'],['diametro','Diámetro'],['cantidad','Cantidad']],
   bloqueaux:    [['marca','Marca'],['tipo','Tipo'],['cantidad','Cantidad']],
-  terminales:   [['material','Material'],['medida','Medida/Calibre'],['cantidad','Cantidad']],
+  terminales:   [['tipo_terminal','Tipo de terminal'],['material','Material'],['medida','Medida/Calibre'],['cantidad','Cantidad']],
+  grampas:            [['tipo','Tipo de grampa'],['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
+  mordaza_jabalina:   [['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
+  bornera_bpn:        [['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
+  separador_bornera:  [['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
+  arandela:           [['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
+  prensa_cable:       [['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
+  cinta_aisladora:    [['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
+  cinta_autosoldable: [['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
+  precinto_plastico:  [['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
+  prolongador:        [['descripcion','Descripción'],['marca','Marca'],['cantidad','Cantidad']],
 };
 
 const UNITS = {
@@ -1969,6 +2123,10 @@ const UNITS = {
   portafusibles:['un','kit'], fuentes:['un'], fuentes_led:['un'], dmx:['un'],
   contactores:['un'], pulsadores:['un'], ojosbuey:['un'], bloqueaux:['un'],
   terminales:['un','par','bolsa','caja'],
+  grampas:['un','caja','pack'], mordaza_jabalina:['un','caja','pack'], bornera_bpn:['un','caja','pack'],
+  separador_bornera:['un','caja','pack'], arandela:['un','caja','pack'], prensa_cable:['un','caja','pack'],
+  cinta_aisladora:['un','caja','pack'], cinta_autosoldable:['un','caja','pack'],
+  precinto_plastico:['un','caja','pack'], prolongador:['un'],
 };
 
 const FAM_NAMES = {
@@ -1986,7 +2144,17 @@ borneras_barra:'🔗 Bornera de Barra',
   pulsadores:   '🔘 Pulsador',
   ojosbuey:     '💡 Ojo de Buey',
   bloqueaux:    '🔌 Bloque Auxiliar',
-  terminales:   '🔧 Terminal / Conector',
+  terminales:   '🔧 Terminales',
+  grampas:            '📎 Grampas',
+  mordaza_jabalina:   '⚓ Mordaza para Jabalina',
+  bornera_bpn:        '🔗 Bornera Paso BPN',
+  separador_bornera:  '➖ Separador para Bornera',
+  arandela:           '⭕ Arandela',
+  prensa_cable:       '🔧 Prensa Cable',
+  cinta_aisladora:    '🎞️ Cinta Aisladora PVC',
+  cinta_autosoldable: '🎞️ Cinta Autosoldable',
+  precinto_plastico:  '🏷️ Precinto Plástico',
+  prolongador:        '🔌 Prolongador',
 };
 
 function uOpts(fam) { return (UNITS[fam]||['un']).map(u=>`<option value="${u}">${u}</option>`).join(''); }
@@ -2013,9 +2181,13 @@ function bloqueFotoItem(fam, n) {
   return `
     <div class="foto-bloque">
       <label>Fotos de referencia <span class="opc">(opcional, máx. 2)</span></label>
-      <div id="${fam}_foto_preview_${n}" class="foto-preview-gestion"></div>
-      <input type="file" accept="image/*" id="${fam}_foto_input_${n}" style="display:none" onchange="manejarSeleccionFotoItem(this, '${fam}', ${n})">
-      <button type="button" class="btn-add" id="${fam}_foto_btn_${n}" onclick="document.getElementById('${fam}_foto_input_${n}').click()">+ Agregar foto</button>
+      <div id="${fam}_foto_preview_${n}" class="foto-preview-gestion" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;"></div>
+      <input type="file" accept="image/*" capture="environment" id="${fam}_foto_input_camara_${n}" style="display:none" onchange="manejarSeleccionFotoItem(this, '${fam}', ${n})">
+      <input type="file" accept="image/*" id="${fam}_foto_input_galeria_${n}" style="display:none" onchange="manejarSeleccionFotoItem(this, '${fam}', ${n})">
+      <div id="${fam}_foto_btns_${n}" style="display:flex;gap:8px;">
+        <button type="button" class="btn-add" style="flex:1;" onclick="document.getElementById('${fam}_foto_input_camara_${n}').click()">📷 Tomar foto</button>
+        <button type="button" class="btn-add" style="flex:1;" onclick="document.getElementById('${fam}_foto_input_galeria_${n}').click()">🖼️ Galería</button>
+      </div>
     </div>`;
 }
 
@@ -2046,14 +2218,14 @@ function renderFotosItem(fam, n) {
   const key = `${fam}_${n}`;
   const fotos = fotosPendientes[key] || [];
   const preview = document.getElementById(`${fam}_foto_preview_${n}`);
-  const btn = document.getElementById(`${fam}_foto_btn_${n}`);
+  const btns = document.getElementById(`${fam}_foto_btns_${n}`);
   if (!preview) return;
   preview.innerHTML = fotos.map((b64, i) => `
     <div class="foto-slot">
       <img src="data:image/jpeg;base64,${b64}" onclick="abrirZoomImagen('data:image/jpeg;base64,${b64}')">
       <button type="button" class="foto-slot-del" onclick="eliminarFotoItem('${fam}',${n},${i})" title="Eliminar">🗑️</button>
     </div>`).join('');
-  if (btn) btn.style.display = fotos.length >= 2 ? 'none' : 'block';
+  if (btns) btns.style.display = fotos.length >= 2 ? 'none' : 'flex';
 }
 
 // ── Bloque de ubicación genérico por ítem ──
@@ -2105,6 +2277,15 @@ function agregarCamposOtro(bloque, fam) {
     select.insertAdjacentElement('afterend', otroInput);
     forzarMayusculas(otroInput);
 
+    // Terminales → Medida/Calibre "Otro": solo números (se permite coma o punto para decimales, ej: 1,5)
+    if (fam === 'terminales' && campo === 'medida') {
+      otroInput.inputMode = 'decimal';
+      otroInput.placeholder = 'Solo número (ej: 185)';
+      otroInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9.,]/g, '');
+      });
+    }
+
 select.addEventListener('change', () => {
       const esOtro = select.value === 'Otro';
       otroInput.style.display = esOtro ? 'block' : 'none';
@@ -2123,6 +2304,9 @@ function normalizarCamposOtroAlEnviar() {
     const campoBase = (input.dataset.campo || input.id || '').replace(/_otro$/, '');
     if (campoBase.includes('amperaje') && /^\d+([.,]\d+)?$/.test(valor)) {
       valor = valor + 'A';
+    }
+    if (input.dataset.fam === 'terminales' && campoBase === 'medida' && /^\d+([.,]\d+)?$/.test(valor)) {
+      valor = valor + 'mm²';
     }
     input.value = valor;
   });
@@ -2279,6 +2463,23 @@ function showOther(sel, otherId) {
   const el = document.getElementById(otherId);
   el.style.display = sel.value === 'OTRO' ? 'block' : 'none';
   if (sel.value !== 'OTRO') el.value = '';
+}
+
+// Plantilla común de los insumos de texto libre: [tipo opcional] + descripción + marca + cantidad + observaciones
+function plantillaLibre(fam, n, qtyRow, selectorExtra) {
+  return `
+      ${selectorExtra || ''}
+      ${lbl(fam,'descripcion','Descripción')}
+      <input type="text" name="${fam}_descripcion_${n}" data-fam="${fam}" data-campo="descripcion" placeholder="Ej: METALICA PARA CAÑOS SEMIPESADOS - 22 MM">
+      ${lbl(fam,'marca','Marca')}
+      <select name="${fam}_marca_${n}" data-fam="${fam}" data-campo="marca">
+        <option value="">— Seleccioná —</option>
+        <option value="No especificado">No especificado</option>
+        <option value="Otro">Otra marca (escribir)</option>
+      </select>
+      ${lbl(fam,'cantidad','Cantidad')}${qtyRow}
+      <label>Observaciones</label>
+      <input type="text" name="${fam}_observaciones_${n}" placeholder="Opcional">`;
 }
 
 function addItem(fam) {
@@ -2526,12 +2727,15 @@ function addItem(fam) {
       <input type="text" name="bloqueaux_observaciones_${n}" placeholder="Opcional">`,
 
     terminales: `
+      ${lbl('terminales','tipo_terminal','Tipo de terminal')}
+      <select name="terminales_tipo_terminal_${n}" data-fam="terminales" data-campo="tipo_terminal">
+        <option value="">— Seleccioná —</option>${opts(['Terminal','Terminal Tubular'])}</select>
       ${lbl('terminales','material','Material')}
       <select name="terminales_material_${n}" data-fam="terminales" data-campo="material">
         <option value="">— Seleccioná —</option>${opts(['Cobre','Aluminio','Cobre estañado','Bronce','Otro','No especificado'])}</select>
       ${lbl('terminales','medida','Medida / Calibre')}
       <select name="terminales_medida_${n}" data-fam="terminales" data-campo="medida">
-        <option value="">— Seleccioná —</option>${opts(['1 AWG','2 AWG','4 AWG','6 AWG','8 AWG','10 AWG','12 AWG','14 AWG','16 AWG','2/0 AWG','1/0 AWG','0,5mm²','0,75mm²','1mm²','1,5mm²','2,5mm²','4mm²','6mm²','10mm²','16mm²','25mm²','35mm²','50mm²','70mm²','95mm²','120mm²','Otro','No especificado'])}</select>
+        <option value="">— Seleccioná —</option>${opts(['1 AWG','2 AWG','4 AWG','6 AWG','8 AWG','10 AWG','12 AWG','14 AWG','16 AWG','2/0 AWG','1/0 AWG','0,5mm²','0,75mm²','1mm²','1,5mm²','2,5mm²','4mm²','6mm²','10mm²','16mm²','25mm²','35mm²','50mm²','70mm²','95mm²','120mm²','185mm²','Otro','No especificado'])}</select>
       <label>Tipo de ojal (opcional)</label>
       <select name="terminales_ojal_${n}" data-fam="terminales" data-campo="ojal">
         <option value="">— Seleccioná —</option>${opts(['Ojal chico','Ojal grande','Ojal redondo','Ojal oval','Pala','Tubo aislado','Aislado','No especificado'])}</select>
@@ -2541,6 +2745,20 @@ function addItem(fam) {
       ${lbl('terminales','cantidad','Cantidad')}${qtyRow}
       <label>Observaciones</label>
       <input type="text" name="terminales_observaciones_${n}" placeholder="Opcional">`,
+
+    grampas: plantillaLibre('grampas', n, qtyRow, `
+      ${lbl('grampas','tipo','Tipo de grampa')}
+      <select name="grampas_tipo_${n}" data-fam="grampas" data-campo="tipo">
+        <option value="">— Seleccioná —</option>${opts(['GRAMPA OMEGA','GRAMPA MEDIA OMEGA','GRAMPA C'])}</select>`),
+    mordaza_jabalina:   plantillaLibre('mordaza_jabalina', n, qtyRow),
+    bornera_bpn:        plantillaLibre('bornera_bpn', n, qtyRow),
+    separador_bornera:  plantillaLibre('separador_bornera', n, qtyRow),
+    arandela:           plantillaLibre('arandela', n, qtyRow),
+    prensa_cable:       plantillaLibre('prensa_cable', n, qtyRow),
+    cinta_aisladora:    plantillaLibre('cinta_aisladora', n, qtyRow),
+    cinta_autosoldable: plantillaLibre('cinta_autosoldable', n, qtyRow),
+    precinto_plastico:  plantillaLibre('precinto_plastico', n, qtyRow),
+    prolongador:        plantillaLibre('prolongador', n, qtyRow),
   };
 
   const famLabel = FAM_NAMES[fam] ? FAM_NAMES[fam].split(' ').slice(1).join(' ') : fam;
@@ -2645,6 +2863,13 @@ function closeErrOverlay() {
 
 // ── (dentro de 3.6) Borrador automático en localStorage — estándar del proyecto ──
 let draftTimer = null;
+let borradorBloqueado = false;
+let txidActual = null;
+
+function generarTxid() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'txid-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+}
 
 function actualizarEstadoBorrador(texto) {
   const el = document.getElementById('borrador_estado');
@@ -2652,6 +2877,7 @@ function actualizarEstadoBorrador(texto) {
 }
 
 function guardarBorrador() {
+  if (borradorBloqueado) return;
   const estado = {
     tipo_movimiento: document.getElementById('tipo_movimiento').value,
     responsable: document.getElementById('responsable').value,
@@ -2660,6 +2886,8 @@ function guardarBorrador() {
     obra_otro: document.getElementById('obra_otro').value,
     observaciones: document.getElementById('observaciones').value,
     nuevo_descripcion: document.getElementById('nuevo_descripcion').value,
+    nuevo_marca: document.getElementById('nuevo_marca').value,
+    nuevo_marca_otro: document.getElementById('nuevo_marca_otro').value,
     nuevo_cantidad: document.getElementById('nuevo_cantidad').value,
     nuevo_unidad: document.getElementById('nuevo_unidad').value,
     nuevo_observacion: document.getElementById('nuevo_observacion').value,
@@ -2717,6 +2945,9 @@ function restaurarBorrador() {
   document.getElementById('obra_otro').style.display = estado.obra === 'OTRO' ? 'block' : 'none';
   document.getElementById('observaciones').value = estado.observaciones || '';
   document.getElementById('nuevo_descripcion').value = estado.nuevo_descripcion || '';
+  document.getElementById('nuevo_marca').value = estado.nuevo_marca || '';
+  document.getElementById('nuevo_marca_otro').value = estado.nuevo_marca_otro || '';
+  document.getElementById('nuevo_marca_otro').style.display = estado.nuevo_marca === 'OTRO' ? 'block' : 'none';
   document.getElementById('nuevo_cantidad').value = estado.nuevo_cantidad || '';
   document.getElementById('nuevo_unidad').value = estado.nuevo_unidad || 'un';
   document.getElementById('nuevo_observacion').value = estado.nuevo_observacion || '';
@@ -2752,6 +2983,9 @@ function restaurarBorrador() {
 }
 
 function resetForm(limpiarBorrador = true) {
+  clearTimeout(draftTimer);
+  borradorBloqueado = false;
+  txidActual = null;
   if (limpiarBorrador) { try { localStorage.removeItem(CONFIG.storageKey); } catch (e) {} }
   document.getElementById('tipo_movimiento').value = '';
   document.getElementById('responsable').value     = '';
@@ -2766,10 +3000,11 @@ function resetForm(limpiarBorrador = true) {
     counters[f] = 0;
   });
   Object.keys(fotosPendientes).forEach(k => delete fotosPendientes[k]);
-  ['nuevo_descripcion','nuevo_cantidad','nuevo_observacion'].forEach(id => {
+  ['nuevo_descripcion','nuevo_marca','nuevo_marca_otro','nuevo_cantidad','nuevo_observacion'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('nuevo_unidad').value = 'un';
+  document.getElementById('nuevo_marca_otro').style.display = 'none';
   ['nuevo_deposito','nuevo_estante','nuevo_columna','nuevo_fila'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
@@ -2801,6 +3036,8 @@ function resetForm(limpiarBorrador = true) {
 }
 
 async function submitForm() {
+  if (document.getElementById('btn-submit').disabled) return; // ya hay un envío en curso — ignora el toque repetido
+
   normalizarCamposOtroAlEnviar();
 
   const tipo = document.getElementById('tipo_movimiento').value;
@@ -2883,6 +3120,19 @@ async function submitForm() {
     }
   }
 
+  if (nuevoDesc) {
+    const selM  = document.getElementById('nuevo_marca');
+    const otroM = document.getElementById('nuevo_marca_otro');
+    if (!selM.value || (selM.value === 'OTRO' && !otroM.value.trim())) {
+      hasError = true;
+      (selM.value === 'OTRO' ? otroM : selM).classList.add('err');
+      const li = document.createElement('li');
+      li.textContent = 'Producto no listado → Marca';
+      errList.appendChild(li);
+      famErrors.add('Producto no listado');
+    }
+  }
+
   if (nuevoDesc && esMovimientoConUbicacion(tipo)) {
     ['deposito','estante','columna','fila'].forEach(campo => {
       const el = document.getElementById(`nuevo_${campo}`);
@@ -2920,6 +3170,9 @@ async function submitForm() {
   if (nuevoDesc) {
     payload.producto_nuevo = {
       descripcion: nuevoDesc,
+      marca:       (document.getElementById('nuevo_marca').value === 'OTRO'
+                     ? document.getElementById('nuevo_marca_otro').value.trim()
+                     : document.getElementById('nuevo_marca').value),
       cantidad:    document.getElementById('nuevo_cantidad').value,
       unidad:      document.getElementById('nuevo_unidad').value,
       observacion: document.getElementById('nuevo_observacion').value.trim(),
@@ -2935,22 +3188,49 @@ async function submitForm() {
   const btn = document.getElementById('btn-submit');
   btn.disabled = true; btn.textContent = 'Enviando...';
 
+  if (!navigator.onLine) {
+    btn.disabled = false; btn.textContent = 'Registrar movimiento';
+    mostrarCartelFallaConexion(() => submitForm());
+    return;
+  }
+
+  if (!txidActual) txidActual = generarTxid();
+  payload._txid = txidActual;
+
+  clearTimeout(draftTimer);
+  borradorBloqueado = true;
+
+  // Sin AbortController con timeout corto: cortar la espera del lado del
+  // cliente NO cancela la ejecución en Apps Script — el dato puede quedar
+  // guardado igual mientras el navegador ya decidió que "falló", y eso
+  // llevaba a que el usuario reintentara y se duplicara el movimiento.
   try {
-    await fetch(APPS_SCRIPT_URL, {
+    const resp2 = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
     });
+    const resultado = await resp2.json();
+
+    if (!resultado.ok) {
+      btn.disabled = false; btn.textContent = 'Registrar movimiento';
+      borradorBloqueado = false;
+      document.getElementById('ov-err-list').innerHTML = '<li>Error del servidor: ' + resultado.error + '</li>';
+      document.getElementById('ov-err').classList.add('show');
+      return;
+    }
+
     try { localStorage.removeItem(CONFIG.storageKey); } catch (e) {}
+    txidActual = null;
     document.getElementById('ov-ok-detail').textContent =
       `${tipo} registrada por ${resp} — ${total} producto${total!==1?'s':''} guardado${total!==1?'s':''}.`;
     document.getElementById('ov-ok').classList.add('show');
     btn.style.display = 'none';
     stockLoaded = false;
-  } catch {
-    alert('Error al enviar. Verificá tu conexión.');
+  } catch (err) {
+    borradorBloqueado = false;
     btn.disabled = false; btn.textContent = 'Registrar movimiento';
+    mostrarCartelFallaConexion(() => submitForm());
   }
 }
 
@@ -2979,6 +3259,7 @@ document.addEventListener('DOMContentLoaded', function() {
   forzarMayusculas(document.getElementById('obra_otro'));
   forzarMayusculas(document.getElementById('nuevo_descripcion'));
   forzarMayusculas(document.getElementById('nuevo_observacion'));
+  forzarMayusculas(document.getElementById('nuevo_marca_otro'));
   forzarMayusculas(document.getElementById('observaciones'));
 
   const estSel = document.getElementById('nuevo_estante');
@@ -3017,7 +3298,98 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.target.matches('input, select, textarea')) programarGuardado();
   });
   restaurarBorrador();
+  revisarDeepLinkProducto();
 });
+
+function revisarDeepLinkProducto() {
+  const params = new URLSearchParams(window.location.search);
+  const idProducto = params.get('id');
+  if (!idProducto) return;
+
+  goStock();
+  const intentarAbrir = () => {
+    const idx = stockData.findIndex(p => p.id === idProducto);
+    if (idx >= 0) {
+      openDetail(idx);
+    } else if (stockLoaded) {
+      // ya cargó el stock pero no está ese ID — no hacemos nada más
+    } else {
+      setTimeout(intentarAbrir, 300); // el fetch todavía no terminó, reintenta
+    }
+  };
+  intentarAbrir();
+}
 </script>
+  <!-- AUTO MAYUSCULAS - RPM CONSTRUCCIONES -->
+  <style>
+    input:not([type="password"]):not([type="email"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not(.no-mayus),
+    textarea:not(.no-mayus),
+    select:not(.no-mayus),
+    select:not(.no-mayus) option {
+      text-transform: uppercase !important;
+    }
+  </style>
+  <script>
+    (function () {
+      function convertirElemento(el) {
+        if (!el || !el.matches) return;
+        if (el.matches("input:not([type='password']):not([type='email']):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']):not(.no-mayus), textarea:not(.no-mayus)")) {
+          var upper = (el.value || '').toUpperCase();
+          if (el.value !== upper) {
+            var start = el.selectionStart;
+            var end = el.selectionEnd;
+            el.value = upper;
+            if (el.setSelectionRange && start !== null && end !== null) {
+              try { el.setSelectionRange(start, end); } catch (_) {}
+            }
+          }
+        }
+      }
+      document.addEventListener("input", function (e) { convertirElemento(e.target); }, true);
+      document.addEventListener("change", function (e) { convertirElemento(e.target); }, true);
+
+      function mayusPayloadCliente(obj, key) {
+        if (obj === null || obj === undefined) return obj;
+        if (typeof obj === 'string') {
+          var k = String(key || '').toLowerCase();
+          if (['token','idtoken','_txid','firma_base64','foto_base64','fotos_base64','imagen_base64','base64','imagen','foto','url','email','accion','action'].indexOf(k) !== -1) {
+            return obj;
+          }
+          if (/^data:image\//i.test(obj) || /^https?:\/\//i.test(obj)) return obj;
+          return obj.trim().toUpperCase();
+        }
+        if (Array.isArray(obj)) {
+          var kArr = String(key || '').toLowerCase();
+          if (['fotos_base64','base64','imagenes','fotos'].indexOf(kArr) !== -1) return obj;
+          return obj.map(function(item) { return mayusPayloadCliente(item, key); });
+        }
+        if (typeof obj === 'object') {
+          var res = {};
+          for (var p in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, p)) {
+              res[p] = mayusPayloadCliente(obj[p], p);
+            }
+          }
+          return res;
+        }
+        return obj;
+      }
+
+      if (typeof window.fetch === 'function') {
+        var _fetchOrig = window.fetch;
+        window.fetch = function(url, init) {
+          if (init && init.body && typeof init.body === 'string') {
+            try {
+              var parsed = JSON.parse(init.body);
+              if (parsed && typeof parsed === 'object') {
+                init.body = JSON.stringify(mayusPayloadCliente(parsed));
+              }
+            } catch (_) {}
+          }
+          return _fetchOrig.apply(this, arguments);
+        };
+      }
+    })();
+  </script>
 </body>
 </html>
