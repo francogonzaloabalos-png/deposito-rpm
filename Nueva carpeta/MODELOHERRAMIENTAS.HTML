@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control de herramientas - Modelo</title>
+<style>
+:root{
+  --fondo:#eceae6; --papel:#ffffff; --tinta:#1f2328; --suave:#5d646c; --linea:#d5d2cb;
+  --acento:#f2b705; --acento-tinta:#2b2100;
+  --dep-bg:#dff1e4; --dep-tx:#1b5e32;
+  --per-bg:#dce9f8; --per-tx:#1a4a82;
+  --man-bg:#fbe9c7; --man-tx:#7a4a00;
+  --baj-bg:#e6e3df; --baj-tx:#4a4742;
+  --err:#a32d2d; --ok:#1b5e32;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --fondo:#16181b; --papel:#1f2226; --tinta:#eceae6; --suave:#a2a8af; --linea:#353a40;
+    --dep-bg:#1d3a28; --dep-tx:#a9dcb9;
+    --per-bg:#1c3350; --per-tx:#a9c9ef;
+    --man-bg:#46330f; --man-tx:#f1cf8c;
+    --baj-bg:#34322f; --baj-tx:#c4c0ba;
+    --err:#f09595; --ok:#a9dcb9;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--acento);padding-bottom:10px;margin-bottom:20px}
+h1{font-size:24px;margin:0;font-weight:700}
+h2{font-size:17px;margin:0 0 10px;font-weight:700}
+.sub{color:var(--suave);font-size:13px;margin:2px 0 0}
+section{background:var(--papel);border:1px solid var(--linea);border-radius:6px;padding:16px;margin-bottom:18px}
+label.rol{font-size:13px;color:var(--suave);display:flex;gap:8px;align-items:center}
+input,select,button{font:inherit;color:inherit}
+input,select{background:var(--papel);border:1px solid var(--linea);border-radius:4px;padding:7px 9px;min-height:38px}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--acento);outline-offset:1px}
+button{background:var(--papel);border:1px solid var(--suave);border-radius:4px;padding:7px 14px;min-height:38px;cursor:pointer}
+button:hover{background:var(--fondo)}
+button.primario{background:var(--acento);border-color:var(--acento);color:var(--acento-tinta);font-weight:700}
+button.primario:hover{filter:brightness(.95)}
+.fila{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tabla-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+th{text-align:left;font-weight:600;color:var(--suave);padding:8px 8px;border-bottom:2px solid var(--linea);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid var(--linea)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--fondo)}
+tr.activo td{background:var(--fondo);font-weight:600}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:3px;white-space:nowrap}
+.EN_DEPOSITO{background:var(--dep-bg);color:var(--dep-tx)}
+.CON_PERSONAL{background:var(--per-bg);color:var(--per-tx)}
+.EN_MANTENIMIENTO{background:var(--man-bg);color:var(--man-tx)}
+.BAJA{background:var(--baj-bg);color:var(--baj-tx)}
+.ficha{border-top:1px solid var(--linea);margin-top:14px;padding-top:14px}
+.ficha .cab{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.ficha .det{color:var(--suave);font-size:13px;margin:0 0 12px}
+.acciones{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.acciones button.sel{border-color:var(--tinta);box-shadow:inset 0 -3px 0 var(--acento)}
+#msg{margin:10px 0 0;font-size:14px;min-height:20px}
+#msg.ok{color:var(--ok)} #msg.err{color:var(--err)}
+.nota{font-size:13px;color:var(--suave);margin:8px 0 0}
+.oculto{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>Control de herramientas</h1>
+    <p class="sub">Depósito Arismendi · modelo con datos de ejemplo, no guarda nada</p>
+  </div>
+  <label class="rol">Ver como
+    <select id="rol" onchange="cambiarRol()">
+      <option value="OPERADOR">Operador</option>
+      <option value="ADMIN">Administrativo</option>
+    </select>
+  </label>
+</header>
+
+<section aria-labelledby="t-resumen">
+  <h2 id="t-resumen">Cuántas tengo por tipo</h2>
+  <div class="tabla-wrap">
+    <table>
+      <thead><tr>
+        <th>Tipo</th><th class="num">Total activas</th><th class="num">En depósito</th>
+        <th class="num">Con personal</th><th class="num">En mantenimiento</th><th class="num">De baja</th>
+      </tr></thead>
+      <tbody id="resumen"></tbody>
+    </table>
+  </div>
+  <p class="nota">El total no cuenta las dadas de baja. Tocá un tipo para filtrar el stock de abajo.</p>
+</section>
+
+<section aria-labelledby="t-pers">
+  <h2 id="t-pers">Herramientas a cargo de cada persona</h2>
+  <div class="tabla-wrap">
+    <table>
+      <thead><tr><th>Persona</th><th class="num">Herramientas</th><th>Obra</th><th class="num">La más antigua (días)</th></tr></thead>
+      <tbody id="personas"></tbody>
+    </table>
+  </div>
+  <p class="nota">Se arma sola con las herramientas que están con personal. Tocá una persona para ver el detalle.</p>
+</section>
+
+<section aria-labelledby="t-reg">
+  <h2 id="t-reg">Registrar movimiento</h2>
+  <div class="fila">
+    <input id="codigo" list="codigos" placeholder="Código interno, ej. MAR-002" aria-label="Código interno" style="min-width:230px">
+    <datalist id="codigos"></datalist>
+    <button class="primario" onclick="buscar()">Buscar</button>
+  </div>
+  <div id="ficha" class="ficha oculto">
+    <div class="cab">
+      <strong id="f-desc"></strong>
+      <span id="f-estado" class="tag"></span>
+    </div>
+    <p class="det" id="f-det"></p>
+    <div class="acciones" id="acciones"></div>
+    <div class="fila oculto" id="campos">
+      <input id="in-persona" placeholder="Persona responsable" aria-label="Persona responsable">
+      <input id="in-obra" placeholder="Obra destino" aria-label="Obra destino">
+      <input id="in-motivo" placeholder="Motivo" aria-label="Motivo" style="min-width:220px">
+      <select id="in-cond" aria-label="Condición al devolver">
+        <option value="">Condición al devolver</option><option>OK</option><option>Dañada</option>
+      </select>
+      <button class="primario" onclick="confirmar()">Confirmar</button>
+    </div>
+  </div>
+  <p id="msg" role="status"></p>
+</section>
+
+<section aria-labelledby="t-stock">
+  <h2 id="t-stock">Stock de herramientas</h2>
+  <div class="fila" style="margin-bottom:10px">
+    <select id="f-estado-sel" onchange="pintar()" aria-label="Filtrar por estado">
+      <option value="">Todos los estados</option>
+      <option>EN_DEPOSITO</option><option>CON_PERSONAL</option><option>EN_MANTENIMIENTO</option><option>BAJA</option>
+    </select>
+    <select id="f-tipo-sel" onchange="pintar()" aria-label="Filtrar por tipo"></select>
+    <input id="f-txt" oninput="pintar()" placeholder="Código, persona u obra" aria-label="Buscar" style="flex:1;min-width:180px">
+  </div>
+  <div class="tabla-wrap">
+    <table>
+      <thead><tr><th>Código</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Responsable</th><th>Obra</th><th>Último mov.</th></tr></thead>
+      <tbody id="stock"></tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="t-hist">
+  <h2 id="t-hist">Últimos movimientos</h2>
+  <div class="tabla-wrap">
+    <table>
+      <thead><tr><th>Fecha</th><th>Código</th><th>Acción</th><th>De</th><th>A</th><th>Persona</th><th>Obra</th><th>Motivo</th></tr></thead>
+      <tbody id="hist"></tbody>
+    </table>
+  </div>
+</section>
+
+</div>
+
+<script>
+var ETIQ = {SALIDA:'Entregar a persona',DEVOLUCION:'Registrar devolución',A_MANTENIMIENTO:'Enviar a mantenimiento',
+            DE_MANTENIMIENTO:'Reingresar a depósito',BAJA:'Dar de baja'};
+var ACC = {
+  SALIDA:{desde:['EN_DEPOSITO'],a:'CON_PERSONAL'},
+  DEVOLUCION:{desde:['CON_PERSONAL'],a:'EN_DEPOSITO'},
+  A_MANTENIMIENTO:{desde:['EN_DEPOSITO','CON_PERSONAL'],a:'EN_MANTENIMIENTO'},
+  DE_MANTENIMIENTO:{desde:['EN_MANTENIMIENTO'],a:'EN_DEPOSITO'},
+  BAJA:{desde:['EN_DEPOSITO','CON_PERSONAL','EN_MANTENIMIENTO'],a:'BAJA',admin:true}
+};
+var TIPOS = ['MARTILLO','TALADRO','AMOLADORA','NIVEL','PALA'];
+
+var data = [
+ {c:'MAR-001',t:'MARTILLO',d:'Martillo con mango de plástico',e:'EN_DEPOSITO',p:'',o:'',f:'24/10'},
+ {c:'MAR-002',t:'MARTILLO',d:'Martillo con mango de madera',e:'CON_PERSONAL',p:'Juan Pérez',o:'Palpalá',f:'25/10'},
+ {c:'MAR-003',t:'MARTILLO',d:'Martillo con mango de madera',e:'CON_PERSONAL',p:'Luis Gómez',o:'Centro',f:'26/10'},
+ {c:'MAR-004',t:'MARTILLO',d:'Martillo con mango de plástico',e:'EN_MANTENIMIENTO',p:'',o:'',f:'20/10'},
+ {c:'MAR-005',t:'MARTILLO',d:'Martillo con mango de madera',e:'BAJA',p:'',o:'',f:'15/09'},
+ {c:'TAL-001',t:'TALADRO',d:'Taladro percutor',e:'EN_DEPOSITO',p:'',o:'',f:'22/10'},
+ {c:'TAL-002',t:'TALADRO',d:'Taladro percutor',e:'CON_PERSONAL',p:'Juan Pérez',o:'Palpalá',f:'25/10'},
+ {c:'AMO-001',t:'AMOLADORA',d:'Amoladora angular 7"',e:'EN_DEPOSITO',p:'',o:'',f:'23/10'},
+ {c:'AMO-002',t:'AMOLADORA',d:'Amoladora angular 4 1/2"',e:'CON_PERSONAL',p:'Marcos Díaz',o:'Alto Comedero',f:'26/10'},
+ {c:'NIV-001',t:'NIVEL',d:'Nivel láser',e:'EN_MANTENIMIENTO',p:'',o:'',f:'20/10'},
+ {c:'PAL-001',t:'PALA',d:'Pala ancha',e:'EN_DEPOSITO',p:'',o:'',f:'18/10'},
+ {c:'PAL-002',t:'PALA',d:'Pala punta',e:'BAJA',p:'',o:'',f:'10/09'}
+];
+var hist = [
+ {f:'26/10 09:10',c:'MAR-003',a:'SALIDA',de:'EN_DEPOSITO',a2:'CON_PERSONAL',p:'Luis Gómez',o:'Centro',m:''},
+ {f:'25/10 08:30',c:'MAR-002',a:'SALIDA',de:'EN_DEPOSITO',a2:'CON_PERSONAL',p:'Juan Pérez',o:'Palpalá',m:''},
+ {f:'20/10 10:15',c:'NIV-001',a:'A_MANTENIMIENTO',de:'EN_DEPOSITO',a2:'EN_MANTENIMIENTO',p:'',o:'',m:'Descalibrado'}
+];
+var actual = null, accion = null, filtroTipo = '';
+
+function el(tag, txt, cls){ var n=document.createElement(tag); if(txt!==undefined) n.textContent=txt; if(cls) n.className=cls; return n; }
+function tag(est){ return el('span', est, 'tag '+est); }
+function esAdmin(){ return document.getElementById('rol').value==='ADMIN'; }
+function hoy(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0')};
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+
+function pintarResumen(){
+  var tb=document.getElementById('resumen'); tb.textContent='';
+  TIPOS.forEach(function(t){
+    var r={total:0,EN_DEPOSITO:0,CON_PERSONAL:0,EN_MANTENIMIENTO:0,BAJA:0};
+    data.forEach(function(h){ if(h.t===t){ r[h.e]++; if(h.e!=='BAJA') r.total++; } });
+    var tr=el('tr',undefined,'click'+(filtroTipo===t?' activo':''));
+    tr.tabIndex=0;
+    tr.onclick=function(){ filtroTipo = filtroTipo===t ? '' : t; document.getElementById('f-tipo-sel').value=filtroTipo; pintarResumen(); pintar(); };
+    tr.onkeydown=function(e){ if(e.key==='Enter') tr.onclick(); };
+    tr.appendChild(el('td',t));
+    [r.total,r.EN_DEPOSITO,r.CON_PERSONAL,r.EN_MANTENIMIENTO,r.BAJA].forEach(function(v){ tr.appendChild(el('td',v,'num')); });
+    tb.appendChild(tr);
+  });
+}
+function pintar(){
+  var est=document.getElementById('f-estado-sel').value;
+  var tip=document.getElementById('f-tipo-sel').value; filtroTipo=tip;
+  var q=document.getElementById('f-txt').value.toLowerCase();
+  var tb=document.getElementById('stock'); tb.textContent='';
+  data.filter(function(h){
+    return (!est||h.e===est)&&(!tip||h.t===tip)&&(!q||(h.c+' '+h.p+' '+h.o+' '+h.d).toLowerCase().indexOf(q)!==-1);
+  }).forEach(function(h){
+    var tr=el('tr');
+    tr.appendChild(el('td',h.c)); tr.appendChild(el('td',h.t)); tr.appendChild(el('td',h.d));
+    var td=el('td'); td.appendChild(tag(h.e)); tr.appendChild(td);
+    tr.appendChild(el('td',h.p||'-')); tr.appendChild(el('td',h.o||'-')); tr.appendChild(el('td',h.f));
+    tb.appendChild(tr);
+  });
+  pintarResumen(); pintarPersonas();
+}
+var abierta = '';
+function diasDesde(f){
+  var m=f.split(' ')[0].split('/');
+  var d=new Date(2026,parseInt(m[1],10)-1,parseInt(m[0],10));
+  return Math.max(0,Math.floor((new Date(2026,9,27).getTime()-d.getTime())/86400000));
+}
+function pintarPersonas(){
+  var g={};
+  data.forEach(function(h){ if(h.e==='CON_PERSONAL'){ (g[h.p]=g[h.p]||[]).push(h); } });
+  var nombres=Object.keys(g).sort(function(a,b){ return g[b].length-g[a].length; });
+  var tb=document.getElementById('personas'); tb.textContent='';
+  if(!nombres.length){ var v=el('tr'); var c=el('td','Nadie tiene herramientas a cargo.'); c.colSpan=4; v.appendChild(c); tb.appendChild(v); return; }
+  nombres.forEach(function(n){
+    var lista=g[n], obras=[], maxd=0;
+    lista.forEach(function(h){ if(obras.indexOf(h.o)===-1) obras.push(h.o); maxd=Math.max(maxd,diasDesde(h.f)); });
+    var tr=el('tr',undefined,'click'+(abierta===n?' activo':'')); tr.tabIndex=0;
+    tr.onclick=function(){ abierta = abierta===n ? '' : n; pintarPersonas(); };
+    tr.onkeydown=function(e){ if(e.key==='Enter') tr.onclick(); };
+    tr.appendChild(el('td',n)); tr.appendChild(el('td',lista.length,'num'));
+    tr.appendChild(el('td',obras.join(', '))); tr.appendChild(el('td',maxd,'num'));
+    tb.appendChild(tr);
+    if(abierta===n){
+      var dr=el('tr'); var dc=el('td'); dc.colSpan=4; dc.style.background='var(--fondo)';
+      lista.forEach(function(h){
+        dc.appendChild(el('div',h.c+' · '+h.d+' · '+h.o+' · desde '+h.f+' ('+diasDesde(h.f)+' días)'));
+      });
+      dr.appendChild(dc); tb.appendChild(dr);
+    }
+  });
+}
+function pintarHist(){
+  var tb=document.getElementById('hist'); tb.textContent='';
+  hist.slice(0,8).forEach(function(m){
+    var tr=el('tr');
+    [m.f,m.c,ETIQ[m.a],m.de,m.a2,m.p||'-',m.o||'-',m.m||'-'].forEach(function(v){ tr.appendChild(el('td',v)); });
+    tb.appendChild(tr);
+  });
+}
+function msg(t,tipo){ var m=document.getElementById('msg'); m.textContent=t; m.className=tipo||''; }
+
+function buscar(){
+  var cod=document.getElementById('codigo').value.trim().toUpperCase();
+  actual=data.filter(function(h){return h.c===cod})[0];
+  document.getElementById('campos').classList.add('oculto'); accion=null; msg('');
+  if(!actual){ document.getElementById('ficha').classList.add('oculto'); msg('No existe la herramienta '+cod+'.','err'); return; }
+  mostrarFicha();
+}
+function mostrarFicha(){
+  document.getElementById('ficha').classList.remove('oculto');
+  document.getElementById('f-desc').textContent=actual.d+' · '+actual.c;
+  var st=document.getElementById('f-estado'); st.textContent=actual.e; st.className='tag '+actual.e;
+  document.getElementById('f-det').textContent='Tipo: '+actual.t+' · Responsable: '+(actual.p||'-')+' · Obra: '+(actual.o||'-');
+  var cont=document.getElementById('acciones'); cont.textContent='';
+  Object.keys(ACC).filter(function(k){
+    return ACC[k].desde.indexOf(actual.e)!==-1 && (!ACC[k].admin||esAdmin());
+  }).forEach(function(k){
+    var b=el('button',ETIQ[k]); b.onclick=function(){ elegir(k,b); }; cont.appendChild(b);
+  });
+  if(!cont.children.length) cont.appendChild(el('span','Sin acciones disponibles para este estado.','sub'));
+}
+function elegir(k,btn){
+  accion=k; msg('');
+  Array.prototype.forEach.call(document.querySelectorAll('#acciones button'),function(b){b.classList.remove('sel')});
+  btn.classList.add('sel');
+  document.getElementById('campos').classList.remove('oculto');
+  var sal=k==='SALIDA', mot=(k==='A_MANTENIMIENTO'||k==='BAJA'), dev=k==='DEVOLUCION';
+  document.getElementById('in-persona').classList.toggle('oculto',!sal);
+  document.getElementById('in-obra').classList.toggle('oculto',!sal);
+  document.getElementById('in-motivo').classList.toggle('oculto',!mot);
+  document.getElementById('in-cond').classList.toggle('oculto',!dev);
+}
+function confirmar(){
+  if(!accion||!actual) return;
+  var pe=document.getElementById('in-persona').value.trim(), ob=document.getElementById('in-obra').value.trim(),
+      mo=document.getElementById('in-motivo').value.trim();
+  if(accion==='SALIDA' && (!pe||!ob)){ msg('Completá la persona y la obra destino.','err'); return; }
+  if((accion==='A_MANTENIMIENTO'||accion==='BAJA') && !mo){ msg('Completá el motivo.','err'); return; }
+  if(accion==='BAJA' && !confirm('La baja es definitiva. ¿Confirmás?')) return;
+  var ant=actual.e, fecha=hoy(), cod=actual.c;
+  hist.unshift({f:fecha,c:cod,a:accion,de:ant,a2:ACC[accion].a,p:pe||actual.p,o:ob||actual.o,m:mo});
+  actual.e=ACC[accion].a; actual.f=fecha.slice(0,5);
+  actual.p = accion==='SALIDA'?pe:''; actual.o = accion==='SALIDA'?ob:'';
+  ['in-persona','in-obra','in-motivo'].forEach(function(i){document.getElementById(i).value=''});
+  document.getElementById('in-cond').value='';
+  document.getElementById('campos').classList.add('oculto'); accion=null;
+  mostrarFicha(); pintar(); pintarHist();
+  msg('Movimiento registrado: '+cod+' ahora está '+actual.e+'.','ok');
+}
+function cambiarRol(){ if(actual) mostrarFicha(); msg(''); }
+
+(function init(){
+  var dl=document.getElementById('codigos'); data.forEach(function(h){ var o=document.createElement('option'); o.value=h.c; dl.appendChild(o); });
+  var s=document.getElementById('f-tipo-sel'); s.appendChild(new Option('Todos los tipos',''));
+  TIPOS.forEach(function(t){ s.appendChild(new Option(t,t)); });
+  document.getElementById('codigo').addEventListener('keydown',function(e){ if(e.key==='Enter') buscar(); });
+  pintar(); pintarHist();
+})();
+</script>
+</body>
+</html>
