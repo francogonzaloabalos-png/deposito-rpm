@@ -295,11 +295,11 @@
     writing-mode:vertical-rl; transform:rotate(180deg); font-size:2.9mm; letter-spacing:.7px;
   }
   .rotulo-editor-item{ background:#fff; border:1px solid #dce4ec; border-radius:9px; padding:10px; margin-bottom:8px; box-shadow:0 2px 8px rgba(30,42,56,.04); }
-  .rotulo-editor-grid{ display:grid; grid-template-columns:minmax(170px,1fr) minmax(150px,.72fr) 58px 30px; gap:7px; align-items:start; }
-  .rotulo-editor-grid input{ width:100%; padding:7px 8px; border:1px solid #cbd5df; border-radius:5px; font:inherit; font-size:13px; }
+  .rotulo-editor-grid{ display:grid; grid-template-columns:minmax(150px,1fr) minmax(130px,.72fr) 105px 58px 30px; gap:7px; align-items:start; }
+  .rotulo-editor-grid input, .rotulo-editor-grid select{ width:100%; padding:7px 8px; border:1px solid #cbd5df; border-radius:5px; font:inherit; font-size:13px; background:white; }
   .rotulo-editor-grid .r-item-subtitulo{ border-left:3px solid #0B5CAB; }
   .rotulo-campo-label{ display:block; font-size:10px; font-weight:800; color:#667788; letter-spacing:.45px; text-transform:uppercase; margin:0 0 4px; }
-  @media(max-width:680px){ .rotulo-editor-grid{ grid-template-columns:1fr 1fr 54px 30px; } }
+  @media(max-width:680px){ .rotulo-editor-grid{ grid-template-columns:1fr 1fr 1fr 54px 30px; } }
 
   /* ================= REFERENCIAS (título + lista de familias) — EXTENSIÓN NUEVA ================= */
   .ref-tag{
@@ -1291,6 +1291,7 @@ function rpmCrearItemCartel(item){
     '<div class="rotulo-editor-grid">' +
       '<label><span class="rotulo-campo-label">Título</span><input class="r-item-titulo r-item-texto" id="' + id + '" type="text" placeholder="Ej. COMPRA"></label>' +
       '<label><span class="rotulo-campo-label">Subtítulo opcional</span><input class="r-item-subtitulo" type="text" placeholder="Ej. HERRAMIENTAS · EQUIPOS"></label>' +
+      '<label><span class="rotulo-campo-label">Formato</span><select class="r-item-formato"><option value="">General</option><option value="horizontal">Horizontal</option><option value="vertical">Vertical</option></select></label>' +
       '<label><span class="rotulo-campo-label">Letra mm</span><input type="number" class="r-item-tamano" min="3" step="0.5" placeholder="Auto" title="Tamaño del título para este cartel. Vacío = automático."></label>' +
       '<button type="button" class="r-item-quitar" title="Quitar este cartel" style="margin-top:18px;border:1px solid #d4dbe2;background:white;border-radius:5px;width:30px;height:32px;cursor:pointer;font-size:16px;color:#a33;">×</button>' +
     '</div>';
@@ -1300,6 +1301,7 @@ function rpmCrearItemCartel(item){
   wrap.querySelector('.r-item-titulo').value = item.titulo !== undefined ? item.titulo : (lineasAnteriores.shift() || '');
   wrap.querySelector('.r-item-subtitulo').value = item.subtitulo !== undefined ? item.subtitulo : lineasAnteriores.join(' ');
   wrap.querySelector('.r-item-tamano').value = item.tamano || '';
+  wrap.querySelector('.r-item-formato').value = item.formato || '';
   wrap.querySelector('.r-item-quitar').addEventListener('click', () => {
     wrap.remove();
     generarRotulos();
@@ -1334,22 +1336,31 @@ function generarRotulos(){
     const titulo = fila.querySelector('.r-item-titulo').value.trim();
     const subtitulo = fila.querySelector('.r-item-subtitulo').value.trim();
     if(!titulo) return;
+
+    // Formato propio de este cartel (si está en "General", usa el selector global)
+    const formatoItem = fila.querySelector('.r-item-formato').value || formato;
+    const esVertical = formatoItem === 'vertical';
+    // Si el cartel tiene distinto formato que el general, se invierten ancho y alto
+    const mismo = formatoItem === formato;
+    const anchoItem = mismo ? ancho : alto;
+    const altoItem  = mismo ? alto  : ancho;
+
     const tamanoPropio = parseFloat(fila.querySelector('.r-item-tamano').value);
     let fuente;
     if(!isNaN(tamanoPropio) && tamanoPropio > 0){
-      fuente = tamanoPropio; // tamaño puntual de este cartel, tiene prioridad
+      fuente = tamanoPropio;
     } else if(modoFuente === 'auto'){
-      const anchoUtil = formato === 'vertical' ? alto - (subtitulo ? 12 : 0) : ancho;
-      const altoUtil = formato === 'vertical' ? ancho : alto * (subtitulo ? .68 : .86);
+      const anchoUtil = esVertical ? altoItem - 4 : anchoItem;
+      const altoUtil  = esVertical ? anchoItem - (subtitulo ? 12 : 0) : altoItem * (subtitulo ? .68 : .86);
       fuente = calcularFuenteAuto(titulo, anchoUtil, altoUtil);
     } else {
       fuente = fuenteManual;
     }
     const claseAlin = alineacion === 'izquierda' ? ' alinear-izq' : (alineacion === 'derecha' ? ' alinear-der' : '');
-    const claseFormato = formato === 'vertical' ? ' vertical' : '';
+    const claseFormato = esVertical ? ' vertical' : '';
     const sinSubtitulo = subtitulo ? '' : ' sin-subtitulo';
     out += `
-      <div class="nombre-tag diseno-moderno corte${claseAlin}${claseFormato}${sinSubtitulo}" style="width:${ancho}mm;height:${alto}mm;border:${marco}mm solid ${color};color:${color};font-family:${familia};">
+      <div class="nombre-tag diseno-moderno corte${claseAlin}${claseFormato}${sinSubtitulo}" style="width:${anchoItem}mm;height:${altoItem}mm;border:${marco}mm solid ${color};color:${color};font-family:${familia};">
         <div class="rotulo-contenido">
           <div class="rotulo-principal" style="font-size:${fuente}mm;">
             ${iconoRotuloSVG(icono, fuente*1.08, color)}
@@ -1629,7 +1640,8 @@ function rpmGuardarValores(){
     const items = Array.from(document.querySelectorAll('#r-lista-carteles .r-item-cartel')).map(f => ({
       titulo: f.querySelector('.r-item-titulo').value,
       subtitulo: f.querySelector('.r-item-subtitulo').value,
-      tamano: f.querySelector('.r-item-tamano').value
+      tamano: f.querySelector('.r-item-tamano').value,
+      formato: f.querySelector('.r-item-formato').value
     }));
     localStorage.setItem(RPM_STORAGE_ITEMS_KEY, JSON.stringify(items));
 
