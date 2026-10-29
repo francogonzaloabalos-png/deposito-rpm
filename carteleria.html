@@ -287,6 +287,9 @@
   .rotulo-linea{ flex-shrink:0; height:.55mm; background:currentColor; }
   .rotulo-separador{ flex-shrink:0; align-self:stretch; width:.55mm; background:currentColor; }
   .rotulo-grupo.sin-subtitulo .rotulo-principal{ padding-bottom:3mm; }
+  .rotulo-grupo.junto{ justify-content:center; }
+  .rotulo-grupo.junto .rotulo-principal{ flex:0 0 auto; padding-bottom:0; }
+  .nombre-tag.vertical .rotulo-grupo.junto .rotulo-principal{ padding-bottom:4mm; padding-right:0; }
   .nombre-tag.alinear-izq .rotulo-principal{ justify-content:flex-start; text-align:left; }
   .nombre-tag.alinear-der .rotulo-principal{ justify-content:flex-end; text-align:right; }
   .nombre-tag.vertical{ border-radius:3.5mm; }
@@ -596,6 +599,7 @@
               <option value="ninguno">Sin marcador</option>
             </select>
           </label>
+          <label>Distancia título-subtítulo (mm) <input type="number" id="r-sub-distancia" value="" min="0" step="0.5" placeholder="Auto"></label>
         </div>
       </div>
       </div>
@@ -1376,6 +1380,8 @@ function generarRotulos(){
   const subOpacidad = leerPct('r-sub-opacidad', 0.78);
   const lineaOpacidad = leerPct('r-linea-opacidad', 1);
   const lineaMostrar = document.getElementById('r-linea-mostrar').checked;
+  const subDist = parseFloat(document.getElementById('r-sub-distancia').value);
+  const juntar = !isNaN(subDist) && subDist >= 0;
   const marcadorSel = document.getElementById('r-sub-marcador').value;
   const marcadorTxt = marcadorSel === 'punto' ? '• ' : (marcadorSel === 'guion' ? '- ' : '');
   const listaSubs = txt => (txt || '').split('\n').map(s => s.trim()).filter(Boolean);
@@ -1425,7 +1431,7 @@ function generarRotulos(){
       return subs.map(s => `<div class="rotulo-sub-item">${marca}${escapeHTML(s)}</div>`).join('');
     };
     const armarGrupo = (tit, subs, fuente) => `
-        <div class="rotulo-grupo${subs.length ? '' : ' sin-subtitulo'}">
+        <div class="rotulo-grupo${subs.length ? '' : ' sin-subtitulo'}${subs.length && juntar ? ' junto' : ''}"${subs.length && juntar ? ` style="gap:${subDist}mm;"` : ''}>
           <div class="rotulo-principal" style="font-size:${fuente}mm;">
             ${iconoRotuloSVG(icono, fuente*1.08, color)}
             <div class="texto">${escapeHTML(tit)}</div>
@@ -1700,7 +1706,7 @@ const RPM_CAMPOS_A_GUARDAR = [
   'c-cols','c-filas','c-modo','c-direccion','c-ancho','c-alto','c-anchod','c-marco','c-color',
   'f-letras','f-rep','f-ancho','f-alto','f-marco','f-color',
   'e-cant','e-inicio','e-ancho','e-alto','e-fondo','e-franja',
-  'r-formato','r-ancho','r-alto','r-marco','r-color','r-fuente-familia','r-fuente-otra','r-modo-fuente','r-fuente-manual','r-alineacion','r-icono','r-sub-modo','r-sub-manual','r-sub-opacidad','r-linea-mostrar','r-linea-opacidad','r-sub-marcador',
+  'r-formato','r-ancho','r-alto','r-marco','r-color','r-fuente-familia','r-fuente-otra','r-modo-fuente','r-fuente-manual','r-alineacion','r-icono','r-sub-modo','r-sub-manual','r-sub-opacidad','r-linea-mostrar','r-linea-opacidad','r-sub-marcador','r-sub-distancia',
   'ref-ancho','ref-alto','ref-color-header','ref-color-franja','ref-dividir','ref-etiqueta1','ref-etiqueta2',
   'ref-marcador','ref-modo-fuente','ref-fuente-manual','ref-cuerpo-alineacion',
   'ref-titulo1-modo','ref-titulo1-tamano','ref-titulo1-alineacion',
