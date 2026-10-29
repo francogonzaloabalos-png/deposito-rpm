@@ -269,6 +269,38 @@
   .nombre-tag .icono{ flex-shrink:0; margin-right:2mm; }
   .nombre-tag .texto{ line-height:1.15; word-break:break-word; white-space:pre-line; }
 
+  /* Rótulos de dos niveles: pensados para leerse rápido desde el pasillo. */
+  .nombre-tag.diseno-moderno{
+    position:relative; overflow:hidden; padding:0; border-radius:3mm;
+    box-shadow:0 1.2mm 2.6mm rgba(15,35,55,.12);
+  }
+  .nombre-tag.diseno-moderno::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(135deg,rgba(255,255,255,.18),transparent 35%);
+  }
+  .rotulo-contenido{ position:relative; z-index:1; width:100%; height:100%; display:flex; flex-direction:column; }
+  .rotulo-principal{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; gap:2.4mm; padding:3mm 4mm 2mm; font-weight:900; letter-spacing:.45px; text-align:center; line-height:1.03; }
+  .rotulo-principal .texto{ white-space:pre-line; word-break:break-word; }
+  .rotulo-subtitulo{ flex-shrink:0; padding:1.8mm 4mm 2mm; border-top:.55mm solid currentColor; font-size:3.2mm; font-weight:800; letter-spacing:1.1px; line-height:1.1; text-align:center; text-transform:uppercase; opacity:.78; }
+  .rotulo-subtitulo:empty{ display:none; }
+  .nombre-tag.sin-subtitulo .rotulo-principal{ padding-bottom:3mm; }
+  .nombre-tag.alinear-izq .rotulo-principal{ justify-content:flex-start; text-align:left; }
+  .nombre-tag.alinear-der .rotulo-principal{ justify-content:flex-end; text-align:right; }
+  .nombre-tag.vertical{ border-radius:3.5mm; }
+  .nombre-tag.vertical .rotulo-contenido{ flex-direction:row; }
+  .nombre-tag.vertical .rotulo-principal{ padding:4mm 2mm; flex-direction:column; gap:2.4mm; }
+  .nombre-tag.vertical .rotulo-principal .texto{ writing-mode:vertical-rl; transform:rotate(180deg); line-height:1; white-space:normal; }
+  .nombre-tag.vertical .rotulo-subtitulo{
+    width:12mm; padding:3mm 1.6mm; border-top:0; border-left:.55mm solid currentColor;
+    writing-mode:vertical-rl; transform:rotate(180deg); font-size:2.9mm; letter-spacing:.7px;
+  }
+  .rotulo-editor-item{ background:#fff; border:1px solid #dce4ec; border-radius:9px; padding:10px; margin-bottom:8px; box-shadow:0 2px 8px rgba(30,42,56,.04); }
+  .rotulo-editor-grid{ display:grid; grid-template-columns:minmax(170px,1fr) minmax(150px,.72fr) 58px 30px; gap:7px; align-items:start; }
+  .rotulo-editor-grid input{ width:100%; padding:7px 8px; border:1px solid #cbd5df; border-radius:5px; font:inherit; font-size:13px; }
+  .rotulo-editor-grid .r-item-subtitulo{ border-left:3px solid #0B5CAB; }
+  .rotulo-campo-label{ display:block; font-size:10px; font-weight:800; color:#667788; letter-spacing:.45px; text-transform:uppercase; margin:0 0 4px; }
+  @media(max-width:680px){ .rotulo-editor-grid{ grid-template-columns:1fr 1fr 54px 30px; } }
+
   /* ================= REFERENCIAS (título + lista de familias) — EXTENSIÓN NUEVA ================= */
   .ref-tag{
     border-radius: 4mm;
@@ -453,7 +485,7 @@
       <div class="grupo-controles">
         <p class="grupo-titulo">Contenido</p>
         <div class="fila-controles">
-          <label style="width:100%;max-width:520px;">Texto de cada cartel (podés escribir varias líneas dentro de uno mismo, ej. nombre arriba y código/año abajo)
+          <label style="width:100%;max-width:650px;">Cada cartel tiene un título principal y, si hace falta, un subtítulo debajo. Así queda más ordenado y legible.
             <div id="r-lista-carteles"></div>
             <button type="button" class="sub-btn" id="r-agregar-cartel" style="margin-top:4px;width:fit-content;">+ Agregar cartel</button>
           </label>
@@ -463,6 +495,13 @@
       <div class="grupo-controles">
         <p class="grupo-titulo">Tamaño del cartel</p>
         <div class="fila-controles">
+          <label>Formato
+            <select id="r-formato">
+              <option value="horizontal">Horizontal · título + subtítulo</option>
+              <option value="vertical">Vertical · lectura de abajo hacia arriba</option>
+            </select>
+            <small style="font-weight:normal;color:#667788;max-width:175px;">Para vertical: sugerido 35–45 mm de ancho y 100–160 mm de alto.</small>
+          </label>
           <label>Ancho (mm) <input type="number" id="r-ancho" value="90" min="30"></label>
           <label>Alto (mm) <input type="number" id="r-alto" value="40" min="20"></label>
           <label>Grosor de marco (mm) <input type="number" id="r-marco" value="2.6" min="0" step="0.2"></label>
@@ -1247,16 +1286,19 @@ function rpmCrearItemCartel(item){
   rpmContadorCarteles++;
   const id = 'r-item-' + rpmContadorCarteles;
   const wrap = document.createElement('div');
-  wrap.className = 'r-item-cartel';
-  wrap.style.cssText = 'display:flex;gap:6px;align-items:flex-start;margin-bottom:6px;';
+  wrap.className = 'r-item-cartel rotulo-editor-item';
   wrap.innerHTML =
-    '<textarea class="r-item-texto" id="' + id + '" rows="2" ' +
-    'style="flex:1;padding:6px 8px;font-size:13px;border:1px solid #ccc;border-radius:4px;font-family:inherit;resize:vertical;"></textarea>' +
-    '<input type="number" class="r-item-tamano" min="3" step="0.5" placeholder="auto" title="Tamaño de letra propio de este cartel, en mm. Vacío = usa el tamaño general." ' +
-    'style="width:56px;padding:6px 4px;font-size:12px;border:1px solid #ccc;border-radius:4px;">' +
-    '<button type="button" class="r-item-quitar" title="Quitar este cartel" ' +
-    'style="border:1px solid #ccc;background:white;border-radius:4px;width:28px;height:32px;cursor:pointer;font-size:15px;color:#a33;flex-shrink:0;">×</button>';
-  wrap.querySelector('.r-item-texto').value = item.texto || '';
+    '<div class="rotulo-editor-grid">' +
+      '<label><span class="rotulo-campo-label">Título</span><input class="r-item-titulo r-item-texto" id="' + id + '" type="text" placeholder="Ej. COMPRA"></label>' +
+      '<label><span class="rotulo-campo-label">Subtítulo opcional</span><input class="r-item-subtitulo" type="text" placeholder="Ej. HERRAMIENTAS · EQUIPOS"></label>' +
+      '<label><span class="rotulo-campo-label">Letra mm</span><input type="number" class="r-item-tamano" min="3" step="0.5" placeholder="Auto" title="Tamaño del título para este cartel. Vacío = automático."></label>' +
+      '<button type="button" class="r-item-quitar" title="Quitar este cartel" style="margin-top:18px;border:1px solid #d4dbe2;background:white;border-radius:5px;width:30px;height:32px;cursor:pointer;font-size:16px;color:#a33;">×</button>' +
+    '</div>';
+  // Compatibilidad con los rótulos guardados antes de incorporar el subtítulo.
+  const textoAnterior = item.texto || '';
+  const lineasAnteriores = textoAnterior.split('\n');
+  wrap.querySelector('.r-item-titulo').value = item.titulo !== undefined ? item.titulo : (lineasAnteriores.shift() || '');
+  wrap.querySelector('.r-item-subtitulo').value = item.subtitulo !== undefined ? item.subtitulo : lineasAnteriores.join(' ');
   wrap.querySelector('.r-item-tamano').value = item.tamano || '';
   wrap.querySelector('.r-item-quitar').addEventListener('click', () => {
     wrap.remove();
@@ -1284,26 +1326,37 @@ function generarRotulos(){
   const fuenteManual = parseFloat(document.getElementById('r-fuente-manual').value) || 8;
   const alineacion = document.getElementById('r-alineacion').value;
   const icono = document.getElementById('r-icono').value;
+  const formato = document.getElementById('r-formato').value;
 
   const filas = Array.from(document.querySelectorAll('#r-lista-carteles .r-item-cartel'));
   let out = '';
   filas.forEach(fila => {
-    const texto = fila.querySelector('.r-item-texto').value.trim();
-    if(!texto) return;
+    const titulo = fila.querySelector('.r-item-titulo').value.trim();
+    const subtitulo = fila.querySelector('.r-item-subtitulo').value.trim();
+    if(!titulo) return;
     const tamanoPropio = parseFloat(fila.querySelector('.r-item-tamano').value);
     let fuente;
     if(!isNaN(tamanoPropio) && tamanoPropio > 0){
       fuente = tamanoPropio; // tamaño puntual de este cartel, tiene prioridad
     } else if(modoFuente === 'auto'){
-      fuente = calcularFuenteAuto(texto, ancho, alto);
+      const anchoUtil = formato === 'vertical' ? alto - (subtitulo ? 12 : 0) : ancho;
+      const altoUtil = formato === 'vertical' ? ancho : alto * (subtitulo ? .68 : .86);
+      fuente = calcularFuenteAuto(titulo, anchoUtil, altoUtil);
     } else {
       fuente = fuenteManual;
     }
     const claseAlin = alineacion === 'izquierda' ? ' alinear-izq' : (alineacion === 'derecha' ? ' alinear-der' : '');
+    const claseFormato = formato === 'vertical' ? ' vertical' : '';
+    const sinSubtitulo = subtitulo ? '' : ' sin-subtitulo';
     out += `
-      <div class="nombre-tag corte${claseAlin}" style="width:${ancho}mm;height:${alto}mm;border:${marco}mm solid ${color};color:${color};font-family:${familia};">
-        ${iconoRotuloSVG(icono, fuente*1.3, color)}
-        <div class="texto" style="font-size:${fuente}mm;">${escapeHTML(texto)}</div>
+      <div class="nombre-tag diseno-moderno corte${claseAlin}${claseFormato}${sinSubtitulo}" style="width:${ancho}mm;height:${alto}mm;border:${marco}mm solid ${color};color:${color};font-family:${familia};">
+        <div class="rotulo-contenido">
+          <div class="rotulo-principal" style="font-size:${fuente}mm;">
+            ${iconoRotuloSVG(icono, fuente*1.08, color)}
+            <div class="texto">${escapeHTML(titulo)}</div>
+          </div>
+          <div class="rotulo-subtitulo">${escapeHTML(subtitulo)}</div>
+        </div>
       </div>`;
   });
   document.getElementById('sheet-rotulos').innerHTML = out;
@@ -1555,7 +1608,7 @@ const RPM_CAMPOS_A_GUARDAR = [
   'c-cols','c-filas','c-modo','c-direccion','c-ancho','c-alto','c-anchod','c-marco','c-color',
   'f-letras','f-rep','f-ancho','f-alto','f-marco','f-color',
   'e-cant','e-inicio','e-ancho','e-alto','e-fondo','e-franja',
-  'r-ancho','r-alto','r-marco','r-color','r-fuente-familia','r-fuente-otra','r-modo-fuente','r-fuente-manual','r-alineacion','r-icono',
+  'r-formato','r-ancho','r-alto','r-marco','r-color','r-fuente-familia','r-fuente-otra','r-modo-fuente','r-fuente-manual','r-alineacion','r-icono',
   'ref-ancho','ref-alto','ref-color-header','ref-color-franja','ref-dividir','ref-etiqueta1','ref-etiqueta2',
   'ref-marcador','ref-modo-fuente','ref-fuente-manual','ref-cuerpo-alineacion',
   'ref-titulo1-modo','ref-titulo1-tamano','ref-titulo1-alineacion',
@@ -1574,7 +1627,8 @@ function rpmGuardarValores(){
     localStorage.setItem(RPM_STORAGE_KEY, JSON.stringify(datos));
 
     const items = Array.from(document.querySelectorAll('#r-lista-carteles .r-item-cartel')).map(f => ({
-      texto: f.querySelector('.r-item-texto').value,
+      titulo: f.querySelector('.r-item-titulo').value,
+      subtitulo: f.querySelector('.r-item-subtitulo').value,
       tamano: f.querySelector('.r-item-tamano').value
     }));
     localStorage.setItem(RPM_STORAGE_ITEMS_KEY, JSON.stringify(items));
@@ -1698,6 +1752,7 @@ function rpmGuardarPreset(i){
   if(nombre === null) return; // canceló, o el navegador bloqueó el cuadro
   rpmPresets[i] = {
     nombre: nombre.trim() || ('Diseño ' + (i+1)),
+    formato: document.getElementById('r-formato').value,
     ancho: document.getElementById('r-ancho').value,
     alto: document.getElementById('r-alto').value,
     marco: document.getElementById('r-marco').value,
@@ -1716,6 +1771,7 @@ function rpmGuardarPreset(i){
 function rpmCargarPreset(i){
   const p = rpmPresets[i];
   if(!p) return;
+  document.getElementById('r-formato').value = p.formato || 'horizontal';
   document.getElementById('r-ancho').value = p.ancho;
   document.getElementById('r-alto').value = p.alto;
   document.getElementById('r-marco').value = p.marco;
@@ -1807,76 +1863,5 @@ generarRotulos();
 generarReferencias();
 </script>
 <script src="conexion-protegida.js"></script>
-  <!-- AUTO MAYUSCULAS - RPM CONSTRUCCIONES -->
-  <style>
-    input:not([type="password"]):not([type="email"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not(.no-mayus),
-    textarea:not(.no-mayus),
-    select:not(.no-mayus),
-    select:not(.no-mayus) option {
-      text-transform: uppercase !important;
-    }
-  </style>
-  <script>
-    (function () {
-      function convertirElemento(el) {
-        if (!el || !el.matches) return;
-        if (el.matches("input:not([type='password']):not([type='email']):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']):not(.no-mayus), textarea:not(.no-mayus)")) {
-          var upper = (el.value || '').toUpperCase();
-          if (el.value !== upper) {
-            var start = el.selectionStart;
-            var end = el.selectionEnd;
-            el.value = upper;
-            if (el.setSelectionRange && start !== null && end !== null) {
-              try { el.setSelectionRange(start, end); } catch (_) {}
-            }
-          }
-        }
-      }
-      document.addEventListener("input", function (e) { convertirElemento(e.target); }, true);
-      document.addEventListener("change", function (e) { convertirElemento(e.target); }, true);
-
-      function mayusPayloadCliente(obj, key) {
-        if (obj === null || obj === undefined) return obj;
-        if (typeof obj === 'string') {
-          var k = String(key || '').toLowerCase();
-          if (['token','idtoken','_txid','firma_base64','foto_base64','fotos_base64','imagen_base64','base64','imagen','foto','url','email','accion','action'].indexOf(k) !== -1) {
-            return obj;
-          }
-          if (/^data:image\//i.test(obj) || /^https?:\/\//i.test(obj)) return obj;
-          return obj.trim().toUpperCase();
-        }
-        if (Array.isArray(obj)) {
-          var kArr = String(key || '').toLowerCase();
-          if (['fotos_base64','base64','imagenes','fotos'].indexOf(kArr) !== -1) return obj;
-          return obj.map(function(item) { return mayusPayloadCliente(item, key); });
-        }
-        if (typeof obj === 'object') {
-          var res = {};
-          for (var p in obj) {
-            if (Object.prototype.hasOwnProperty.call(obj, p)) {
-              res[p] = mayusPayloadCliente(obj[p], p);
-            }
-          }
-          return res;
-        }
-        return obj;
-      }
-
-      if (typeof window.fetch === 'function') {
-        var _fetchOrig = window.fetch;
-        window.fetch = function(url, init) {
-          if (init && init.body && typeof init.body === 'string') {
-            try {
-              var parsed = JSON.parse(init.body);
-              if (parsed && typeof parsed === 'object') {
-                init.body = JSON.stringify(mayusPayloadCliente(parsed));
-              }
-            } catch (_) {}
-          }
-          return _fetchOrig.apply(this, arguments);
-        };
-      }
-    })();
-  </script>
 </body>
 </html>
