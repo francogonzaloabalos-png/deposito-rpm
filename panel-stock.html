@@ -54,6 +54,17 @@
             background: var(--accent-soft);
         }
 
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
         .app {
             max-width: 1320px;
             margin: 0 auto;
@@ -6092,6 +6103,14 @@
             toggle.addEventListener('click', () => setSideCollapsed(!document.body.classList.contains('side-collapsed')));
             document.getElementById('sideLogout').addEventListener('click', () => document.getElementById('btnLogout').click());
         })();
+
+        // Evita que la rueda del mouse modifique los campos numéricos
+        document.addEventListener('wheel', function (e) {
+            const el = e.target;
+            if (el && el.tagName === 'INPUT' && el.type === 'number' && document.activeElement === el) {
+                el.blur(); // le saca el foco: el valor no cambia y la página sigue scrolleando normal
+            }
+        }, { passive: true, capture: true });
 
         // Inicializar puntos con tema por defecto al cargar
         applyTheme('maestroSlate');
