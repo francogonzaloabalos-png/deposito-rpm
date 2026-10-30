@@ -1468,6 +1468,7 @@
     }
 </style>
 <style id="glassStyles">
+
     /* ---------- EFECTO CRISTAL (GLASS) ---------- */
     :root{
         --glass-bg:color-mix(in srgb,var(--bg-elev) 50%,transparent);
@@ -1679,6 +1680,9 @@
     .glass-btn i{font-size:12px}
     .glass-btn-accent{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 35%,transparent)}
     .glass-btn-accent:hover{background:color-mix(in srgb,var(--accent) 12%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+
+    /* Rendimiento: sin desenfoque en superficies grandes */
+    .table-wrap, .filter-panel, .toolbar, .stat, .side { backdrop-filter: none; -webkit-backdrop-filter: none; }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -2635,6 +2639,11 @@
             }
         }
 
+        function renderMovSegunPestana() {
+            if (state.activeTab === 'mov') renderMov();
+            else if (state.activeTab === 'reporte') renderReporteSalidas();
+        }
+
         let solicitudBusquedaMovimientos = 0;
         async function buscarMovimientosServidor(q, tipo = '') {
             const solicitud = ++solicitudBusquedaMovimientos;
@@ -2645,24 +2654,21 @@
             if (q.length < 3 && !cargarTodasLasSalidas) {
                 state.movExtra = [];
                 state.mov = fusionarMovimientos(state.movBase, state.movExtra);
-                renderMov();
-                renderReporteSalidas();
+                renderMovSegunPestana();
                 return;
             }
 
             // Mostrar de inmediato lo que ya está cargado mientras responde la búsqueda histórica.
             state.movExtra = [];
             state.mov = fusionarMovimientos(state.movBase, state.movExtra);
-            renderMov();
-            renderReporteSalidas();
+            renderMovSegunPestana();
 
             try {
                 const data = await apiBuscarMovimientos(q, tipo);
                 if (solicitud !== solicitudBusquedaMovimientos) return;
                 state.movExtra = data.movimientos || [];
                 state.mov = fusionarMovimientos(state.movBase, state.movExtra);
-                renderMov();
-                renderReporteSalidas();
+                renderMovSegunPestana();
                 if (data.truncado) {
                     showToast('La búsqueda encontró más de 5000 movimientos; se muestran los 5000 más recientes.', true);
                 }
@@ -2823,7 +2829,7 @@
                     movProductInfoFastCache = new WeakMap();
                     const movimientosActuales = state.mov;
                     precalentarMovimientos(movimientosActuales, () => {
-                        if (state.mov === movimientosActuales) renderAll();
+                        if (state.mov === movimientosActuales && (state.activeTab === 'mov' || state.activeTab === 'reporte')) renderAll();
                     });
                 }
 
@@ -3316,7 +3322,7 @@
                 entries.forEach(entry => {
                     if (!entry.isIntersecting) return;
                     const img = entry.target;
-                    if (img.dataset.full && !img.hasAttribute('src')) img.src = img.dataset.full;
+                    if (img.dataset.full && !img.hasAttribute('src')) img.src = img.dataset.full.replace('sz=w1000', 'sz=w200');
                     stockImageObserver.unobserve(img);
                 });
             }, { rootMargin: '240px 0px' })
@@ -3414,7 +3420,7 @@
             tr.querySelectorAll('.thumb').forEach(img => {
                 img.addEventListener('click', () => openLightbox(img.dataset.full));
                 if (stockImageObserver) stockImageObserver.observe(img);
-                else if (img.dataset.full) img.src = img.dataset.full;
+                else if (img.dataset.full) img.src = img.dataset.full.replace('sz=w1000', 'sz=w200');
             });
         }
 
@@ -5465,11 +5471,19 @@
 
         function renderAll() {
             renderStats();
-            populateStockProductoFilter();
-            populateMovFamiliaFilter();
-            populateMovProductoFilter();
-            renderToolsSummary();
-            if (state.activeTab === 'stock') renderStock(); else if (state.activeTab === 'herramientas') renderHerramientas(); else if (state.activeTab === 'reporte') renderReporteSalidas(); else renderMov();
+            if (state.activeTab === 'stock') {
+                populateStockProductoFilter();
+                renderStock();
+            } else if (state.activeTab === 'herramientas') {
+                renderToolsSummary();
+                renderHerramientas();
+            } else if (state.activeTab === 'reporte') {
+                renderReporteSalidas();
+            } else {
+                populateMovFamiliaFilter();
+                populateMovProductoFilter();
+                renderMov();
+            }
             window.dispatchEvent(new Event('tableRendered'));
         }
 
