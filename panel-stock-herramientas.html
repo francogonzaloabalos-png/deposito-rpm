@@ -1911,7 +1911,7 @@
         <div id="panel-herramientas" style="display:none;">
             <section class="tools-summary-card" aria-labelledby="tools-summary-title">
                 <div class="tools-summary-head"><div><div class="brand-eyebrow">Control individual</div><h2 id="tools-summary-title">Herramientas</h2></div></div>
-                <div class="table-scroll"><table class="tools-table"><thead><tr><th>Tipo</th><th class="num">Stock total</th><th class="num">En depósito</th><th class="num">Con personal</th><th class="num">Mantenimiento</th><th class="num">Baja</th></tr></thead><tbody id="toolsSummaryBody"></tbody></table></div>
+                <div class="table-scroll" style="max-height:340px;overflow-y:auto;"><table class="tools-table"><thead><tr><th>Tipo</th><th class="num">Stock total</th><th class="num">En depósito</th><th class="num">Con personal</th><th class="num">Mantenimiento</th><th class="num">Baja</th></tr></thead><tbody id="toolsSummaryBody"></tbody></table></div>
             </section>
             <div class="tools-page-head"><div><div class="brand-eyebrow">Trazabilidad individual</div><div class="brand-title">Gestión de herramientas</div><p>Entrega, devolución, mantenimiento, baja e historial por cada unidad.</p></div></div>
             <div class="stats" id="toolsKpis"></div>
@@ -2368,7 +2368,7 @@
 
         auth.onAuthStateChanged(user => {
             document.getElementById('loginOverlay').style.display = user ? 'none' : 'flex';
-            if (user) { cargarTodo(false); }
+            if (user) { cargarTodo(false); cargarHerramientas(); }
             else { state.stock = []; state.mov = []; renderAll(); }
         });
 
@@ -2471,7 +2471,75 @@
         function renderPersonasHerramientas() { const groups={}; state.herramientas.filter(h=>h.estado==='CON_PERSONAL').forEach(h=>{const k=h.responsable||'SIN RESPONSABLE'; (groups[k]||(groups[k]={cantidad:0,obras:new Set()})).cantidad++; groups[k].obras.add(h.obra||'—');}); const rows=Object.entries(groups); document.getElementById('toolsPeopleBody').innerHTML=rows.length?rows.map(([p,x])=>`<tr><td>${escTool(p)}</td><td class="num">${x.cantidad}</td><td>${escTool([...x.obras].join(', '))}</td></tr>`).join(''):'<tr><td colspan="3" class="tools-empty">Nadie tiene herramientas a cargo.</td></tr>'; }
         function renderHistorialHerramientas() { const rows=state.herramientasMov.slice(0,12); document.getElementById('toolsHistoryBody').innerHTML=rows.length?rows.map(m=>`<tr><td>${escTool(m.fecha)}</td><td>${escTool(m.codigo)}</td><td>${escTool(m.accion)}</td><td>${escTool(m.responsable||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.motivo||'—')}</td></tr>`).join(''):'<tr><td colspan="6" class="tools-empty">Todavía no hay movimientos registrados.</td></tr>'; }
         function renderKpisHerramientas() { const a=state.herramientas.filter(h=>h.estado!=='BAJA'); const k=[['Activas',a.length,'#4ade80'],['En depósito',a.filter(h=>h.estado==='EN_DEPOSITO').length,'#60a5fa'],['Con personal',a.filter(h=>h.estado==='CON_PERSONAL').length,'#f59e0b'],['Mantenimiento',a.filter(h=>h.estado==='EN_MANTENIMIENTO').length,'#f87171']]; document.getElementById('toolsKpis').innerHTML=k.map(x=>`<div class="stat"><div class="stat-label">${x[0]}</div><div class="stat-num" style="color:${x[2]}">${x[1]}</div></div>`).join(''); }
-        function gestionarHerramienta(codigo) { const h=state.herramientas.find(x=>x.codigo===codigo); if(!h)return; const opciones=h.estado==='EN_DEPOSITO'?'1 Entregar\n2 Enviar a mantenimiento\n3 Dar de baja':h.estado==='CON_PERSONAL'?'1 Registrar devolución\n2 Enviar a mantenimiento\n3 Dar de baja':h.estado==='EN_MANTENIMIENTO'?'1 Reingresar a depósito\n2 Dar de baja':''; const pick=prompt(`${h.codigo} · ${h.descripcion}\nEstado: ${estadoTool(h.estado)}\n\n${opciones}\n\nElegí una opción:`); if(!pick)return; let accion='', estado=''; if(h.estado==='EN_DEPOSITO'&&pick==='1'){accion='SALIDA';estado='CON_PERSONAL';} if(h.estado==='EN_DEPOSITO'&&pick==='2'){accion='A_MANTENIMIENTO';estado='EN_MANTENIMIENTO';} if(h.estado==='CON_PERSONAL'&&pick==='1'){accion='DEVOLUCION';estado='EN_DEPOSITO';} if(h.estado==='CON_PERSONAL'&&pick==='2'){accion='A_MANTENIMIENTO';estado='EN_MANTENIMIENTO';} if(h.estado==='EN_MANTENIMIENTO'&&pick==='1'){accion='DE_MANTENIMIENTO';estado='EN_DEPOSITO';} if(pick==='3'||(h.estado==='EN_MANTENIMIENTO'&&pick==='2')){accion='BAJA';estado='BAJA';} if(!accion)return alert('Opción inválida.'); let responsable='',obra='',motivo=''; if(accion==='SALIDA'){responsable=prompt('Persona responsable:')||''; obra=prompt('Obra destino:')||''; if(!responsable||!obra)return alert('La entrega requiere responsable y obra.');} if(['A_MANTENIMIENTO','BAJA'].includes(accion)){motivo=prompt('Motivo:')||''; if(!motivo)return alert('El movimiento requiere un motivo.');} state.herramientasMov.unshift({fecha:fechaTool(),codigo:h.codigo,accion,responsable:responsable||h.responsable,obra:obra||h.obra,motivo}); h.estado=estado; h.responsable=accion==='SALIDA'?responsable:''; h.obra=accion==='SALIDA'?obra:''; h.ultimo_movimiento=fechaTool(); guardarHerramientasLocales(); renderToolsSummary(); renderHerramientas(); }
+        function mapearEstadoTool(u) {
+            if (u.baja) return 'BAJA';
+            if (u.poder) return 'CON_PERSONAL';
+            const enDeposito = String(u.lugar || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').indexOf('DEPOSITO') === 0;
+            return (u.disp && enDeposito) ? 'EN_DEPOSITO' : 'EN_MANTENIMIENTO';
+        }
+
+        async function cargarHerramientas() {
+            if (isDemo || !auth.currentUser) return;
+            try {
+                const token = encodeURIComponent(await getIdToken());
+                const res = await fetch(`${CONFIG.WEB_APP_URL}?action=herr-datos&token=${token}&_=${Date.now()}`, { cache: 'no-store' });
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error || 'Error cargando herramientas');
+                state.herramientas = (data.unidades || []).map(u => ({
+                    codigo: u.codigo,
+                    tipo: u.tipo || 'SIN TIPO',
+                    descripcion: [u.detalle, u.marca].filter(Boolean).join(' · '),
+                    estado: mapearEstadoTool(u),
+                    responsable: u.poder || '',
+                    obra: '',
+                    ultimo_movimiento: u.lugar || ''
+                }));
+                renderToolsSummary();
+                renderHerramientas();
+            } catch (e) {
+                console.error('Error cargando herramientas:', e);
+                showToast('No se pudieron cargar las herramientas: ' + e.message, true);
+            }
+        }
+
+        async function gestionarHerramienta(codigo) {
+            const h = state.herramientas.find(x => x.codigo === codigo);
+            if (!h) return;
+            let payload, accion;
+
+            if (h.estado === 'EN_DEPOSITO') {
+                const responsable = (prompt(`${h.codigo} · ${h.descripcion}\n\nPersona que se la lleva:`) || '').trim().toUpperCase();
+                if (!responsable) return;
+                const obra = (prompt('Obra / destino:') || '').trim().toUpperCase();
+                if (!obra) return alert('La entrega requiere obra o destino.');
+                accion = 'SALIDA';
+                payload = { accion: 'herr-movimiento', tipo_movimiento: 'SALIDA', responsable, obra, observaciones: '',
+                            items: [{ codigos: [h.codigo] }] };
+            } else if (h.estado === 'CON_PERSONAL') {
+                const pick = prompt(`${h.codigo} · ${h.descripcion}\nLa tiene: ${h.responsable}\n\nEstado en que vuelve:\n1 APTO\n2 NO APTO`);
+                if (!pick) return;
+                const estado = pick.trim() === '1' ? 'APTO' : (pick.trim() === '2' ? 'NO APTO' : '');
+                if (!estado) return alert('Opción inválida.');
+                accion = 'DEVOLUCION';
+                payload = { accion: 'herr-movimiento', tipo_movimiento: 'DEVOLUCIÓN', responsable: h.responsable, obra: 'DEPÓSITO', observaciones: '',
+                            items: [{ lugar: 'DEPÓSITO', ubic: { deposito: '', estante: '', columna: '', fila: '' },
+                                    codigos: [{ codigo: h.codigo, estado }] }] };
+            } else {
+                return alert(`${h.codigo} no se puede entregar ni devolver desde acá (lugar: ${h.ultimo_movimiento || 'sin indicar'}). Corregilo en la hoja "Unidades Herramientas".`);
+            }
+
+            try {
+                const r = await apiPostSeguro(payload);
+                if (!r || !r.ok) return alert('No se guardó: ' + ((r && r.error) || 'error desconocido'));
+                state.herramientasMov.unshift({ fecha: fechaTool(), codigo: h.codigo, accion,
+                    responsable: payload.responsable, obra: payload.obra, motivo: '' });
+                showToast(`${h.codigo}: ${accion === 'SALIDA' ? 'entrega' : 'devolución'} registrada ✓`);
+                await cargarHerramientas();
+            } catch (e) {
+                alert('No se pudo confirmar el movimiento. Revisá la hoja "Movimientos Herramientas" antes de repetirlo.');
+            }
+        }
+
         function abrirHerramientas(){ document.querySelector('.side-btn[data-side-tab="herramientas"]').click(); }
 
         // ============================================================
@@ -2989,7 +3057,7 @@
 
         function stockFiltrado() {
             const ui = state.stockUi;
-            let list = zonaFiltrado(state.stock).concat(!state.zona && !state.dep ? herramientasComoStock() : []);
+            let list = zonaFiltrado(state.stock);
             if (ui.familia) list = list.filter(p => normalizeText(p.familia) === normalizeText(ui.familia));
             if (ui.estado) list = list.filter(p => p.estado === ui.estado);
             if (ui.producto) list = list.filter(p => p.id === ui.producto);
@@ -5819,7 +5887,7 @@
         wireSortHeaders('stickyStockTable', state.stockUi, renderStock);
         wireSortHeaders('stickyMovTable', state.movUi, renderMov);
 
-        document.getElementById('btnRefresh').addEventListener('click', () => cargarTodo(false));
+        document.getElementById('btnRefresh').addEventListener('click', () => { cargarTodo(false); cargarHerramientas(); });
         document.getElementById('btnExport').addEventListener('click', () => exportExcel('auto'));
         document.getElementById('btnExportAll').addEventListener('click', () => exportExcel('todos'));
 
@@ -5905,7 +5973,6 @@
 
         document.getElementById('lightbox').addEventListener('click', closeLightbox);
 
-        cargarHerramientasLocales();
         renderToolsSummary();
         document.getElementById('toolSearch').addEventListener('input', e => { state.herramientasUi.search=e.target.value; renderHerramientas(); });
         document.getElementById('toolEstadoFilter').addEventListener('change', e => { state.herramientasUi.estado=e.target.value; renderHerramientas(); });
