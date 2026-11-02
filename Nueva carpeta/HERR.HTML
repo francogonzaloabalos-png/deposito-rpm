@@ -1938,7 +1938,17 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             <div class="stats" id="toolsKpis"></div>
             <section class="table-wrap tools-section" id="toolsTraceSection"><div class="tools-section-title"><div><strong>Buscar herramienta y ver su trazabilidad</strong><div class="tools-report-note">Buscá por código, nombre, persona u obra para ver dónde está y todos sus movimientos.</div></div></div><div class="tools-report-controls"><input id="toolTraceSearch" list="toolTraceCodes" type="search" placeholder="Código, herramienta, persona u obra"><datalist id="toolTraceCodes"></datalist></div><div id="toolsTraceResults" class="tools-trace-results"><p class="tools-report-note">Escribí al menos 2 caracteres para buscar.</p></div></section>
             <section class="table-wrap tools-section" id="toolsPeopleSection"><div class="tools-section-title"><div><strong>Herramientas a cargo de cada persona</strong><div class="tools-report-note">Seleccioná una persona para ver sus herramientas, la obra y desde cuándo las tiene.</div></div></div><div class="table-scroll"><table class="tools-table"><thead><tr><th>Persona</th><th class="num">Herramientas</th><th>Obra</th><th class="num">La más antigua (días)</th></tr></thead><tbody id="toolsPeopleBody"></tbody></table></div></section>
-            <section class="table-wrap tools-section" id="toolsQuickSection"><div class="tools-section-title"><div><strong>Registrar movimiento</strong><div class="tools-report-note">Ingresá el código y continuá con las opciones habituales de entrega o devolución.</div></div></div><div class="tools-report-controls"><input id="toolsQuickCode" list="toolsQuickCodes" placeholder="Código de herramienta" aria-label="Código de herramienta"><datalist id="toolsQuickCodes"></datalist><button type="button" class="btn primary" id="toolsQuickManage">Buscar herramienta</button></div></section>
+            
+<section class="table-wrap tools-section" id="responsablesImportSection">
+ <div class="tools-section-title"><strong>Actualizar responsables desde Excel</strong></div>
+ <div style="padding:16px"><p>Solo códigos existentes. DEVUELTO → Depósito Arismendi, sin responsable. Se conserva el estado técnico. Los códigos repetidos quedan pendientes.</p>
+ <input id="responsablesArchivo" type="file" accept=".xlsx" aria-label="Excel actualizado de herramientas">
+ <button type="button" class="btn" id="responsablesRevisar">Revisar cambios</button>
+ <button type="button" class="btn primary" id="responsablesAplicar" disabled>Aplicar cambios revisados</button>
+ <p id="responsablesMensaje" role="status" style="margin:12px 0"></p>
+ <div id="responsablesVista" class="table-scroll" style="max-height:420px;overflow:auto"></div></div>
+</section>
+<section class="table-wrap tools-section" id="toolsQuickSection"><div class="tools-section-title"><div><strong>Registrar movimiento</strong><div class="tools-report-note">Ingresá el código y continuá con las opciones habituales de entrega o devolución.</div></div></div><div class="tools-report-controls"><input id="toolsQuickCode" list="toolsQuickCodes" placeholder="Código de herramienta" aria-label="Código de herramienta"><datalist id="toolsQuickCodes"></datalist><button type="button" class="btn primary" id="toolsQuickManage">Buscar herramienta</button></div></section>
             <div class="table-wrap tools-section" id="toolsStockSection">
                 <div class="tools-section-title"><div><strong>Stock de herramientas</strong><div class="tools-report-note">Buscá por código, tipo, persona u obra y gestioná cada unidad desde su fila.</div></div></div>
                 <div class="toolbar"><div class="search-box"><input id="toolSearch" placeholder="Buscar código, tipo, responsable u obra"></div><select id="toolEstadoFilter" class="filter-select"><option value="">Todos los estados</option><option value="EN_DEPOSITO">En depósito</option><option value="CON_PERSONAL">Con personal</option><option value="EN_MANTENIMIENTO">En mantenimiento</option><option value="BAJA">Baja</option></select><select id="toolTipoFilter" class="filter-select"><option value="">Todos los tipos</option></select></div>
@@ -6478,6 +6488,80 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         // Inicializar puntos con tema por defecto al cargar
         applyTheme('maestroSlate');
     </script>
+
+<script>
+// Estado de revisión aislado: cambiar el archivo invalida la confirmación anterior.
+let revisionResponsables = null;
+function textoCeldaResponsables(cell) {
+ const v=cell.value;
+ if(v && typeof v==='object') {
+  if(v instanceof Date) return v.toISOString().slice(0,10);
+  if(v.richText) return v.richText.map(t=>t.text).join('');
+  if('result' in v) return String(v.result ?? '');
+  if(v.text) return String(v.text);
+ }
+ return String(v ?? '').trim();
+}
+const normalizarCabeceraResponsables=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+document.getElementById('responsablesArchivo').addEventListener('change',()=>{
+ revisionResponsables=null; document.getElementById('responsablesAplicar').disabled=true;
+ document.getElementById('responsablesVista').replaceChildren();
+ document.getElementById('responsablesMensaje').textContent='Archivo seleccionado. Revisá los cambios antes de aplicarlos.';
+});
+document.getElementById('responsablesRevisar').addEventListener('click',async()=>{
+ const revisar=document.getElementById('responsablesRevisar'), aplicar=document.getElementById('responsablesAplicar'),
+  archivo=document.getElementById('responsablesArchivo'), msg=document.getElementById('responsablesMensaje');
+ revisionResponsables=null; aplicar.disabled=true;
+ document.getElementById('responsablesVista').replaceChildren();
+ try {
+  if(isDemo || !auth.currentUser) throw Error('Ingresá al sistema conectado para revisar el Excel.');
+  const f=archivo.files[0]; if(!f) throw Error('Seleccioná el archivo .xlsx actualizado.');
+  revisar.disabled=true; archivo.disabled=true; msg.textContent='Leyendo archivo y comparando códigos…';
+  const wb=new ExcelJS.Workbook(); await wb.xlsx.load(await f.arrayBuffer());
+  const hoja=wb.worksheets.find(s=>normalizarCabeceraResponsables(s.name)==='BASE DE DATOS');
+  if(!hoja) throw Error('No se encontró la hoja BASE DE DATOS.');
+  let cab=null, inicio=0;
+  for(let n=1;n<=Math.min(15,hoja.rowCount);n++) {
+   const mapa={}; hoja.getRow(n).eachCell((c,i)=>mapa[normalizarCabeceraResponsables(textoCeldaResponsables(c))]=i);
+   if(mapa.CODIGO && mapa.RESPONSABLE && mapa.MOVIMIENTO) {cab=mapa;inicio=n;break;}
+  }
+  if(!cab) throw Error('Faltan las columnas CODIGO, RESPONSABLE o MOVIMIENTO.');
+  const registros=[];
+  for(let n=inicio+1;n<=hoja.rowCount;n++) {
+   const row=hoja.getRow(n), leer=k=>cab[k]?textoCeldaResponsables(row.getCell(cab[k])):'';
+   if(!leer('CODIGO') && !leer('HERRAMIENTA / EQUIPO')) continue;
+   registros.push({fila:n,codigo:leer('CODIGO'),responsable:leer('RESPONSABLE'),movimiento:leer('MOVIMIENTO'),
+    obra:leer('OBRA'),fecha:leer('FECHA'),remito:leer('N° REMITO')||leer('Nº REMITO')||leer('N REMITO')});
+  }
+  const payload={accion:'herr-importar-responsables',fase:'REVISAR',archivo:f.name,registros};
+  const r=await apiPostSeguro(payload); if(!r?.ok) throw Error(r?.error||'No se pudo revisar.');
+  msg.textContent=`${r.cambios.length} cambios; ${r.pendientes.length} pendientes; ${r.iguales} sin cambios; ${r.sinCodigo} filas sin código excluidas. Fecha del historial: conciliación de hoy; no acredita la fecha original de entrega.`;
+  document.getElementById('responsablesVista').innerHTML='<table class="tools-table"><thead><tr><th>Código</th><th>Ubicación / responsable anterior</th><th>Nuevo destino</th><th>Estado técnico conservado</th></tr></thead><tbody>'+
+   r.cambios.map(c=>`<tr><td>${escTool(c.codigo)}</td><td>${escTool(c.anterior||'Sin indicar')}</td><td>${escTool(c.nuevo)}</td><td>${escTool(c.estado)}</td></tr>`).join('')+
+   '</tbody></table><h4>Pendientes: no se aplicarán</h4><table class="tools-table"><thead><tr><th>Código</th><th>Filas del Excel</th><th>Motivo</th></tr></thead><tbody>'+
+   r.pendientes.map(c=>`<tr><td>${escTool(c.codigo)}</td><td>${escTool(c.filas)}</td><td>${escTool(c.motivo)}</td></tr>`).join('')+'</tbody></table>';
+  revisionResponsables={...payload,fase:'APLICAR',huella:r.huella}; delete revisionResponsables._txid;
+  aplicar.disabled=!r.cambios.length;
+ } catch(e) {msg.textContent=e.message;} finally {revisar.disabled=false;archivo.disabled=false;}
+});
+document.getElementById('responsablesAplicar').addEventListener('click',async()=>{
+ if(!revisionResponsables) return;
+ const btn=document.getElementById('responsablesAplicar'), revisar=document.getElementById('responsablesRevisar'),
+  archivo=document.getElementById('responsablesArchivo'), msg=document.getElementById('responsablesMensaje');
+ btn.disabled=true;revisar.disabled=true;archivo.disabled=true;
+ try {
+  msg.textContent='Aplicando cambios y guardando respaldo…';
+  const r=await apiPostSeguro(revisionResponsables); if(!r?.ok) throw Error(r?.error||'No se pudo actualizar.');
+  revisionResponsables=null;
+  msg.textContent=`Actualizadas ${r.actualizados} herramientas. Respaldo: ${r.respaldo||'no requerido'}.`;
+  await cargarHerramientas();
+ } catch(e) {
+  revisionResponsables=null;
+  msg.textContent=e.message+' Revisá Unidades Herramientas y Movimientos Herramientas antes de volver a importar.';
+ } finally {revisar.disabled=false;archivo.disabled=false;}
+});
+</script>
+
 </body>
 
 </html>
