@@ -302,14 +302,25 @@
     writing-mode:vertical-rl; transform:rotate(180deg); font-size:2.9mm; letter-spacing:.7px;
   }
   .nombre-tag.vertical .rotulo-linea{ height:auto; width:.55mm; }
-  .rotulo-editor-item{ background:#fff; border:1px solid #dce4ec; border-radius:9px; padding:10px; margin-bottom:8px; box-shadow:0 2px 8px rgba(30,42,56,.04); }
-  .rotulo-editor-grid{ display:grid; grid-template-columns:minmax(140px,1fr) minmax(120px,.72fr) 100px 58px 58px 30px; gap:7px; align-items:start; }
-  .rotulo-editor-grid input, .rotulo-editor-grid select, .rotulo-editor-grid textarea{ width:100%; padding:7px 8px; border:1px solid #cbd5df; border-radius:5px; font:inherit; font-size:13px; background:white; }
-  .rotulo-editor-grid .r-item-subtitulo, .rotulo-editor-grid .r-item-subtitulo2{ border-left:3px solid #0B5CAB; resize:vertical; }
+  .rotulo-editor-item{ background:#fff; border:1px solid #dce4ec; border-radius:10px; padding:14px; margin-bottom:10px; box-shadow:0 2px 8px rgba(30,42,56,.04); }
+  .rotulo-editor-grid{ display:grid; grid-template-columns:minmax(165px,1.15fr) minmax(235px,2fr) minmax(112px,.85fr) 70px 70px 32px; gap:10px; align-items:start; }
+  .rotulo-editor-grid input, .rotulo-editor-grid select, .rotulo-editor-grid textarea{ width:100%; padding:9px 10px; border:1px solid #cbd5df; border-radius:6px; font:inherit; font-size:14px; background:white; }
+  .rotulo-editor-grid .r-item-titulo, .rotulo-editor-grid .r-item-titulo2{ min-height:42px; font-weight:700; }
+  .rotulo-editor-grid .r-item-subtitulo, .rotulo-editor-grid .r-item-subtitulo2{ min-height:92px; border-left:3px solid #0B5CAB; line-height:1.45; resize:vertical; }
+  /* En el panel con vista lateral, el editor se ordena en dos filas para no desbordar. */
+  #bloque-rotulos .r-item-cartel > .rotulo-editor-grid{ grid-template-columns:minmax(130px,1fr) minmax(200px,1.65fr) minmax(96px,.8fr) 32px; grid-template-rows:auto auto; }
+  #bloque-rotulos .r-item-cartel > .rotulo-editor-grid > label:nth-child(1){ grid-column:1; grid-row:1; }
+  #bloque-rotulos .r-item-cartel > .rotulo-editor-grid > label:nth-child(2){ grid-column:2; grid-row:1; }
+  #bloque-rotulos .r-item-cartel > .rotulo-editor-grid > label:nth-child(3){ grid-column:3; grid-row:1; }
+  #bloque-rotulos .r-item-cartel > .rotulo-editor-grid > label:nth-child(4){ grid-column:1; grid-row:2; }
+  #bloque-rotulos .r-item-cartel > .rotulo-editor-grid > label:nth-child(5){ grid-column:2; grid-row:2; max-width:130px; }
+  #bloque-rotulos .r-item-cartel > .rotulo-editor-grid > .r-item-quitar{ grid-column:4; grid-row:1; margin-top:22px!important; }
+  #bloque-rotulos .r-item-titulo, #bloque-rotulos .r-item-titulo2{ min-height:92px; line-height:1.45; resize:vertical; }
   .rotulo-bloque2{ margin-top:8px; border-top:1px dashed #cbd5df; padding-top:6px; }
   .rotulo-bloque2 summary{ font-size:12px; font-weight:bold; color:#0B5CAB; cursor:pointer; margin-bottom:8px; }
   .rotulo-campo-label{ display:block; font-size:10px; font-weight:800; color:#667788; letter-spacing:.45px; text-transform:uppercase; margin:0 0 4px; }
-  @media(max-width:680px){ .rotulo-editor-grid{ grid-template-columns:1fr 1fr 1fr 54px 54px 30px; } }
+  @media(max-width:900px){ .rotulo-editor-grid{ grid-template-columns:1fr 1.35fr 110px 62px 62px 30px; } }
+  @media(max-width:680px){ .rotulo-editor-grid{ grid-template-columns:1fr 1fr; } .rotulo-editor-grid .r-item-quitar{ grid-column:2; justify-self:end; } }
 
   /* ================= REFERENCIAS (título + lista de familias) — EXTENSIÓN NUEVA ================= */
   .ref-tag{
@@ -337,13 +348,193 @@
   .ref-item{ display:flex; align-items:baseline; gap:1.5mm; padding:0.5mm 0; }
   .ref-item .num{ font-weight:900; flex-shrink:0; }
   .ref-item .texto{ color:var(--negro); font-weight:600; line-height:1.15; }
+
+  /* ---------- Interfaz: sistema visual RPM ---------- */
+  :root{
+    --tinta: #102a43;
+    --azul-noche: #0b1f3a;
+    --azul-rpm: #1264c6;
+    --azul-claro: #eaf4ff;
+    --cielo: #78c7f0;
+    --acento: #00a6a6;
+    --linea: #c9d9e8;
+    --papel: #ffffff;
+    --fondo: #e9f1f8;
+    --muted: #52677c;
+    --negro: var(--tinta);
+    --gris: var(--muted);
+  }
+
+  body{
+    min-height:100vh;
+    font-family: Aptos, "Segoe UI", system-ui, sans-serif;
+    color:var(--tinta);
+    background:
+      linear-gradient(90deg, rgba(18,100,198,.035) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(rgba(18,100,198,.035) 1px, transparent 1px) 0 0 / 28px 28px,
+      var(--fondo);
+  }
+  .panel{
+    max-width:1120px;
+    margin:32px auto 0;
+    padding:30px 34px 18px;
+    border:1px solid rgba(18,100,198,.18);
+    border-bottom:5px solid var(--azul-rpm);
+    border-radius:18px 18px 0 0;
+    box-shadow:0 18px 44px rgba(16,42,67,.12);
+    background:var(--papel);
+  }
+  .panel h1{
+    max-width:760px;
+    margin:0 0 9px;
+    color:var(--azul-noche);
+    font-size:clamp(1.55rem, 3vw, 2.25rem);
+    letter-spacing:-.045em;
+    line-height:1.05;
+  }
+  .panel h1::after{
+    content:""; display:block; width:54px; height:5px; margin-top:17px;
+    border-radius:5px; background:var(--acento);
+  }
+  .panel > p{ max-width:870px; margin:14px 0 0; color:var(--muted); font-size:.94rem; line-height:1.6; }
+  .panel > p b{ color:var(--azul-rpm); }
+
+  .tipo-tabs{ gap:6px; margin:28px -34px 0; padding:0 34px 12px; overflow-x:auto; flex-wrap:nowrap; border-bottom:1px solid var(--linea); }
+  .tipo-btn{
+    white-space:nowrap; padding:10px 14px; border:0; border-radius:8px;
+    background:transparent; color:#486078; font-size:.82rem; font-weight:700;
+    transition:background .18s ease, color .18s ease, box-shadow .18s ease;
+  }
+  .tipo-btn:hover{ background:var(--azul-claro); color:var(--azul-rpm); }
+  .tipo-btn.active{ background:var(--azul-noche); color:white; box-shadow:0 5px 11px rgba(11,31,58,.2); }
+  .bloque-tipo{ border-top:0; padding:21px 0 6px; }
+
+  .grupo-controles{
+    margin-bottom:13px; padding:15px 17px 5px; border:1px solid var(--linea);
+    border-radius:11px; background:linear-gradient(110deg, #fbfdff, #f4f9fd);
+  }
+  .grupo-titulo{ margin:0 0 12px; color:var(--azul-rpm); font-size:.69rem; letter-spacing:.07em; }
+  .fila-controles{ gap:13px 16px; }
+  .fila-controles label{ color:#38536e; font-size:.75rem; gap:5px; }
+  .fila-controles input[type=number], .fila-controles input[type=text],
+  .fila-controles select, .rotulo-editor-grid input, .rotulo-editor-grid select,
+  .rotulo-editor-grid textarea, textarea{
+    min-height:35px; border:1px solid #b9ccdd; border-radius:6px; color:var(--tinta);
+    background:#fff; box-shadow:0 1px 0 rgba(16,42,67,.03);
+  }
+  .fila-controles input[type=number]:focus, .fila-controles input[type=text]:focus,
+  .fila-controles select:focus, .rotulo-editor-grid input:focus, .rotulo-editor-grid select:focus,
+  .rotulo-editor-grid textarea:focus, textarea:focus{
+    outline:3px solid rgba(18,100,198,.18); border-color:var(--azul-rpm);
+  }
+  button{ font-family:inherit; }
+  .fila-controles button.generar, .imprimir-btn{
+    padding:10px 16px; border-radius:7px; background:var(--azul-rpm); color:white;
+    box-shadow:0 4px 10px rgba(18,100,198,.22);
+  }
+  .fila-controles button.generar:hover, .imprimir-btn:hover{ background:#0d4f9f; }
+  .imprimir-btn{ background:var(--acento); box-shadow:0 4px 10px rgba(0,166,166,.22); }
+  .imprimir-btn:hover{ background:#007f80; }
+  .subtabs{ gap:6px; }
+  .sub-btn{ border:1px solid #9fc4e5; border-radius:7px; color:var(--azul-rpm); }
+  .sub-btn.active{ background:var(--azul-claro); color:#0b4f9d; border-color:var(--azul-rpm); }
+
+  .recos{ margin:18px 0 6px; padding:9px 17px; border-color:#b9d8ec; border-radius:10px; background:var(--azul-claro); }
+  .recos summary{ color:var(--azul-noche); }
+  .recos summary::before, .recos b{ color:var(--azul-rpm); }
+  .recos li{ color:#38536e; }
+  .color-swatch-btn{ border-color:#9eb8ce; box-shadow:inset 0 0 0 2px white, 0 1px 3px rgba(16,42,67,.15); }
+  .cp-menu, .cp-panel{ border-color:var(--linea); box-shadow:0 18px 40px rgba(16,42,67,.22); }
+  .cp-header{ color:var(--azul-noche); }
+  .cp-btn-aceptar{ background:var(--azul-rpm); border-color:var(--azul-rpm); }
+  .cp-btn-cancelar{ color:var(--azul-rpm); border-color:var(--azul-rpm); }
+
+  .sheet{
+    max-width:1120px; min-height:260px; margin:0 auto 36px; padding:10mm;
+    border:1px solid rgba(18,100,198,.16); border-top:0; border-radius:0 0 18px 18px;
+    box-shadow:0 18px 44px rgba(16,42,67,.1); background:white;
+  }
+  .corte{ outline-color:#7e9cb7; }
+  .rotulo-editor-item{ border-color:var(--linea); box-shadow:none; }
+  .rotulo-editor-grid .r-item-subtitulo, .rotulo-editor-grid .r-item-subtitulo2{ border-left-color:var(--acento); }
+  .rotulo-bloque2 summary, .rotulo-campo-label{ color:var(--azul-rpm); }
+
+  /* Guías visuales: resumen del resultado de cada bloque de Celdas. */
+  .grupo-cabecera{ display:flex; align-items:center; gap:9px; margin:0 0 12px; }
+  .grupo-cabecera .grupo-titulo{ margin:0; }
+  .grupo-icono{
+    position:relative; display:grid; place-items:center; width:29px; height:29px; flex:0 0 29px;
+    border:1px solid #b8d4ec; border-radius:8px; background:#eaf4ff; color:var(--azul-rpm);
+  }
+  .grupo-icono::before, .grupo-icono::after{ content:""; position:absolute; box-sizing:border-box; }
+  .icono-hoja::before{ width:12px; height:17px; border:1.8px solid currentColor; border-radius:2px; }
+  .icono-hoja::after{ width:5px; height:5px; top:6px; right:7px; border-width:0 1.8px 1.8px 0; border-style:solid; transform:rotate(0); }
+  .icono-hoja.horizontal::before{ width:17px; height:12px; }
+  .icono-hoja.horizontal::after{ top:8px; right:5px; }
+  .icono-grilla::before{ width:15px; height:15px; border:1.8px solid currentColor; border-radius:2px; background:linear-gradient(currentColor,currentColor) center/1.8px 100% no-repeat, linear-gradient(currentColor,currentColor) center/100% 1.8px no-repeat; }
+  .icono-regla::before{ width:17px; height:5px; border-top:2px solid currentColor; border-bottom:2px solid currentColor; transform:rotate(-27deg); }
+  .icono-regla::after{ width:11px; height:4px; border-left:1px solid currentColor; border-right:1px solid currentColor; transform:rotate(-27deg); }
+  .icono-tinta::before{ width:11px; height:15px; border:2px solid currentColor; border-radius:8px 8px 10px 10px; }
+  .icono-tinta::after{ width:5px; height:5px; border-radius:50%; background:var(--acento); bottom:5px; }
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  .celdas-editor{ display:grid; grid-template-columns:minmax(0, 1fr) 250px; gap:18px; align-items:start; }
+  .celdas-vista{ position:sticky; top:18px; padding:13px; border:1px solid #bcd8ed; border-radius:12px; background:#f4faff; }
+  .preview-titulo-fila{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 10px; }
+  .preview-titulo-fila h2{ margin:0!important; }
+  .ver-carteles-btn{ padding:5px 7px; border:1px solid #9fc4e5; border-radius:6px; background:white; color:var(--azul-rpm); font-size:.66rem; font-weight:800; cursor:pointer; }
+  .ver-carteles-btn:hover{ background:var(--azul-claro); border-color:var(--azul-rpm); }
+  .ver-carteles-btn:focus-visible{ outline:3px solid rgba(18,100,198,.22); outline-offset:2px; }
+  .celdas-vista h2{ margin:0 0 10px; color:var(--azul-noche); font-size:.82rem; line-height:1.2; }
+  .preview-ejemplos{ display:grid; gap:15px; padding:11px; border:1px solid #c8dcec; border-radius:8px; background:#e7f1fa; }
+  .preview-ficha{ display:flex; align-items:center; gap:11px; min-width:0; }
+  .preview-cartel-wrap{ display:grid; place-items:center; flex:1 1 auto; min-width:0; }
+  .preview-cartel{ display:flex; align-items:center; justify-content:center; flex:0 1 auto; max-width:142px; max-height:68px; overflow:hidden; color:var(--preview-color, var(--azul-rpm)); font-size:10px; font-weight:900; text-align:center; white-space:nowrap; }
+  .preview-cartel.dual{ justify-content:stretch; }
+  .preview-mitad{ display:flex; align-items:center; justify-content:center; flex:1; min-width:0; height:100%; }
+  .preview-mitad + .preview-mitad{ border-left:1px solid currentColor; }
+  .preview-medidas{ display:grid; flex:0 0 64px; gap:3px; color:var(--muted); font-size:.64rem; line-height:1.25; }
+  .preview-medidas strong{ color:var(--azul-noche); font-size:.72rem; }
+  .icono-texto::before{ content:"T"; position:static; font-weight:900; font-size:16px; }
+  .icono-lista::before{ width:15px; height:11px; border-top:2px solid currentColor; border-bottom:2px solid currentColor; background:linear-gradient(currentColor,currentColor) center/100% 2px no-repeat; }
+  .icono-estante::before{ width:16px; height:13px; border:2px solid currentColor; border-top-width:5px; }
+  .icono-paleta::before{ width:14px; height:14px; border:2px solid currentColor; border-radius:50%; }
+  .icono-paleta::after{ width:4px; height:4px; border-radius:50%; background:var(--acento); right:5px; bottom:5px; }
+  #bloque-filas.active, #bloque-estantes.active, #bloque-rotulos.active, #bloque-referencias.active{ display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:18px; align-items:start; }
+  .tipo-controles{ min-width:0; }
+  .tipo-vista{ position:sticky; top:18px; padding:13px; border:1px solid #bcd8ed; border-radius:12px; background:#f4faff; }
+  .tipo-vista h2{ margin:0 0 10px; color:var(--azul-noche); font-size:.82rem; }
+  .tipo-preview{ display:grid; place-items:center; min-height:125px; padding:12px; border:1px solid #c8dcec; border-radius:8px; background:#e7f1fa; overflow:hidden; }
+  .preview-clon-lienzo{ position:relative; width:100%; height:190px; overflow:hidden; }
+  .preview-clon{ position:absolute; top:8px; left:50%; display:flex; flex-wrap:wrap; gap:8mm; width:max-content; transform-origin:top center; }
+  #preview-ejemplos .preview-clon{ flex-direction:column; align-items:center; }
+  #preview-rotulos{ display:block; max-height:510px; overflow:auto; }
+  .preview-rotulos-lista{ display:grid; gap:10px; }
+  .preview-rotulos-item{ display:flex; justify-content:center; overflow:hidden; min-height:56px; padding:7px; border:1px solid #c8dcec; border-radius:7px; background:white; }
+  .preview-rotulos-item > *{ zoom:.34; transform-origin:top center; }
+  .mini-fila, .mini-estante, .mini-rotulo, .mini-referencia{ display:flex; align-items:center; justify-content:center; max-width:100%; overflow:hidden; color:var(--preview-color, var(--azul-rpm)); font-weight:900; text-align:center; }
+  .mini-estante{ justify-content:flex-start; color:white; }
+  .mini-estante span{ padding:8px; }
+  .mini-referencia{ display:block; padding:9px; background:white; color:var(--tinta); text-align:left; font-size:8px; }
+  .mini-referencia strong{ display:block; margin:-9px -9px 7px; padding:7px 9px; color:white; }
+
+  @media(max-width:720px){
+    .panel{ margin:0; padding:23px 18px 14px; border-radius:0; }
+    .tipo-tabs{ margin:22px -18px 0; padding:0 18px 11px; }
+    .sheet{ margin:0; border-radius:0; padding:6mm; }
+    .fila-controles label{ flex:1 1 130px; }
+    .fila-controles input[type=number], .fila-controles input[type=text], .fila-controles select{ width:100%; }
+    .celdas-editor{ grid-template-columns:1fr; }
+    .celdas-vista{ position:static; order:-1; }
+    #bloque-filas.active, #bloque-estantes.active, #bloque-rotulos.active, #bloque-referencias.active{ grid-template-columns:1fr; }
+    .tipo-vista{ position:static; order:-1; }
+  }
+  @media(prefers-reduced-motion:reduce){ *, *::before, *::after{ transition:none!important; scroll-behavior:auto!important; } }
 </style>
 </head>
 <body>
 
   <div class="panel">
     <h1>Generador de cartelería de depósito — RPM Construcciones</h1>
-    <p>Usá esta herramienta para imprimir la señalización de ubicación de cualquier estantería del depósito. Elegí el tipo de cartel que necesitás: <b>Celdas</b> (identifica cada casillero, ej. 1B), <b>Filas</b> (letra grande para ubicar el nivel desde el pasillo), <b>Estantes</b> (identifica cada mueble/estantería completo), <b>Rótulos</b> (nombre de producto o carpeta) o <b>Referencias</b> (título + lista de familias). Configurá cantidad, tamaño y color según el estante que estés señalizando, generá los carteles e imprimilos — cada uno sale con una línea punteada para guiar el corte.</p>
 
     <div class="tipo-tabs">
       <button class="tipo-btn active" data-tipo="celdas" onclick="mostrarTipo('celdas')">Celdas (1B, 3D...)</button>
@@ -353,33 +544,36 @@
       <button class="tipo-btn" data-tipo="referencias" onclick="mostrarTipo('referencias')">Referencias (familias)</button>
     </div>
 
-    <!-- ===================== Control global: tamaño de hoja de impresión — EXTENSIÓN NUEVA ===================== -->
-    <div class="grupo-controles" id="control-hoja" style="margin-top:12px;">
-      <p class="grupo-titulo">Hoja de impresión</p>
-      <div class="fila-controles">
-        <label>Tamaño de hoja
-          <select id="hoja-tamano">
-            <option value="A4">A4 (210 × 297 mm)</option>
-            <option value="A3">A3 (297 × 420 mm)</option>
-            <option value="A2">A2 (420 × 594 mm)</option>
-            <option value="A1">A1 (594 × 841 mm)</option>
-            <option value="Carta">Carta / Letter (216 × 279 mm)</option>
-            <option value="Oficio">Oficio / Legal (216 × 356 mm)</option>
-          </select>
-        </label>
-        <label>Orientación
-          <select id="hoja-orientacion">
-            <option value="portrait">Vertical</option>
-            <option value="landscape">Horizontal</option>
-          </select>
-        </label>
-      </div>
-    </div>
-
     <!-- ===================== CELDAS ===================== -->
     <div class="bloque-tipo active" id="bloque-celdas">
+      <div class="celdas-editor">
+      <div class="celdas-controles">
+      <div class="grupo-controles" id="control-hoja">
+        <div class="grupo-cabecera">
+          <span class="grupo-icono icono-hoja" aria-hidden="true"></span>
+          <p class="grupo-titulo">Hoja de impresión</p>
+        </div>
+        <div class="fila-controles">
+          <label>Tamaño de hoja
+            <select id="hoja-tamano">
+              <option value="A4">A4 (210 × 297 mm)</option>
+              <option value="A3">A3 (297 × 420 mm)</option>
+              <option value="A2">A2 (420 × 594 mm)</option>
+              <option value="A1">A1 (594 × 841 mm)</option>
+              <option value="Carta">Carta / Letter (216 × 279 mm)</option>
+              <option value="Oficio">Oficio / Legal (216 × 356 mm)</option>
+            </select>
+          </label>
+          <label>Orientación
+            <select id="hoja-orientacion">
+              <option value="portrait">Vertical</option>
+              <option value="landscape">Horizontal</option>
+            </select>
+          </label>
+        </div>
+      </div>
       <div class="grupo-controles">
-        <p class="grupo-titulo">Distribución</p>
+        <div class="grupo-cabecera"><span class="grupo-icono icono-grilla" aria-hidden="true"></span><p class="grupo-titulo">Distribución</p></div>
         <div class="fila-controles">
           <label>Columnas <input type="number" id="c-cols" value="6" min="1" max="30"></label>
           <label>Filas (letras) <input type="text" class="ancho-txt" id="c-filas" value="A,B,C,D,E"></label>
@@ -399,7 +593,7 @@
       </div>
 
       <div class="grupo-controles">
-        <p class="grupo-titulo">Tamaño</p>
+        <div class="grupo-cabecera"><span class="grupo-icono icono-regla" aria-hidden="true"></span><p class="grupo-titulo">Tamaño</p></div>
         <div class="fila-controles">
           <label>Ancho del cartel (mm) <input type="number" id="c-ancho" value="60" min="20"></label>
           <label>Alto del cartel (mm) <input type="number" id="c-alto" value="30" min="15"></label>
@@ -409,7 +603,7 @@
       </div>
 
       <div class="grupo-controles">
-        <p class="grupo-titulo">Color e impresión</p>
+        <div class="grupo-cabecera"><span class="grupo-icono icono-tinta" aria-hidden="true"></span><p class="grupo-titulo">Color e impresión</p></div>
         <div class="fila-controles fila-imprimir">
           <label>Color
             <input type="hidden" id="c-color" value="#0B5CAB">
@@ -417,6 +611,14 @@
           </label>
           <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
         </div>
+      </div>
+      </div>
+      <aside class="celdas-vista" aria-live="polite" aria-label="Vista previa de celdas">
+        <div class="preview-bloque">
+          <div class="preview-titulo-fila"><h2>Ejemplo de cartel</h2><button class="ver-carteles-btn" type="button" onclick="rpmIrACarteles()">Ver carteles ↓</button></div>
+          <div class="preview-ejemplos" id="preview-ejemplos"></div>
+        </div>
+      </aside>
       </div>
     </div>
 
@@ -478,12 +680,12 @@
         <p class="grupo-titulo">Color e impresión</p>
         <div class="fila-controles fila-imprimir">
           <label>Color de fondo
-            <input type="hidden" id="e-fondo" value="#1E2A38">
-            <button type="button" class="color-swatch-btn" data-target="e-fondo" style="background:#1E2A38;" onclick="abrirColorPicker('e-fondo', this)"></button>
+            <input type="hidden" id="e-fondo" value="#0B1F3A">
+            <button type="button" class="color-swatch-btn" data-target="e-fondo" style="background:#0B1F3A;" onclick="abrirColorPicker('e-fondo', this)"></button>
           </label>
           <label>Color de franja
-            <input type="hidden" id="e-franja" value="#E08A2C">
-            <button type="button" class="color-swatch-btn" data-target="e-franja" style="background:#E08A2C;" onclick="abrirColorPicker('e-franja', this)"></button>
+            <input type="hidden" id="e-franja" value="#00A6A6">
+            <button type="button" class="color-swatch-btn" data-target="e-franja" style="background:#00A6A6;" onclick="abrirColorPicker('e-franja', this)"></button>
           </label>
           <button class="imprimir-btn" onclick="abrirYImprimir()">Imprimir</button>
         </div>
@@ -819,6 +1021,7 @@ function mostrarOpcionEstante(n){
   document.getElementById('sheet-estantes-1').classList.remove('activa');
   document.getElementById('sheet-estantes-2').classList.remove('activa');
   document.getElementById('sheet-estantes-'+n).classList.add('activa');
+  rpmVistaEstantes();
 }
 
 /* ---------- Flecha SVG gruesa (bien visible pero compacta) ---------- */
@@ -856,6 +1059,11 @@ function construirCelda(col, filas, anchoEst, altoEst, anchoDoble, marco, color,
   return html;
 }
 
+function actualizarVistaPreviaCeldas(numCols, filas, ancho, alto, anchoDoble, marco, color, modo, direccion){
+  const esDoble = modo === 'dual' && filas[0] === 'A' && filas[1] === 'B';
+  rpmClonarPrevisualizacion('preview-ejemplos', 'sheet-celdas', .46, esDoble ? 2 : 1);
+}
+
 function generarCeldas(){
   const numCols = parseInt(document.getElementById('c-cols').value) || 6;
   const filasBase = document.getElementById('c-filas').value.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean);
@@ -872,6 +1080,7 @@ function generarCeldas(){
     out += construirCelda(c, [...filasBase], anchoEst, altoEst, anchoDoble, marco, color, modo, direccion);
   }
   document.getElementById('sheet-celdas').innerHTML = out;
+  actualizarVistaPreviaCeldas(numCols, filasBase, anchoEst, altoEst, anchoDoble, marco, color, modo, direccion);
 }
 
 /* ---------- FILAS ---------- */
@@ -890,6 +1099,7 @@ function generarFilas(){
     }
   });
   document.getElementById('sheet-filas').innerHTML = out;
+  rpmVistaFilas();
 }
 
 /* ---------- ESTANTES ---------- */
@@ -927,6 +1137,7 @@ function generarEstantes(){
   }
   document.getElementById('sheet-estantes-1').innerHTML = out1;
   document.getElementById('sheet-estantes-2').innerHTML = out2;
+  rpmVistaEstantes();
 }
 
 function toggleAnchoDoble(){
@@ -952,7 +1163,7 @@ const CP_PRESETS = [
   ['#5b0f00','#660000','#783f04','#7f6000','#274e13','#0c343d','#1c4587','#073763','#20124d','#4c1130'],
 ];
 const CP_ESTANDAR = ['#000000','#ffffff','#4a86e8','#ff0000','#ffff00','#00ff00','#ff9900','#9900ff'];
-let cpFavoritos = ['#0B5CAB','#E08A2C'];
+let cpFavoritos = ['#1264C6','#00A6A6'];
 let cpMenuActivo = null;
 let cpModalActivo = null;
 let cpTarget = { inputId:null, btnEl:null };
@@ -1322,8 +1533,8 @@ function rpmCrearItemCartel(item){
   wrap.className = 'r-item-cartel rotulo-editor-item';
   wrap.innerHTML =
     '<div class="rotulo-editor-grid">' +
-      '<label><span class="rotulo-campo-label">Título</span><input class="r-item-titulo r-item-texto" id="' + id + '" type="text" placeholder="Ej. COMPRA"></label>' +
-      '<label><span class="rotulo-campo-label">Subtítulos (uno por línea)</span><textarea class="r-item-subtitulo" rows="2" placeholder="Ej. Herramientas&#10;Equipos"></textarea></label>' +
+      '<label><span class="rotulo-campo-label">Título</span><textarea class="r-item-titulo r-item-texto" id="' + id + '" rows="4" placeholder="Ej. COMPRA"></textarea></label>' +
+      '<label><span class="rotulo-campo-label">Subtítulos (uno por línea)</span><textarea class="r-item-subtitulo" rows="4" placeholder="Ej. Herramientas&#10;Equipos"></textarea></label>' +
       '<label><span class="rotulo-campo-label">Formato</span><select class="r-item-formato"><option value="">General</option><option value="horizontal">Horizontal</option><option value="vertical">Vertical</option></select></label>' +
       '<label><span class="rotulo-campo-label">Letra mm</span><input type="number" class="r-item-tamano" min="3" step="0.5" placeholder="Auto" title="Tamaño del título para este cartel. Vacío = automático."></label>' +
       '<label><span class="rotulo-campo-label">Sub mm</span><input type="number" class="r-item-subtamano" min="2" step="0.5" placeholder="Auto" title="Tamaño del subtítulo para este cartel. Vacío = el general."></label>' +
@@ -1332,8 +1543,8 @@ function rpmCrearItemCartel(item){
     '<details class="rotulo-bloque2">' +
       '<summary>+ Segundo título con sus subtítulos (solo formato vertical)</summary>' +
       '<div class="rotulo-editor-grid" style="grid-template-columns:1fr 1fr;">' +
-        '<label><span class="rotulo-campo-label">Título 2</span><input class="r-item-titulo2" type="text" placeholder="Ej. VENTA"></label>' +
-        '<label><span class="rotulo-campo-label">Subtítulos 2 (uno por línea)</span><textarea class="r-item-subtitulo2" rows="2" placeholder="Ej. Repuestos&#10;Insumos"></textarea></label>' +
+        '<label><span class="rotulo-campo-label">Título 2</span><textarea class="r-item-titulo2" rows="4" placeholder="Ej. VENTA"></textarea></label>' +
+        '<label><span class="rotulo-campo-label">Subtítulos 2 (uno por línea)</span><textarea class="r-item-subtitulo2" rows="4" placeholder="Ej. Repuestos&#10;Insumos"></textarea></label>' +
       '</div>' +
     '</details>';
   // Compatibilidad con los rótulos guardados antes de incorporar el subtítulo.
@@ -1454,6 +1665,7 @@ function generarRotulos(){
       </div>`;
   });
   document.getElementById('sheet-rotulos').innerHTML = out;
+  rpmVistaRotulos();
 }
 
 document.getElementById('r-agregar-cartel').addEventListener('click', () => {
@@ -1601,6 +1813,7 @@ function generarReferencias(){
       </div>`;
   });
   document.getElementById('sheet-referencias').innerHTML = out;
+  rpmVistaReferencias();
 }
 
 document.getElementById('ref-agregar-tablero').addEventListener('click', () => {
@@ -1641,6 +1854,7 @@ function aplicarTamanoHoja(){
     document.head.appendChild(estiloPagina);
   }
   estiloPagina.textContent = `@page { size: ${w}mm ${h}mm; margin: 6mm; }`;
+  if(document.getElementById('preview-ejemplos')) generarCeldas();
 }
 
 /* ---------- abrirYImprimir extendido: agrega el @page dinámico a la ventana de impresión ---------- */
@@ -1948,7 +2162,88 @@ function rpmRenderPresets(){
   }
 }
 
+/* ---------- Guías y vistas previas laterales para todas las categorías ---------- */
+function rpmIrACarteles(){
+  const hoja = document.querySelector('.sheet.activa');
+  if(!hoja) return;
+  hoja.setAttribute('tabindex', '-1');
+  hoja.scrollIntoView({behavior:'smooth', block:'start'});
+  hoja.focus({preventScroll:true});
+}
+
+function rpmPrepararPestanas(){
+  const tipos = ['filas','estantes','rotulos','referencias'];
+  const iconoPara = texto => {
+    const t = texto.toLowerCase();
+    if(t.includes('tamaño')) return 'icono-regla';
+    if(t.includes('color')) return 'icono-paleta';
+    if(t.includes('tipografía') || t.includes('título') || t.includes('subtítulo')) return 'icono-texto';
+    if(t.includes('cantidad') || t.includes('columnas')) return 'icono-grilla';
+    if(t.includes('estilo')) return 'icono-tinta';
+    return 'icono-lista';
+  };
+  tipos.forEach(tipo => {
+    const bloque = document.getElementById('bloque-' + tipo);
+    if(!bloque || bloque.querySelector('.tipo-vista')) return;
+    const controles = document.createElement('div');
+    controles.className = 'tipo-controles';
+    while(bloque.firstChild) controles.appendChild(bloque.firstChild);
+    controles.querySelectorAll('.grupo-titulo').forEach(titulo => {
+      if(titulo.parentElement.classList.contains('grupo-cabecera')) return;
+      const cabecera = document.createElement('div');
+      cabecera.className = 'grupo-cabecera';
+      const icono = document.createElement('span');
+      icono.className = 'grupo-icono ' + iconoPara(titulo.textContent);
+      icono.setAttribute('aria-hidden', 'true');
+      titulo.parentNode.insertBefore(cabecera, titulo);
+      cabecera.append(icono, titulo);
+    });
+    const vista = document.createElement('aside');
+    vista.className = 'tipo-vista';
+    vista.setAttribute('aria-live', 'polite');
+    vista.innerHTML = `<div class="preview-titulo-fila"><h2>Vista previa</h2><button class="ver-carteles-btn" type="button" onclick="rpmIrACarteles()">Ver carteles ↓</button></div><div class="tipo-preview" id="preview-${tipo}"></div>`;
+    bloque.append(controles, vista);
+  });
+}
+
+function rpmClonarPrevisualizacion(previewId, sheetId, escala, cantidad=1){
+  const destino = document.getElementById(previewId);
+  const hoja = document.getElementById(sheetId);
+  if(!destino || !hoja) return;
+  const piezas = Array.from(hoja.children).slice(0, cantidad);
+  if(!piezas.length) return;
+  const lienzo = document.createElement('div');
+  lienzo.className = 'preview-clon-lienzo';
+  const clon = document.createElement('div');
+  clon.className = 'preview-clon';
+  clon.style.transform = `translateX(-50%) scale(${escala})`;
+  piezas.forEach(pieza => clon.appendChild(pieza.cloneNode(true)));
+  lienzo.appendChild(clon);
+  destino.replaceChildren(lienzo);
+}
+function rpmVistaFilas(){ rpmClonarPrevisualizacion('preview-filas', 'sheet-filas', .42); }
+function rpmVistaEstantes(){ rpmClonarPrevisualizacion('preview-estantes', 'sheet-estantes-' + opcionEstante.valor, .18); }
+function rpmVistaRotulos(){
+  const destino = document.getElementById('preview-rotulos');
+  const hoja = document.getElementById('sheet-rotulos');
+  if(!destino || !hoja) return;
+  const piezas = Array.from(hoja.children);
+  if(!piezas.length){ destino.replaceChildren(); return; }
+  const lista = document.createElement('div');
+  lista.className = 'preview-rotulos-lista';
+  piezas.forEach((pieza, i) => {
+    const item = document.createElement('div');
+    item.className = 'preview-rotulos-item';
+    item.setAttribute('aria-label', `Vista previa del rótulo ${i + 1}`);
+    item.appendChild(pieza.cloneNode(true));
+    lista.appendChild(item);
+  });
+  destino.replaceChildren(lista);
+}
+function rpmVistaReferencias(){ rpmClonarPrevisualizacion('preview-referencias', 'sheet-referencias', .42); }
+
 // Al cargar la página: restaura los últimos valores guardados y regenera todo con ellos
+rpmPrepararPestanas();
 rpmRestaurarValores();
 toggleFuenteManual();
 toggleFuenteOtra();
