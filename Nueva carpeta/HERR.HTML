@@ -1418,6 +1418,7 @@
 
 <style id="toolsIntegrationStyles">
     .tools-summary-card,.tools-section{margin-bottom:16px}.tools-summary-card{background:var(--bg-card);border:1px solid var(--line-soft);border-radius:var(--radius);overflow:hidden}.tools-summary-head,.tools-page-head,.tools-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;border-bottom:1px solid var(--line-soft)}.tools-summary-head h2{font-size:16px;margin:2px 0 0}.tools-page-head{background:var(--bg-card);border:1px solid var(--line-soft);border-radius:var(--radius);margin-bottom:16px}.tools-page-head p{margin:5px 0 0;color:var(--txt-dim)}.tools-table{width:100%;min-width:720px;border-collapse:collapse}.tools-table th,.tools-table td{padding:12px 14px;border-bottom:1px solid var(--line-soft);text-align:left}.tools-table th{color:var(--txt-dim);font-size:11px;text-transform:uppercase;letter-spacing:.05em}.tools-table .num{text-align:right;font-variant-numeric:tabular-nums}.tools-type-link{background:none;border:0;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;padding:0}.tool-status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;letter-spacing:.03em}.tool-status.EN_DEPOSITO{color:var(--ok-fg);background:var(--ok-bg)}.tool-status.CON_PERSONAL{color:var(--devol-fg);background:var(--devol-bg)}.tool-status.EN_MANTENIMIENTO{color:var(--amber);background:var(--amber-soft)}.tool-status.BAJA{color:var(--bad-fg);background:var(--bad-bg)}.tools-two-col{display:grid;grid-template-columns:1fr 1.4fr;gap:16px}.tools-empty{text-align:center!important;color:var(--txt-dim);padding:28px!important}.tool-action{white-space:nowrap}@media(max-width:900px){.tools-two-col{grid-template-columns:1fr}}
+</style>
 <style id="toolsModelPresentationStyles">
 #panel-herramientas{--tool-accent:#f2b705;color:var(--txt)}
 #panel-herramientas .tools-summary-card,#panel-herramientas .tools-section,#panel-herramientas .tools-page-head{background:var(--bg-card);border:1px solid var(--line);border-radius:10px;box-shadow:none;color:var(--txt)}#panel-herramientas .tools-page-head{border-bottom:3px solid var(--tool-accent)}
@@ -1436,6 +1437,21 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
 #toolsSummaryDetails>summary{cursor:pointer;list-style:none}#toolsSummaryDetails>summary::-webkit-details-marker{display:none}#toolsSummaryDetails[open]>summary{border-bottom:1px solid var(--line)}
 .tools-mov-filters{display:flex;flex-wrap:wrap;gap:9px;align-items:end}.tools-mov-filters input,.tools-mov-filters select{min-height:38px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg-elev);color:var(--txt)}.tools-mov-filters label{display:grid;gap:4px;color:var(--txt-dim);font-size:12px}.tools-mov-filters>input[type=search]{min-width:220px;flex:1}.tools-mov-filters>label input{min-width:140px}.tools-mov-pagination{display:flex;gap:12px;align-items:center}
 .mov-pill.mantenimiento{background:var(--amber-soft);color:var(--amber)}.mov-pill.baja{background:var(--line);color:var(--txt-dim)}
+.tool-actions{display:flex;flex-wrap:wrap;gap:6px;min-width:220px}.tool-actions .btn{padding:6px 8px;font-size:11px}.tool-actions .tool-maintenance{border-color:var(--amber);color:var(--amber)}.tool-actions .tool-danger{border-color:var(--bad-fg);color:var(--bad-fg)}.tool-actions .tool-disabled{opacity:.55;cursor:not-allowed}.tools-section-title .tools-section-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tool-manage-sub{margin:0 0 14px;color:var(--txt-dim);font-size:13px}.tool-movement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tool-movement-grid .btn{min-height:50px;justify-content:flex-start}.tool-movement-grid .btn i{width:18px}.tool-modal-note{font-size:12px;color:var(--txt-dim);margin:12px 0 0}@media(max-width:700px){.tool-movement-grid{grid-template-columns:1fr}.tool-actions{min-width:180px}}
+.tools-report-controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;padding:14px 16px;background:color-mix(in srgb,var(--bg-elev) 52%,transparent);border-bottom:1px solid var(--line-soft)}
+.tools-report-controls>input,.tools-report-controls>label input,.tools-report-controls>select{box-sizing:border-box;min-height:42px;padding:9px 12px;font:inherit}
+.tools-report-controls>input[type=search],.tools-report-controls>input:not([type]){flex:1 1 280px;min-width:220px}
+.tools-report-controls>label{display:grid;gap:5px;flex:1 1 155px;min-width:145px;color:var(--txt-dim);font-size:12px;font-weight:700}.tools-report-controls>label input{width:100%}
+.tools-report-controls>.btn{min-height:42px;padding:9px 14px;white-space:nowrap}.tools-report-controls .btn.primary{font-weight:800}
+#toolsTraceSection .tools-report-controls{padding-top:12px;padding-bottom:12px}#toolsTraceSection #toolTraceSearch{width:100%;max-width:760px;min-height:44px;padding:10px 13px;font-size:14px}
+#toolsQuickSection .tools-report-controls{align-items:center}#toolsQuickSection #toolsQuickCode{max-width:430px}#toolsQuickSection #toolsQuickManage{min-width:190px}
+#panel-herramientas .tools-table{min-width:1080px;table-layout:auto}#panel-herramientas .table-scroll{position:relative;overflow-x:auto;overflow-y:hidden;scrollbar-color:var(--accent) var(--bg-elev);scrollbar-width:thin}#panel-herramientas .table-scroll::-webkit-scrollbar{height:11px}#panel-herramientas .table-scroll::-webkit-scrollbar-track{background:var(--bg-elev);border-top:1px solid var(--line-soft)}#panel-herramientas .table-scroll::-webkit-scrollbar-thumb{background:var(--accent);border:3px solid var(--bg-elev);border-radius:99px}#panel-herramientas .table-scroll::-webkit-scrollbar-thumb:hover{background:var(--tool-accent)}
+#toolsStockSection .tools-table{min-width:1320px}#toolsStockSection .tools-table th:last-child,#toolsStockSection .tools-table td:last-child{position:sticky;right:0;z-index:2;box-shadow:-8px 0 12px color-mix(in srgb,var(--bg) 38%,transparent)}#toolsStockSection .tools-table th:last-child{z-index:3;background:var(--bg-elev)}#toolsStockSection .tools-table td:last-child{background:var(--bg-card)}
+.tools-scroll-note{display:flex;align-items:center;gap:6px;padding:8px 16px 10px;color:var(--txt-dim);font-size:11px;background:color-mix(in srgb,var(--bg-elev) 32%,transparent);border-top:1px solid var(--line-soft)}.tools-scroll-note i{color:var(--tool-accent)}
+.tools-top-scroll{height:13px;overflow-x:auto;overflow-y:hidden;background:var(--bg-elev);border-bottom:1px solid var(--line-soft);scrollbar-color:var(--accent) var(--bg-elev);scrollbar-width:thin}.tools-top-scroll>div{height:1px;min-width:1320px}.tools-top-scroll::-webkit-scrollbar{height:11px}.tools-top-scroll::-webkit-scrollbar-track{background:var(--bg-elev)}.tools-top-scroll::-webkit-scrollbar-thumb{background:var(--accent);border:3px solid var(--bg-elev);border-radius:99px}.tools-top-scroll::-webkit-scrollbar-thumb:hover{background:var(--tool-accent)}.tools-stock-footer{display:flex;justify-content:space-between;gap:12px;align-items:center}.tools-stock-footer .btn{min-width:92px}.tools-stock-footer .btn:disabled{opacity:.45;cursor:not-allowed}
+.tools-subtabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:8px;background:color-mix(in srgb,var(--bg-elev) 68%,transparent);border:1px solid var(--line);border-radius:12px}.tools-subtab{flex:1 1 190px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:9px 14px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--txt-dim);font:700 13px var(--sans);cursor:pointer}.tools-subtab:hover{background:var(--hover-bg);color:var(--txt)}.tools-subtab.active{background:var(--tool-accent);border-color:var(--tool-accent);color:#241c00;box-shadow:0 3px 10px color-mix(in srgb,var(--tool-accent) 25%,transparent)}
+.tools-mov-filters{padding:14px 16px!important;background:color-mix(in srgb,var(--bg-elev) 52%,transparent);border-bottom:1px solid var(--line-soft)}.tools-mov-filters>input[type=search]{min-width:260px;flex:2 1 300px}.tools-mov-filters select{min-width:155px}.tools-mov-filters>label{min-width:140px}.tools-mov-filters .btn{min-height:42px;padding:9px 13px;white-space:nowrap}
+@media(max-width:700px){.tools-section-title{align-items:flex-start;flex-direction:column;padding:14px}.tools-section-title .tools-section-actions{width:100%}.tools-section-title .tools-section-actions .btn{width:100%;justify-content:center}.tools-report-controls{padding:12px}.tools-report-controls>input[type=search],.tools-report-controls>input:not([type]),.tools-report-controls>label{flex-basis:100%;min-width:100%}#toolsQuickSection #toolsQuickCode,#toolsQuickSection #toolsQuickManage{max-width:none;width:100%}.tools-report-controls>.btn{width:100%;justify-content:center}.tools-subtabs{padding:6px;gap:5px}.tools-subtab{flex-basis:100%;min-height:39px}.tools-stock-footer{align-items:flex-start;flex-direction:column}.tools-stock-footer .tools-mov-pagination{width:100%;justify-content:space-between}}
 @media print{body.printing-tools{margin:0!important;padding:0!important;background:#fff!important}body.printing-tools::before{display:none!important}body.printing-tools>*:not(#toolsPrintArea){display:none!important}body.printing-tools>#toolsPrintArea{display:block!important;position:static!important;width:100%!important;margin:0!important;padding:0!important;background:#fff!important;color:#111!important}#toolsPrintArea,#toolsPrintArea *{visibility:visible!important;color:#111!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}#toolsPrintArea{font:12px Arial,sans-serif}#toolsPrintArea h1{font-size:20px;margin:0 0 8px}#toolsPrintArea p{margin:0 0 14px}#toolsPrintArea table{width:100%;border-collapse:collapse;font-size:11px}#toolsPrintArea th,#toolsPrintArea td{border:1px solid #777;padding:6px;text-align:left;vertical-align:top}#toolsPrintArea th{background:#eee!important}@page{margin:12mm}}
 </style><style id="sidebarStyles">
     .filter-title-modern{display:none}
@@ -1934,34 +1950,36 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
 
         <!-- HERRAMIENTAS PANEL -->
         <div id="panel-herramientas" style="display:none;">
-            <div class="tools-page-head"><div><div class="brand-eyebrow">Trazabilidad individual</div><div class="brand-title">Gestión de herramientas</div><p>Entrega, devolución, mantenimiento, baja e historial por cada unidad.</p></div></div>
+            <div class="tools-page-head"><div><div class="brand-eyebrow">Trazabilidad individual</div><div class="brand-title">Gestión de herramientas</div><p>Buscá una herramienta, mirá quién la tiene y registrá cada cambio desde un solo lugar.</p></div></div>
             <div class="stats" id="toolsKpis"></div>
-            <section class="table-wrap tools-section" id="toolsTraceSection"><div class="tools-section-title"><div><strong>Buscar herramienta y ver su trazabilidad</strong><div class="tools-report-note">Buscá por código, nombre, persona u obra para ver dónde está y todos sus movimientos.</div></div></div><div class="tools-report-controls"><input id="toolTraceSearch" list="toolTraceCodes" type="search" placeholder="Código, herramienta, persona u obra"><datalist id="toolTraceCodes"></datalist></div><div id="toolsTraceResults" class="tools-trace-results"><p class="tools-report-note">Escribí al menos 2 caracteres para buscar.</p></div></section>
-            <section class="table-wrap tools-section" id="toolsPeopleSection"><div class="tools-section-title"><div><strong>Herramientas a cargo de cada persona</strong><div class="tools-report-note">Seleccioná una persona para ver sus herramientas, la obra y desde cuándo las tiene.</div></div></div><div class="table-scroll"><table class="tools-table"><thead><tr><th>Persona</th><th class="num">Herramientas</th><th>Obra</th><th class="num">La más antigua (días)</th></tr></thead><tbody id="toolsPeopleBody"></tbody></table></div></section>
-            
-<section class="table-wrap tools-section" id="responsablesImportSection">
- <div class="tools-section-title"><strong>Actualizar responsables desde Excel</strong></div>
+            <nav class="tools-subtabs" aria-label="Vistas de herramientas"><button type="button" class="tools-subtab active" data-tools-view="stock"><i class="fa-solid fa-screwdriver-wrench"></i> Todas las herramientas</button><button type="button" class="tools-subtab" data-tools-view="cargo"><i class="fa-solid fa-user-check"></i> Por persona</button><button type="button" class="tools-subtab" data-tools-view="movimientos"><i class="fa-solid fa-clock-rotate-left"></i> Historial</button></nav>
+            <section class="table-wrap tools-section tools-view" data-tools-panel="movimientos" id="toolsTraceSection"><div class="tools-section-title"><div><strong>Buscar herramienta y ver su trazabilidad</strong><div class="tools-report-note">Buscá por código, nombre, persona u obra para ver dónde está y todos sus movimientos.</div></div></div><div class="tools-report-controls"><input id="toolTraceSearch" list="toolTraceCodes" type="search" placeholder="Código, herramienta, persona u obra"><datalist id="toolTraceCodes"></datalist></div><div id="toolsTraceResults" class="tools-trace-results"><p class="tools-report-note">Escribí al menos 2 caracteres para buscar.</p></div></section>
+            <section class="table-wrap tools-section tools-view" data-tools-panel="cargo" id="toolsPeopleSection"><div class="tools-section-title"><div><strong>Herramientas a cargo de cada persona</strong><div class="tools-report-note">Seleccioná una persona para ver sus herramientas, la obra y desde cuándo las tiene.</div></div></div><div class="table-scroll"><table class="tools-table"><thead><tr><th>Persona</th><th class="num">Herramientas</th><th>Obra</th><th class="num">La más antigua (días)</th></tr></thead><tbody id="toolsPeopleBody"></tbody></table></div></section>
+            <section class="table-wrap tools-section tools-view" data-tools-panel="stock" id="toolsQuickSection"><div class="tools-section-title"><div><strong>¿Qué necesitás hacer?</strong><div class="tools-report-note">Buscá por nombre o código. Mirá cuántas hay disponibles, quién las tiene y elegí una unidad para registrar un movimiento.</div></div><div class="tools-section-actions"><button type="button" class="btn small" id="toolsOpenMovements"><i class="fa-solid fa-clock-rotate-left"></i> Ver movimientos</button></div></div><div class="tools-report-controls"><input id="toolsQuickCode" list="toolsQuickCodes" type="search" placeholder="Ej.: motosierra, taladro o MOCH-004" aria-label="Buscar herramienta por nombre o código" aria-controls="toolsQuickResults" autocomplete="off"><datalist id="toolsQuickCodes"></datalist><button type="button" class="btn primary" id="toolsQuickManage">Buscar herramienta</button><button type="button" class="btn" id="toolsQuickClear">Limpiar</button></div><div id="toolsQuickResults" class="quick-results"><p class="tools-report-note">Escribí el nombre de una herramienta para ver cantidades y códigos.</p></div></section>
+            <div class="table-wrap tools-section tools-view" data-tools-panel="stock" id="toolsStockSection">
+                <div class="tools-section-title"><div><strong>Stock de herramientas</strong><div class="tools-report-note">Buscá por código, tipo, persona u obra y gestioná cada unidad desde su fila.</div></div></div>
+                <div class="toolbar"><div class="search-box"><input id="toolSearch" placeholder="Buscar código, tipo, responsable u obra"></div><select id="toolEstadoFilter" class="filter-select"><option value="">Todos los estados</option><option value="EN_DEPOSITO">En depósito</option><option value="CON_PERSONAL">Con personal</option><option value="EN_MANTENIMIENTO">En mantenimiento</option><option value="BAJA">Baja</option></select><select id="toolTipoFilter" class="filter-select"><option value="">Todos los tipos</option></select></div>
+                <div class="tools-top-scroll" id="toolsTopScroll" aria-label="Desplazamiento horizontal superior"><div id="toolsTopScrollInner"></div></div>
+                <div class="table-scroll" id="toolsStockScroll" aria-label="Tabla de stock de herramientas, desplazable horizontalmente"><table class="tools-table" id="toolsStockTable"><thead><tr><th>Código</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Responsable</th><th>Obra</th><th>Fecha de alta</th><th>Ubicación actual</th><th>Acciones</th></tr></thead><tbody id="toolsBody"></tbody></table></div><div class="tools-scroll-note"><i class="fa-solid fa-arrows-left-right"></i> Deslizá horizontalmente desde la barra superior o inferior. Las acciones quedan siempre visibles.</div><div class="table-footer tools-stock-footer"><span id="toolsStockCount">0 herramientas</span><div class="tools-mov-pagination"><button type="button" class="btn small" id="toolsStockPrev">‹ Anterior</button><span id="toolsStockPageLabel">1 / 1</span><button type="button" class="btn small" id="toolsStockNext">Siguiente ›</button></div></div>
+            </div>
+
+            <section class="table-wrap tools-section tools-view" data-tools-panel="movimientos" id="toolsHistorySection"><div class="tools-section-title"><span>Movimientos de herramientas · últimos 10</span><div class="tools-history-actions"><button type="button" class="btn small" id="toolsHistoryToggle">Ver todo</button></div></div><div class="table-scroll"><table class="tools-table"><thead><tr><th>Fecha</th><th>Código</th><th>Acción</th><th>Responsable</th><th>Obra</th><th>N° Remito</th><th>Motivo</th></tr></thead><tbody id="toolsHistoryBody"></tbody></table></div></section>
+            <section class="table-wrap tools-section tools-view" data-tools-panel="cargo" id="toolsReportSection">
+                <div class="tools-section-title"><div><strong>Informe de herramientas por persona y obra</strong><div class="tools-report-note">Días a cargo desde la entrega registrada. Si no hay una entrega registrada, se usa la fecha de alta como inicio conocido de la tenencia.</div></div><button type="button" class="btn primary" id="toolsReportPrint"><i class="fa-solid fa-print"></i> Imprimir informe</button></div>
+                <div class="tools-report-controls"><label>Desde <input type="date" id="toolsReportFrom"></label><label>Hasta <input type="date" id="toolsReportTo"></label><label>Persona <input type="search" id="toolsReportPerson" placeholder="Todas las personas"></label><label>Obra <input type="search" id="toolsReportWork" placeholder="Todas las obras"></label><button type="button" class="btn small" id="toolsReportClear">Limpiar filtros</button></div>
+                <div class="table-scroll"><table class="tools-table"><thead><tr><th>A cargo desde</th><th>Días a cargo</th><th>Persona</th><th>Obra</th><th>Herramienta</th><th>N° Remito</th><th>Estado</th></tr></thead><tbody id="toolsReportBody"></tbody></table></div>
+            </section>
+<details class="table-wrap tools-section tools-view" data-tools-panel="stock" id="responsablesImportSection"><summary class="tools-section-title">Actualizar responsables desde Excel <span class="tools-report-note">Abrir cuando tengas una nueva planilla</span></summary>
+ 
  <div style="padding:16px"><p>Solo códigos existentes. DEVUELTO → Depósito Arismendi, sin responsable. Se conserva el estado técnico. Los códigos repetidos quedan pendientes.</p>
  <input id="responsablesArchivo" type="file" accept=".xlsx" aria-label="Excel actualizado de herramientas">
  <button type="button" class="btn" id="responsablesRevisar">Revisar cambios</button>
  <button type="button" class="btn primary" id="responsablesAplicar" disabled>Aplicar cambios revisados</button>
  <p id="responsablesMensaje" role="status" style="margin:12px 0"></p>
  <div id="responsablesVista" class="table-scroll" style="max-height:420px;overflow:auto"></div></div>
-</section>
-<section class="table-wrap tools-section" id="toolsQuickSection"><div class="tools-section-title"><div><strong>¿Qué querés hacer con una herramienta?</strong><div class="tools-report-note">Buscá el código. Después elegí Entregar, Recibir devolución o Cambiar estado.</div></div></div><div class="tools-report-controls"><input id="toolsQuickCode" list="toolsQuickCodes" placeholder="Código de herramienta" aria-label="Código de herramienta"><datalist id="toolsQuickCodes"></datalist><button type="button" class="btn primary" id="toolsQuickManage">Ver opciones</button></div></section>
-            <div class="table-wrap tools-section" id="toolsStockSection">
-                <div class="tools-section-title"><div><strong>Stock de herramientas</strong><div class="tools-report-note">Buscá por código, tipo, persona u obra y gestioná cada unidad desde su fila.</div></div></div>
-                <div class="toolbar"><div class="search-box"><input id="toolSearch" placeholder="Buscar código, tipo, responsable u obra"></div><select id="toolEstadoFilter" class="filter-select"><option value="">Todos los estados</option><option value="EN_DEPOSITO">En depósito</option><option value="CON_PERSONAL">Con personal</option><option value="EN_MANTENIMIENTO">En mantenimiento</option><option value="BAJA">Baja</option></select><select id="toolTipoFilter" class="filter-select"><option value="">Todos los tipos</option></select></div>
-                <div class="table-scroll"><table class="tools-table"><thead><tr><th>Código</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Responsable</th><th>Obra</th><th>Fecha de alta</th><th>Ubicación actual</th><th>Acciones</th></tr></thead><tbody id="toolsBody"></tbody></table></div>
-            </div>
+</details>
 
-            <section class="table-wrap tools-section"><div class="tools-section-title"><span>Movimientos de herramientas · últimos 10</span><div class="tools-history-actions"><button type="button" class="btn small" id="toolsHistoryToggle">Ver todo</button></div></div><div class="table-scroll"><table class="tools-table"><thead><tr><th>Fecha</th><th>Código</th><th>Acción</th><th>Responsable</th><th>Obra</th><th>N° Remito</th><th>Motivo</th></tr></thead><tbody id="toolsHistoryBody"></tbody></table></div></section>
-            <section class="table-wrap tools-section" id="toolsReportSection">
-                <div class="tools-section-title"><div><strong>Informe de herramientas por persona y obra</strong><div class="tools-report-note">Fecha y hora de salida, tiempo transcurrido, herramientas, persona y obra.</div></div><button type="button" class="btn primary" id="toolsReportPrint"><i class="fa-solid fa-print"></i> Imprimir informe</button></div>
-                <div class="tools-report-controls"><label>Desde <input type="date" id="toolsReportFrom"></label><label>Hasta <input type="date" id="toolsReportTo"></label><label>Persona <input type="search" id="toolsReportPerson" placeholder="Todas las personas"></label><label>Obra <input type="search" id="toolsReportWork" placeholder="Todas las obras"></label><button type="button" class="btn small" id="toolsReportClear">Limpiar filtros</button></div>
-                <div class="table-scroll"><table class="tools-table"><thead><tr><th>Fecha y hora de salida</th><th>Tiempo transcurrido</th><th>Persona</th><th>Obra</th><th>Herramienta</th><th>N° Remito</th><th>Estado</th></tr></thead><tbody id="toolsReportBody"></tbody></table></div>
-            </section>
-            <details class="table-wrap tools-summary-card tools-section" id="toolsSummaryDetails">
+            <details class="table-wrap tools-summary-card tools-section tools-view" data-tools-panel="stock" id="toolsSummaryDetails">
                 <summary class="tools-section-title"><strong>Resumen por tipo de herramienta</strong><span class="tools-report-note">Abrir para ver cantidades y estados por tipo.</span></summary>
                 <div class="table-scroll" style="max-height:340px;overflow-y:auto;"><table class="tools-table"><thead><tr><th>Tipo</th><th class="num">Stock total</th><th class="num">En depósito</th><th class="num">Con personal</th><th class="num">Mantenimiento</th><th class="num">Baja</th></tr></thead><tbody id="toolsSummaryBody"></tbody></table></div>
             </details>
@@ -1977,7 +1995,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                     <input type="search" id="toolsMovPerson" placeholder="Filtrar por persona">
                     <button type="button" class="btn small" id="toolsMovClear">Limpiar filtros</button>
                 </div>
-                <div class="table-scroll"><table class="tools-table"><thead><tr><th>Fecha</th><th>Código</th><th>Herramienta</th><th>Acción</th><th>Responsable</th><th>Obra</th><th>N° Remito</th><th>Motivo</th></tr></thead><tbody id="toolsMovBody"></tbody></table></div>
+                <div class="table-scroll" aria-label="Tabla de movimientos de herramientas, desplazable horizontalmente"><table class="tools-table"><thead><tr><th>Fecha</th><th>Código</th><th>Herramienta</th><th>Acción</th><th>Responsable</th><th>Obra</th><th>N° Remito</th><th>Motivo</th></tr></thead><tbody id="toolsMovBody"></tbody></table></div><div class="tools-scroll-note"><i class="fa-solid fa-arrows-left-right"></i> Deslizá horizontalmente para ver todas las columnas.</div>
                 <div class="table-footer"><span id="toolsMovCount">0 movimientos</span><div class="tools-mov-pagination"><button type="button" class="btn small" id="toolsMovPrev">‹ Anterior</button><span id="toolsMovPageLabel">1 / 1</span><button type="button" class="btn small" id="toolsMovNext">Siguiente ›</button></div></div>
             </section>
         </div>
@@ -2055,6 +2073,15 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
     </div>
 
     <!-- Quick adjust modal -->
+    <div class="overlay" id="toolManageOverlay" aria-hidden="true">
+        <div class="modal" style="max-width:500px;width:100%;">
+            <h3 id="toolManageTitle">Gestionar herramienta</h3>
+            <p class="tool-manage-sub" id="toolManageSub"></p>
+            <div class="tool-movement-grid" id="toolManageActions"></div>
+            <p class="tool-modal-note">Las acciones se registran en el historial de la herramienta.</p>
+            <div class="modal-actions"><button type="button" class="btn ghost" id="toolManageCancel">Cancelar</button></div>
+        </div>
+    </div>
     <div class="overlay" id="adjustOverlay">
         <div class="modal">
             <h3 id="adjustTitle">Ajustar stock</h3>
@@ -2425,7 +2452,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
 
         auth.onAuthStateChanged(user => {
             document.getElementById('loginOverlay').style.display = user ? 'none' : 'flex';
-            if (user) { cargarTodo(false); cargarHerramientas(); }
+            if (user) { cargarTodo(false); }
             else { state.stock = []; state.mov = []; renderAll(); }
         });
 
@@ -2487,7 +2514,9 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             movExtra: [],
             herramientas: [],
             herramientasMov: [],
-            herramientasUi: { search: '', tipo: '', estado: '', historialCompleto: false, personaAbierta: '' },
+            herramientasCargadas: false,
+            herramientasCargando: false,
+            herramientasUi: { search: '', tipo: '', estado: '', historialCompleto: false, personaAbierta: '', vista: 'stock', page: 0, pageSize: 40 },
             movHerrUi: { search: '', accion: '', desde: '', hasta: '', persona: '', page: 0 },
             zona: '',           // '' = todas
             dep: '',            // '' = todos, '__NONE__' = sin ubicación, o '1','2','5A'...
@@ -2533,7 +2562,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         }
         function toolsPorTipo() { const r={}; state.herramientas.forEach(h=>{const t=h.tipo||'SIN TIPO'; const x=r[t]||(r[t]={tipo:t,total:0,EN_DEPOSITO:0,CON_PERSONAL:0,EN_MANTENIMIENTO:0,BAJA:0}); x[h.estado]=(x[h.estado]||0)+1; if(h.estado!=='BAJA')x.total++;}); return Object.values(r).sort((a,b)=>a.tipo.localeCompare(b.tipo)); }
         function herramientasComoStock() { return toolsPorTipo().map(x => ({ id:'HERR-'+x.tipo, es_herramienta:true, tipo_herramienta:x.tipo, familia:'HERRAMIENTAS', descripcion:nombreVisibleHerramienta(x.tipo), marca:'HERRAMIENTA CONTROLADA', ubicacion_deposito:'', stock_minimo:0, stock_actual:x.total, unidad:'unidades', estado:x.total ? 'OK' : 'REPONER', ult_obs:`Depósito: ${x.EN_DEPOSITO} · Personal: ${x.CON_PERSONAL} · Mantenimiento: ${x.EN_MANTENIMIENTO} · Baja: ${x.BAJA}`, resumen_herramienta:x })); }
-        function renderToolsSummary() { const body=document.getElementById('toolsSummaryBody'); if(!body)return; const rows=toolsPorTipo(); body.innerHTML=rows.length?rows.map(x=>`<tr><td><button class="tools-type-link" data-tool-type="${escTool(x.tipo)}"><i class="fa-solid fa-screwdriver-wrench"></i> ${escTool(nombreVisibleHerramienta(x.tipo))}</button></td><td class="num"><strong>${x.total}</strong></td><td class="num">${x.EN_DEPOSITO}</td><td class="num">${x.CON_PERSONAL}</td><td class="num">${x.EN_MANTENIMIENTO}</td><td class="num">${x.BAJA}</td></tr>`).join(''):'<tr><td colspan="6" class="tools-empty">No hay herramientas registradas.</td></tr>'; body.querySelectorAll('[data-tool-type]').forEach(b=>b.onclick=()=>{state.herramientasUi.tipo=b.dataset.toolType; document.getElementById('toolTipoFilter').value=b.dataset.toolType; renderHerramientas(); document.getElementById('toolsStockSection').scrollIntoView({behavior:'smooth',block:'start'});}); }
+        function renderToolsSummary() { const body=document.getElementById('toolsSummaryBody'); if(!body)return; const rows=toolsPorTipo(); body.innerHTML=rows.length?rows.map(x=>`<tr><td><button class="tools-type-link" data-tool-type="${escTool(x.tipo)}"><i class="fa-solid fa-screwdriver-wrench"></i> ${escTool(nombreVisibleHerramienta(x.tipo))}</button></td><td class="num"><strong>${x.total}</strong></td><td class="num">${x.EN_DEPOSITO}</td><td class="num">${x.CON_PERSONAL}</td><td class="num">${x.EN_MANTENIMIENTO}</td><td class="num">${x.BAJA}</td></tr>`).join(''):'<tr><td colspan="6" class="tools-empty">No hay herramientas registradas.</td></tr>'; body.querySelectorAll('[data-tool-type]').forEach(b=>b.onclick=()=>{state.herramientasUi.tipo=b.dataset.toolType;state.herramientasUi.page=0; document.getElementById('toolTipoFilter').value=b.dataset.toolType; renderHerramientas(); document.getElementById('toolsStockSection').scrollIntoView({behavior:'smooth',block:'start'});}); }
 
         // Identidad por palabras completas: ignora orden, caja, tildes y espacios.
         function palabrasPersonaTool(valor) {
@@ -2564,7 +2593,24 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         }
 
         function toolsFiltradas() { const u=state.herramientasUi, q=(u.search||'').toUpperCase(); return state.herramientas.filter(h=>(!u.tipo||h.tipo===u.tipo)&&(!u.estado||h.estado===u.estado)&&(!q||[h.codigo,h.tipo,h.descripcion,h.responsable,h.obra,h.ubicacion,h.ultimo_movimiento,h.fecha_alta].join(' ').toUpperCase().includes(q)||buscarPersonaTool(h.responsable,q))); }
-        function renderTraceabilidadHerramientas() { const area=document.getElementById('toolsTraceResults'); if(!area)return; const q=(document.getElementById('toolTraceSearch')?.value||'').trim().toLocaleUpperCase('es-AR'); if(q.length<2){area.innerHTML='<p class="tools-report-note">Escribí al menos 2 caracteres para buscar.</p>';return;} const encontrados=state.herramientas.filter(h=>{const movs=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')); const campos=[h.codigo,h.tipo,h.descripcion,h.responsable,h.obra,h.ubicacion,h.ultimo_movimiento,h.fecha_alta,...movs.flatMap(m=>[m.responsable,m.persona,m.obra,m.accion,m.remito])]; return campos.join(' ').toLocaleUpperCase('es-AR').includes(q)||[h.responsable,...movs.flatMap(m=>[m.responsable,m.persona])].some(nombre=>buscarPersonaTool(nombre,q));}).slice(0,30); area.innerHTML=encontrados.length?encontrados.map(h=>{const asignada=salidasActualesTool().find(x=>String(x.h.codigo)===String(h.codigo)); const historial=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')); const lugar=h.estado==='CON_PERSONAL'?(h.responsable||asignada?.persona?'Con '+(h.responsable||asignada.persona):'Con personal'):(h.ubicacion||h.ultimo_movimiento||estadoTool(h.estado)); const alta=parseFechaTool(h.fecha_alta); const histHtml=historial.length?`<div class="table-scroll"><table class="tools-table"><thead><tr><th>Fecha</th><th>Movimiento</th><th>Persona</th><th>Obra</th><th>N° Remito</th><th>Motivo</th></tr></thead><tbody>${historial.map(m=>`<tr><td>${escTool(m.fecha||'—')}</td><td>${escTool(m.accion||'—')}</td><td>${escTool(m.responsable||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${escTool(m.motivo||'—')}</td></tr>`).join('')}</tbody></table></div>`:'<p class="tools-report-note">No hay movimientos guardados para esta herramienta.</p>'; return `<article class="tools-trace-result"><h3>${escTool(nombreVisibleHerramienta(h.tipo))}${h.descripcion?` · ${escTool(nombreVisibleHerramienta(h.descripcion))}`:''} <span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></h3><div class="tools-trace-meta"><div>Código<strong>${escTool(h.codigo)}</strong></div><div>Responsable<strong>${escTool(h.responsable||'—')}</strong></div><div>Obra<strong>${escTool(asignada?.obra||h.obra||'—')}</strong></div><div>Ubicación actual<strong>${escTool(lugar)}</strong></div><div>Fecha de alta (Excel)<strong>${escTool(alta?fechaInformeTool(alta):h.fecha_alta||'Sin fecha en los datos recibidos')}</strong></div><div>Tiempo con personal<strong>${escTool(asignada?edadInformeTool(asignada.desde):'—')}</strong></div></div><details><summary>Trazabilidad · ${historial.length} movimiento(s)</summary>${histHtml}</details></article>`;}).join(''):'<p class="tools-report-note">No se encontraron herramientas o movimientos con esa búsqueda.</p>'; }        function renderHerramientas() { const sel=document.getElementById('toolTipoFilter'); if(!sel)return; const codes=document.getElementById('toolsQuickCodes'); if(codes) codes.innerHTML=state.herramientas.map(h=>'<option value="'+escTool(h.codigo)+'"></option>').join(''); const traceCodes=document.getElementById('toolTraceCodes'); if(traceCodes) traceCodes.innerHTML=state.herramientas.map(h=>'<option value="'+escTool(h.codigo)+'"></option>').join(''); const tipos=[...new Set(state.herramientas.map(h=>h.tipo))].sort(); sel.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option value="${escTool(t)}">${escTool(nombreVisibleHerramienta(t))}</option>`).join(''); sel.value=state.herramientasUi.tipo; const list=toolsFiltradas(), body=document.getElementById('toolsBody'); body.innerHTML=list.length?list.map(h=>`<tr><td class="mono">${escTool(h.codigo)}</td><td>${escTool(nombreVisibleHerramienta(h.tipo))}</td><td>${escTool(nombreVisibleHerramienta(h.descripcion))}</td><td><span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></td><td>${escTool(h.responsable||'—')}</td><td>${escTool(h.obra||'—')}</td><td>${escTool(h.fecha_alta||'—')}</td><td>${escTool(h.ubicacion||h.ultimo_movimiento||'—')}</td><td><button class="btn small tool-action" data-tool-code="${escTool(h.codigo)}">Ver opciones</button></td></tr>`).join(''):'<tr><td colspan="9" class="tools-empty">No hay herramientas que coincidan con el filtro.</td></tr>'; body.querySelectorAll('[data-tool-code]').forEach(b=>b.onclick=()=>gestionarHerramienta(b.dataset.toolCode)); renderPersonasHerramientas(); renderHistorialHerramientas(); renderInformeHerramientas(); renderKpisHerramientas(); renderTraceabilidadHerramientas(); }
+        function renderTraceabilidadHerramientas() { const area=document.getElementById('toolsTraceResults'); if(!area)return; const q=(document.getElementById('toolTraceSearch')?.value||'').trim().toLocaleUpperCase('es-AR'); if(q.length<2){area.innerHTML='<p class="tools-report-note">Escribí al menos 2 caracteres para buscar.</p>';return;} const encontrados=state.herramientas.filter(h=>{const movs=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')); const campos=[h.codigo,h.tipo,h.descripcion,h.responsable,h.obra,h.ubicacion,h.ultimo_movimiento,h.fecha_alta,...movs.flatMap(m=>[m.responsable,m.persona,m.obra,m.accion,m.remito])]; return campos.join(' ').toLocaleUpperCase('es-AR').includes(q)||[h.responsable,...movs.flatMap(m=>[m.responsable,m.persona])].some(nombre=>buscarPersonaTool(nombre,q));}).slice(0,30); area.innerHTML=encontrados.length?encontrados.map(h=>{const asignada=salidasActualesTool().find(x=>String(x.h.codigo)===String(h.codigo)); const historial=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')); const lugar=h.estado==='CON_PERSONAL'?(h.responsable||asignada?.persona?'Con '+(h.responsable||asignada.persona):'Con personal'):(h.ubicacion||h.ultimo_movimiento||estadoTool(h.estado)); const alta=parseFechaTool(h.fecha_alta); const histHtml=historial.length?`<div class="table-scroll"><table class="tools-table"><thead><tr><th>Fecha</th><th>Movimiento</th><th>Persona</th><th>Obra</th><th>N° Remito</th><th>Motivo</th></tr></thead><tbody>${historial.map(m=>`<tr><td>${escTool(m.fecha||'—')}</td><td>${escTool(m.accion||'—')}</td><td>${escTool(m.responsable||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${escTool(m.motivo||'—')}</td></tr>`).join('')}</tbody></table></div>`:'<p class="tools-report-note">No hay movimientos guardados para esta herramienta.</p>'; return `<article class="tools-trace-result"><h3>${escTool(nombreVisibleHerramienta(h.tipo))}${h.descripcion?` · ${escTool(nombreVisibleHerramienta(h.descripcion))}`:''} <span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></h3><div class="tools-trace-meta"><div>Código<strong>${escTool(h.codigo)}</strong></div><div>Responsable<strong>${escTool(h.responsable||'—')}</strong></div><div>Obra<strong>${escTool(asignada?.obra||h.obra||'—')}</strong></div><div>Ubicación actual<strong>${escTool(lugar)}</strong></div><div>Fecha de alta (Excel)<strong>${escTool(alta?fechaInformeTool(alta):h.fecha_alta||'Sin fecha en los datos recibidos')}</strong></div><div>Tiempo con personal<strong>${escTool(asignada?edadInformeTool(asignada.desde):'—')}</strong></div></div><details><summary>Trazabilidad · ${historial.length} movimiento(s)</summary>${histHtml}</details></article>`;}).join(''):'<p class="tools-report-note">No se encontraron herramientas o movimientos con esa búsqueda.</p>'; }
+        function aplicarVistaHerramientas() {
+            const vista=state.herramientasUi.vista || 'stock';
+            document.querySelectorAll('#panel-herramientas [data-tools-panel]').forEach(panel=>{ panel.style.display=panel.dataset.toolsPanel===vista ? '' : 'none'; });
+            document.querySelectorAll('#panel-herramientas [data-tools-view]').forEach(button=>button.classList.toggle('active',button.dataset.toolsView===vista));
+        }
+        function cambiarVistaHerramientas(vista) {
+            if (!['stock','cargo','movimientos'].includes(vista)) return;
+            state.herramientasUi.vista=vista;
+            aplicarVistaHerramientas();
+            renderHerramientas();
+        }
+        function accionesHerramientaHtml(h) {
+            const code=escTool(h.codigo);
+            return '<div class="tool-actions"><button class="btn small primary" data-tool-open="'+code+'"><i class="fa-solid fa-sliders"></i> Ver opciones</button></div>';
+        }
+        function sincronizarScrollSuperiorHerramientas() { const top=document.getElementById('toolsTopScroll'), inner=document.getElementById('toolsTopScrollInner'), scroll=document.getElementById('toolsStockScroll'), table=document.getElementById('toolsStockTable'); if(!top||!inner||!scroll||!table)return; inner.style.width=`${table.scrollWidth}px`; if(!top.dataset.sync){let syncing=false; const sync=(origen,destino)=>{if(syncing)return;syncing=true;destino.scrollLeft=origen.scrollLeft;syncing=false;}; top.addEventListener('scroll',()=>sync(top,scroll),{passive:true});scroll.addEventListener('scroll',()=>sync(scroll,top),{passive:true});top.dataset.sync='1';} }
+        function renderHerramientas() { const sel=document.getElementById('toolTipoFilter'); if(!sel)return; aplicarVistaHerramientas(); const codes=document.getElementById('toolsQuickCodes'); if(codes) codes.innerHTML=[...new Set(state.herramientas.flatMap(h=>[h.codigo,h.tipo]).filter(Boolean))].map(v=>'<option value="'+escTool(v)+'"></option>').join(''); const traceCodes=document.getElementById('toolTraceCodes'); if(traceCodes) traceCodes.innerHTML=state.herramientas.map(h=>'<option value="'+escTool(h.codigo)+'"></option>').join(''); const tipos=[...new Set(state.herramientas.map(h=>h.tipo))].filter(Boolean).sort(); sel.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option value="${escTool(t)}">${escTool(nombreVisibleHerramienta(t))}</option>`).join(''); sel.value=state.herramientasUi.tipo; const list=toolsFiltradas(), ui=state.herramientasUi, pages=Math.max(1,Math.ceil(list.length/ui.pageSize)); ui.page=Math.min(Math.max(0,ui.page),pages-1); const visibles=list.slice(ui.page*ui.pageSize,ui.page*ui.pageSize+ui.pageSize), body=document.getElementById('toolsBody'); body.innerHTML=visibles.length?visibles.map(h=>`<tr><td><div class="foto-codigo">${botonFotoHerramienta(h)}<span class="mono">${escTool(h.codigo)}</span></div></td><td>${escTool(nombreVisibleHerramienta(h.tipo))}</td><td>${escTool(nombreVisibleHerramienta(h.descripcion))}</td><td><span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></td><td>${escTool(h.responsable||'—')}</td><td>${escTool(h.obra||'—')}</td><td>${escTool(fechaAltaInformeTool(h.fecha_alta))}</td><td>${escTool(h.ubicacion||h.ultimo_movimiento||'—')}</td><td>${accionesHerramientaHtml(h)}</td></tr>`).join(''):'<tr><td colspan="9" class="tools-empty">No hay herramientas que coincidan con el filtro.</td></tr>'; activarFotosHerramientas(body); body.querySelectorAll('[data-tool-open]').forEach(b=>b.onclick=()=>abrirGestionHerramienta(b.dataset.toolOpen)); document.getElementById('toolsStockCount').textContent=`${list.length} herramienta${list.length===1?'':'s'} · mostrando ${visibles.length?ui.page*ui.pageSize+1:0}–${ui.page*ui.pageSize+visibles.length}`; document.getElementById('toolsStockPageLabel').textContent=`${ui.page+1} / ${pages}`; document.getElementById('toolsStockPrev').disabled=ui.page<=0; document.getElementById('toolsStockNext').disabled=ui.page>=pages-1; requestAnimationFrame(sincronizarScrollSuperiorHerramientas); renderKpisHerramientas(); renderBusquedaRapidaHerramientas(); const vista=state.herramientasUi.vista; if(vista==='stock') renderToolsSummary(); else if(vista==='cargo'){renderPersonasHerramientas();renderInformeHerramientas();} else {renderHistorialHerramientas();renderTraceabilidadHerramientas();} }
         function renderPersonasHerramientas() {
             const groups={};
             salidasActualesTool().forEach(x=>{const k=nombrePersonaTool(x.persona);(groups[k]||(groups[k]={items:[],obras:new Set()})).items.push(x);groups[k].obras.add(x.obra||'—');});
@@ -2573,8 +2619,8 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             body.innerHTML=rows.length?rows.map(([persona,g])=>{
                 const age=g.items.map(x=>diasTranscurridosTool(x.desde)).filter(x=>x!==null), maxAge=age.length?Math.max(...age):null, open=state.herramientasUi.personaAbierta===persona;
                 const main=`<tr class="tools-person-main" data-persona-tool="${escTool(persona)}" tabindex="0" aria-expanded="${open}"><td><strong>${escTool(persona)}</strong></td><td class="num">${g.items.length}</td><td>${escTool([...g.obras].join(', '))}</td><td class="num">${maxAge===null?'Sin fecha':maxAge}</td></tr>`;
-                const filas=g.items.map(i=>`<tr><td><strong>${escTool(nombreVisibleHerramienta(i.h.tipo))}</strong>${i.h.descripcion?`<small class="tools-report-note">${escTool(nombreVisibleHerramienta(i.h.descripcion))}</small>`:''}</td><td class="mono">${escTool(i.h.codigo)}</td><td>${escTool(i.obra||'—')}</td><td>${escTool(fechaAltaInformeTool(i.h.fecha_alta||i.desde))}</td><td>${escTool(edadInformeTool(i.desde))}</td><td>${escTool(i.remito||'—')}</td></tr>`).join('');
-                const details=open?`<tr class="tools-person-detail"><td colspan="4"><div class="tools-person-printbar"><button type="button" class="btn small primary" data-print-person="${escTool(persona)}"><i class="fa-solid fa-print"></i> Imprimir herramientas de ${escTool(persona)}</button></div><div class="table-scroll"><table class="tools-table tools-person-detail-table"><thead><tr><th>Herramienta</th><th>Código</th><th>Obra</th><th>Fecha de alta</th><th>Tiempo a cargo</th><th>N° Remito</th></tr></thead><tbody>${filas}</tbody></table></div></td></tr>`:'';
+                const filas=g.items.map(i=>`<tr><td><strong>${escTool(nombreVisibleHerramienta(i.h.tipo))}</strong>${i.h.descripcion?`<small class="tools-report-note">${escTool(nombreVisibleHerramienta(i.h.descripcion))}</small>`:''}</td><td class="mono">${escTool(i.h.codigo)}</td><td>${escTool(i.obra||'—')}</td><td>${escTool(fechaAltaInformeTool(i.fecha))}<small class="tools-report-note">${escTool(i.fuenteFecha||'')}</small></td><td>${escTool(edadInformeTool(i.desde))}</td><td>${escTool(i.remito||'—')}</td></tr>`).join('');
+                const details=open?`<tr class="tools-person-detail"><td colspan="4"><div class="tools-person-printbar"><button type="button" class="btn small primary" data-print-person="${escTool(persona)}"><i class="fa-solid fa-print"></i> Imprimir herramientas de ${escTool(persona)}</button></div><div class="table-scroll"><table class="tools-table tools-person-detail-table"><thead><tr><th>Herramienta</th><th>Código</th><th>Obra</th><th>A cargo desde</th><th>Días a cargo</th><th>N° Remito</th></tr></thead><tbody>${filas}</tbody></table></div></td></tr>`:'';
                 return main+details;
             }).join(''):'<tr><td colspan="4" class="tools-empty">Nadie tiene herramientas a cargo.</td></tr>';
             body.querySelectorAll('[data-persona-tool]').forEach(row=>{const toggle=()=>{const person=row.dataset.personaTool;state.herramientasUi.personaAbierta=state.herramientasUi.personaAbierta===person?'':person;renderPersonasHerramientas();};row.addEventListener('click',toggle);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});});
@@ -2592,10 +2638,10 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             const nombre = String(persona || '').trim() || 'SIN RESPONSABLE';
             const rows = salidasActualesTool().filter(x => mismaPersonaTool(x.persona || 'SIN RESPONSABLE', nombre));
             if (!rows.length) return alert('Esta persona no tiene herramientas registradas a su cargo.');
-            const filas = rows.map(x => `<tr><td>${escTool(nombreVisibleHerramienta(x.h.tipo))}${x.h.descripcion ? ` · ${escTool(nombreVisibleHerramienta(x.h.descripcion))}` : ''}</td><td>${escTool(x.h.codigo)}</td><td>${escTool(x.obra || '—')}</td><td>${escTool(fechaAltaInformeTool(x.h.fecha_alta || x.desde))}</td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.remito || '—')}</td></tr>`).join('');
-            imprimirHtmlHerramientas(`Herramientas a cargo de ${nombre}`, `<table><thead><tr><th>Herramienta</th><th>Código</th><th>Obra</th><th>Fecha de alta</th><th>Tiempo a cargo</th><th>N.º de remito</th></tr></thead><tbody>${filas}</tbody></table>`);
+            const filas = rows.map(x => `<tr><td>${escTool(nombreVisibleHerramienta(x.h.tipo))}${x.h.descripcion ? ` · ${escTool(nombreVisibleHerramienta(x.h.descripcion))}` : ''}</td><td>${escTool(x.h.codigo)}</td><td>${escTool(x.obra || '—')}</td><td>${escTool(fechaAltaInformeTool(x.fecha))}<small class="tools-report-note">${escTool(x.fuenteFecha||'')}</small></td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.remito || '—')}</td></tr>`).join('');
+            imprimirHtmlHerramientas(`Herramientas a cargo de ${nombre}`, `<table><thead><tr><th>Herramienta</th><th>Código</th><th>Obra</th><th>A cargo desde</th><th>Días a cargo</th><th>N.º de remito</th></tr></thead><tbody>${filas}</tbody></table>`);
         }
-        function renderHistorialHerramientas() { const body=document.getElementById('toolsHistoryBody'); if(!body)return; const q=(document.getElementById('toolsHistorySearch')?.value||'').trim().toLocaleUpperCase('es-AR'); const rows=state.herramientasMov.filter(m=>!q||[m.codigo,m.tipo,m.descripcion,m.accion,m.tipo_movimiento,m.responsable,m.persona,m.obra,m.remito,m.motivo,m.observaciones].join(' ').toLocaleUpperCase('es-AR').includes(q)||buscarPersonaTool(m.responsable||m.persona||'',q)); const visible=rows.slice(0,10); body.innerHTML=visible.length?visible.map(m=>{const h=state.herramientas.find(x=>String(x.codigo)===String(m.codigo)); const nombre=nombreVisibleHerramienta(m.descripcion||h?.descripcion||m.tipo||h?.tipo||m.codigo||'Herramienta'); return `<tr><td>${escTool(m.fecha||m.fecha_hora||'—')}</td><td>${escTool(m.codigo||'—')}<br>${escTool(nombre)}</td><td>${escTool(m.accion||m.tipo_movimiento||'—')}</td><td>${escTool(m.responsable||m.persona||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${escTool(m.motivo||m.observaciones||'—')}</td></tr>`;}).join(''):'<tr><td colspan="7" class="tools-empty">No hay movimientos que coincidan con la búsqueda.</td></tr>'; const btn=document.getElementById('toolsHistoryToggle'); if(btn)btn.textContent='Ver todo'; }function diasTranscurridosTool(d) { return d ? Math.max(0,Math.floor((Date.now()-d.getTime())/86400000)) : null; }
+        function renderHistorialHerramientas() { const body=document.getElementById('toolsHistoryBody'); if(!body)return; const q=(document.getElementById('toolsHistorySearch')?.value||'').trim().toLocaleUpperCase('es-AR'); const rows=state.herramientasMov.filter(m=>!q||[m.codigo,m.tipo,m.descripcion,m.accion,m.tipo_movimiento,m.responsable,m.persona,m.obra,m.remito,m.motivo,m.observaciones].join(' ').toLocaleUpperCase('es-AR').includes(q)||buscarPersonaTool(m.responsable||m.persona||'',q)); const visible=rows.slice(0,10); body.innerHTML=visible.length?visible.map(m=>{const h=state.herramientas.find(x=>String(x.codigo)===String(m.codigo)); const nombre=nombreVisibleHerramienta(m.descripcion||h?.descripcion||m.tipo||h?.tipo||m.codigo||'Herramienta'); return `<tr><td>${escTool(m.fecha||m.fecha_hora||'—')}</td><td>${escTool(m.codigo||'—')}<br>${escTool(nombre)}</td><td>${escTool(m.accion||m.tipo_movimiento||'—')}</td><td>${escTool(m.responsable||m.persona||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${escTool(m.motivo||m.observaciones||'—')}</td></tr>`;}).join(''):'<tr><td colspan="7" class="tools-empty">No hay movimientos que coincidan con la búsqueda.</td></tr>'; const btn=document.getElementById('toolsHistoryToggle'); if(btn)btn.textContent='Ver todo'; }function diasTranscurridosTool(d) { if(!d || isNaN(d.getTime()))return null; const hoy=new Date(Date.now()); const actual=Date.UTC(hoy.getFullYear(),hoy.getMonth(),hoy.getDate()); const inicio=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()); return Math.max(0,Math.round((actual-inicio)/86400000)); }
         function normalizarAccionHerramienta(v) { return String(v || '').toLocaleUpperCase('es-AR').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' '); }
         function movimientosHerramientasFiltrados() {
             const u=state.movHerrUi, q=String(u.search||'').trim().toLocaleUpperCase('es-AR'), persona=String(u.persona||'').trim().toLocaleUpperCase('es-AR');
@@ -2616,14 +2662,14 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
          function parseFechaTool(v) { if(!v)return null; const s=String(v).trim(); let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/); if(m){const d=new Date(+m[3],+m[2]-1,+m[1],+(m[4]||0),+(m[5]||0)); return isNaN(d)?null:d;} const d=new Date(s); return isNaN(d)?null:d; }
          function fechaInformeTool(d) { return d ? d.toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'; }
         function fechaAltaInformeTool(v) { const d=parseFechaTool(v); return d ? d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) : (String(v||'').trim()||'—'); }
-         function edadInformeTool(d) { if(!d)return 'Sin fecha registrada'; let ms=Math.max(0,Date.now()-d.getTime()); const dias=Math.floor(ms/86400000); const horas=Math.floor((ms%86400000)/3600000); return `${dias} día${dias===1?'':'s'} y ${horas} hora${horas===1?'':'s'}`; }
-         function salidasActualesTool() { return state.herramientas.filter(h=>h.estado==='CON_PERSONAL').map(h=>{const hist=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')).sort((a,b)=>(parseFechaTool(b.fecha||b.fecha_hora)?.getTime()||0)-(parseFechaTool(a.fecha||a.fecha_hora)?.getTime()||0)); let salida=null; for(const m of hist){const a=String(m.accion||m.tipo_movimiento||'').toUpperCase(); if(a.includes('DEVOL'))break; if(a.includes('SALIDA')){salida=m;break;}} const fecha=h.fecha_alta||salida?.fecha||salida?.fecha_hora||salida?.fecha_salida||h.ultimo_movimiento; const desde=parseFechaTool(fecha); return {h,persona:nombrePersonaTool(h.responsable||salida?.responsable||''),obra:h.obra||salida?.obra||'',remito:salida?.remito||'',fecha,desde};}); }
-         function renderInformeHerramientas() { const body=document.getElementById('toolsReportBody'); if(!body)return; const desde=document.getElementById('toolsReportFrom')?.value||'', hasta=document.getElementById('toolsReportTo')?.value||'', persona=(document.getElementById('toolsReportPerson')?.value||'').trim().toLocaleUpperCase('es-AR'), obra=(document.getElementById('toolsReportWork')?.value||'').trim().toLocaleUpperCase('es-AR'); const from=desde?new Date(`${desde}T00:00:00`):null, to=hasta?new Date(`${hasta}T23:59:59`):null; const rows=salidasActualesTool().filter(x=>(!persona||buscarPersonaTool(x.persona||'SIN RESPONSABLE', persona))&&(!obra||x.obra.toLocaleUpperCase('es-AR').includes(obra))&&(!from||(x.desde&&x.desde>=from))&&(!to||(x.desde&&x.desde<=to))); body.innerHTML=rows.length?rows.map(x=>`<tr><td>${escTool(fechaInformeTool(x.desde))}</td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.persona||'SIN RESPONSABLE')}</td><td>${escTool(x.obra||'—')}</td><td>${escTool(`${x.h.codigo} · ${nombreVisibleHerramienta(x.h.tipo)}${x.h.descripcion ? ` · ${nombreVisibleHerramienta(x.h.descripcion)}` : ``}`)}</td><td>${escTool(x.remito||'—')}</td><td>Con personal</td></tr>`).join(''):'<tr><td colspan="7" class="tools-empty">No hay herramientas actualmente a cargo que coincidan con los filtros.</td></tr>'; }
+         function edadInformeTool(d) { const dias=diasTranscurridosTool(d); if(dias===null)return 'Sin fecha registrada'; return `${dias} día${dias===1?'':'s'}`; }
+         function salidasActualesTool() { return state.herramientas.filter(h=>h.estado==='CON_PERSONAL').map(h=>{const hist=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')).sort((a,b)=>(parseFechaTool(b.fecha||b.fecha_hora)?.getTime()||0)-(parseFechaTool(a.fecha||a.fecha_hora)?.getTime()||0)); let salida=null; for(const m of hist){const a=String(m.accion||m.tipo_movimiento||'').toUpperCase(); if(a.includes('DEVOL'))break; if(a.includes('SALIDA')){salida=m;break;}} const esConciliacion=String(salida?.motivo||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().includes('CONCILIACION DESDE EXCEL'); const mismaTenencia=salida && (!h.responsable || mismaPersonaTool(h.responsable,salida.responsable)); const fechaSalida=!esConciliacion && mismaTenencia ? (salida?.fecha||salida?.fecha_hora||salida?.fecha_salida||'') : ''; const usaSalida=!!parseFechaTool(fechaSalida); const fecha=usaSalida?fechaSalida:(h.fecha_alta||''); const desde=parseFechaTool(fecha); const fuenteFecha=desde?(usaSalida?'Entrega registrada':'Fecha de alta'):''; return {h,persona:nombrePersonaTool(h.responsable||salida?.responsable||''),obra:h.obra||(mismaTenencia?salida?.obra:'')||'',remito:(mismaTenencia?salida?.remito:'')||'',fecha,desde,fuenteFecha};}); }
+         function renderInformeHerramientas() { const body=document.getElementById('toolsReportBody'); if(!body)return; const desde=document.getElementById('toolsReportFrom')?.value||'', hasta=document.getElementById('toolsReportTo')?.value||'', persona=(document.getElementById('toolsReportPerson')?.value||'').trim().toLocaleUpperCase('es-AR'), obra=(document.getElementById('toolsReportWork')?.value||'').trim().toLocaleUpperCase('es-AR'); const from=desde?new Date(`${desde}T00:00:00`):null, to=hasta?new Date(`${hasta}T23:59:59`):null; const rows=salidasActualesTool().filter(x=>(!persona||buscarPersonaTool(x.persona||'SIN RESPONSABLE', persona))&&(!obra||x.obra.toLocaleUpperCase('es-AR').includes(obra))&&(!from||(x.desde&&x.desde>=from))&&(!to||(x.desde&&x.desde<=to))); body.innerHTML=rows.length?rows.map(x=>`<tr><td>${escTool(fechaInformeTool(x.desde))}<small class="tools-report-note">${escTool(x.fuenteFecha||'')}</small></td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.persona||'SIN RESPONSABLE')}</td><td>${escTool(x.obra||'—')}</td><td>${escTool(`${x.h.codigo} · ${nombreVisibleHerramienta(x.h.tipo)}${x.h.descripcion ? ` · ${nombreVisibleHerramienta(x.h.descripcion)}` : ``}`)}</td><td>${escTool(x.remito||'—')}</td><td>Con personal</td></tr>`).join(''):'<tr><td colspan="7" class="tools-empty">No hay herramientas actualmente a cargo que coincidan con los filtros.</td></tr>'; }
         function imprimirInformeHerramientas() {
             renderInformeHerramientas();
             const filas = [...document.querySelectorAll('#toolsReportBody tr')].filter(r => !r.querySelector('.tools-empty')).map(r => r.outerHTML).join('');
             if (!filas) return alert('No hay herramientas a cargo para imprimir con los filtros seleccionados.');
-            imprimirHtmlHerramientas('Informe de herramientas por persona y obra', `<table><thead><tr><th>Fecha y hora de salida</th><th>Tiempo transcurrido</th><th>Persona</th><th>Obra</th><th>Herramienta</th><th>N.º de remito</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table>`);
+            imprimirHtmlHerramientas('Informe de herramientas por persona y obra', `<table><thead><tr><th>A cargo desde</th><th>Días a cargo</th><th>Persona</th><th>Obra</th><th>Herramienta</th><th>N.º de remito</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table>`);
         }
          function renderKpisHerramientas() { const a=state.herramientas.filter(h=>h.estado!=='BAJA'); const k=[['Activas',a.length,'#4ade80'],['En depósito',a.filter(h=>h.estado==='EN_DEPOSITO').length,'#60a5fa'],['Con personal',a.filter(h=>h.estado==='CON_PERSONAL').length,'#f59e0b'],['Mantenimiento',a.filter(h=>h.estado==='EN_MANTENIMIENTO').length,'#f87171']]; document.getElementById('toolsKpis').innerHTML=k.map(x=>`<div class="stat"><div class="stat-label">${x[0]}</div><div class="stat-num" style="color:${x[2]}">${x[1]}</div></div>`).join(''); }
         function mapearEstadoTool(u) {
@@ -2633,8 +2679,17 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             return (u.disp && enDeposito) ? 'EN_DEPOSITO' : 'EN_MANTENIMIENTO';
         }
 
-        async function cargarHerramientas() {
-            if (isDemo || !auth.currentUser) return;
+        async function cargarHerramientas(forzar=false) {
+            if (state.herramientasCargando) return;
+            if (state.herramientasCargadas && !forzar) return;
+            if (isDemo || !auth.currentUser) {
+                cargarHerramientasLocales();
+                state.herramientasCargadas=true;
+                if (state.activeTab==='herramientas') renderHerramientas();
+                if (state.activeTab==='movherr') renderMovHerramientas();
+                return;
+            }
+            state.herramientasCargando=true;
             try {
                 const token = encodeURIComponent(await getIdToken());
                 const res = await fetch(`${CONFIG.WEB_APP_URL}?action=herr-datos&token=${token}&_=${Date.now()}`, { cache: 'no-store' });
@@ -2651,6 +2706,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                     descripcion: [u.detalle, u.marca].filter(Boolean).join(' · '),
                     estado: mapearEstadoTool(u),
                     responsable: u.poder || '',
+                    foto_id: u.foto_id || '',
                     estado_tecnico: u.estado || '',
                     lugar_actual: u.lugar || '',
                     obra: u.obra || u.destino || '',
@@ -2658,31 +2714,93 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                     ubicacion: [u.lugar, u.ub?.deposito, u.ub?.estante, u.ub?.columna, u.ub?.fila].filter(Boolean).join(' · '),
                     ultimo_movimiento: u.fecha_salida || u.ultimo_movimiento || u.fecha_movimiento || u.lugar || ''
                 }));
-                renderToolsSummary();
-                renderHerramientas();
-                renderMovHerramientas();
+                state.herramientasCargadas=true;
+                if (state.activeTab==='herramientas') renderHerramientas();
+                if (state.activeTab==='movherr') renderMovHerramientas();
             } catch (e) {
                 console.error('Error cargando herramientas:', e);
                 showToast('No se pudieron cargar las herramientas: ' + e.message, true);
+            } finally {
+                state.herramientasCargando=false;
             }
         }
 
-        function gestionarHerramientaPorCodigo() { const campo=document.getElementById('toolsQuickCode'); const codigo=(campo.value||'').trim().toUpperCase(); const h=state.herramientas.find(x=>String(x.codigo||'').toUpperCase()===codigo); if(!h){alert('No se encontró ese código de herramienta.'); campo.focus(); return;} gestionarHerramienta(h.codigo); }
 
+        let busquedaRapidaFiltro='TODAS', busquedaRapidaPagina=0;
+        const busquedaRapidaTamano=12;
+        function normalizarBusquedaRapida(valor) {
+            return String(valor||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
+        }
+        function coincidirBusquedaRapida(h,consulta) {
+            const q=normalizarBusquedaRapida(consulta);if(!q)return false;
+            const codigo=normalizarBusquedaRapida(h.codigo).replace(/ /g,'');
+            if(codigo && codigo.includes(q.replace(/ /g,'')))return true;
+            const texto=normalizarBusquedaRapida([h.tipo,h.descripcion].filter(Boolean).join(' '));
+            return q.split(/\s+/).every(p=>texto.includes(p));
+        }
+        function resumirBusquedaRapida(unidades) {
+            const total=unidades.filter(h=>h.estado!=='BAJA').length;
+            const disponibles=unidades.filter(h=>h.estado==='EN_DEPOSITO').length;
+            const personal=unidades.filter(h=>h.estado==='CON_PERSONAL').length;
+            const noDisponibles=unidades.filter(h=>h.estado!=='BAJA'&&h.estado!=='EN_DEPOSITO'&&h.estado!=='CON_PERSONAL').length;
+            return {total,disponibles,personal,noDisponibles,bajas:unidades.filter(h=>h.estado==='BAJA').length};
+        }
+        function filtrarResumenBusqueda(h,filtro) {
+            if(filtro==='TODAS')return true;
+            if(filtro==='ACTIVAS')return h.estado!=='BAJA';
+            if(filtro==='NO_DISPONIBLES')return h.estado!=='BAJA'&&h.estado!=='EN_DEPOSITO'&&h.estado!=='CON_PERSONAL';
+            return h.estado===filtro;
+        }
+        function renderBusquedaRapidaHerramientas() {
+            const area=document.getElementById('toolsQuickResults');if(!area)return;
+            const consulta=document.getElementById('toolsQuickCode').value.trim();
+            if(!normalizarBusquedaRapida(consulta)){area.innerHTML='<p class="tools-report-note">Escribí un nombre, como <strong>motosierra</strong>, o un código para ver las unidades.</p>';return;}
+            const todas=state.herramientas.filter(h=>coincidirBusquedaRapida(h,consulta));
+            if(!todas.length){area.innerHTML='<p class="quick-empty" role="status">No encontramos herramientas con esa búsqueda. Probá con otro nombre o código.</p>';return;}
+            const resumen=resumirBusquedaRapida(todas);
+            const tarjetas=[['ACTIVAS','Total sin bajas',resumen.total],['EN_DEPOSITO','Disponibles',resumen.disponibles],['CON_PERSONAL','Con el personal',resumen.personal],['NO_DISPONIBLES','Otras no disponibles',resumen.noDisponibles],['BAJA','De baja',resumen.bajas]];
+            const lista=todas.filter(h=>filtrarResumenBusqueda(h,busquedaRapidaFiltro));
+            const paginas=Math.max(1,Math.ceil(lista.length/busquedaRapidaTamano));
+            busquedaRapidaPagina=Math.min(Math.max(0,busquedaRapidaPagina),paginas-1);
+            const desde=busquedaRapidaPagina*busquedaRapidaTamano,visibles=lista.slice(desde,desde+busquedaRapidaTamano);
+            area.innerHTML=`<div class="quick-heading"><div><strong>Resultado para “${escTool(consulta)}”</strong><p class="tools-report-note" role="status">${todas.length} unidad${todas.length===1?'':'es'} encontrada${todas.length===1?'':'s'}. Tocá una cantidad para filtrar.</p></div><button type="button" class="btn small" data-quick-filter="TODAS">Ver todas</button></div>
+            <div class="quick-counts">${tarjetas.map(([f,t,n])=>`<button type="button" class="quick-count ${busquedaRapidaFiltro===f?'selected':''}" data-quick-filter="${f}" aria-pressed="${busquedaRapidaFiltro===f}"><span>${t}</span><strong>${n}</strong></button>`).join('')}</div>
+            <p class="tools-report-note quick-explanation">Disponibles: aptas para entregar y ubicadas en depósito. “Otras no disponibles” incluye reparación, vencimiento o ubicación sin confirmar. Las bajas se muestran aparte del total.</p>
+            <div class="table-scroll"><table class="tools-table quick-table"><thead><tr><th>Código</th><th>Herramienta</th><th>Situación</th><th>Quién la tiene / ubicación</th><th>Acción</th></tr></thead><tbody>${visibles.length?visibles.map(h=>`<tr><td class="mono"><strong>${escTool(h.codigo)}</strong></td><td>${escTool(nombreVisibleHerramienta(h.tipo))}<small>${escTool(h.descripcion||'')}</small></td><td><span class="tool-status ${escTool(h.estado)}">${escTool(h.estado==='EN_DEPOSITO'?'Disponible':h.estado==='EN_MANTENIMIENTO'?'No disponible':estadoTool(h.estado))}</span>${h.estado_tecnico?`<small>${escTool(h.estado_tecnico)}</small>`:''}</td><td>${escTool(h.responsable?nombrePersonaTool(h.responsable):(h.ubicacion||'Ubicación sin confirmar'))}${h.obra?`<small>${escTool(h.obra)}</small>`:''}</td><td><button type="button" class="btn small primary" data-quick-code="${escTool(h.codigo)}">Ver opciones →</button></td></tr>`).join(''):'<tr><td colspan="5" class="quick-empty">No hay unidades en esta categoría. Tocá otra cantidad o Ver todas.</td></tr>'}</tbody></table></div>
+            <div class="quick-footer"><span>${lista.length?desde+1:0}–${desde+visibles.length} de ${lista.length} unidades</span><div><button type="button" class="btn small" id="quickAnterior" ${busquedaRapidaPagina===0?'disabled':''}>‹ Anterior</button><span> ${busquedaRapidaPagina+1} / ${paginas} </span><button type="button" class="btn small" id="quickSiguiente" ${busquedaRapidaPagina>=paginas-1?'disabled':''}>Siguiente ›</button></div></div>`;
+            area.querySelectorAll('[data-quick-filter]').forEach(b=>b.onclick=()=>{busquedaRapidaFiltro=b.dataset.quickFilter;busquedaRapidaPagina=0;renderBusquedaRapidaHerramientas();});
+            area.querySelectorAll('[data-quick-code]').forEach(b=>b.onclick=()=>abrirGestionHerramienta(b.dataset.quickCode));
+            document.getElementById('quickAnterior').onclick=()=>{busquedaRapidaPagina--;renderBusquedaRapidaHerramientas();};
+            document.getElementById('quickSiguiente').onclick=()=>{busquedaRapidaPagina++;renderBusquedaRapidaHerramientas();};
+        }
+        function gestionarHerramientaPorCodigo() {
+            const consulta=document.getElementById('toolsQuickCode').value.trim();
+            busquedaRapidaFiltro='TODAS';busquedaRapidaPagina=0;renderBusquedaRapidaHerramientas();
+            const exactas=state.herramientas.filter(h=>normalizarBusquedaRapida(h.codigo).replace(/ /g,'')===normalizarBusquedaRapida(consulta).replace(/ /g,''));
+            if(consulta&&exactas.length===1)abrirGestionHerramienta(exactas[0].codigo);
+        }
+
+        function abrirGestionHerramienta(codigo) { gestionarHerramienta(codigo); }
+        function cerrarGestionHerramienta() { document.getElementById('movimientoSimple').close(); }
         let movimientoSimpleActual=null;
         function gestionarHerramienta(codigo) {
             const h=state.herramientas.find(x=>x.codigo===codigo);
             if(!h)return;
+            if(isDemo || !auth.currentUser) {showToast('Ingresá al sistema para registrar movimientos.',true);return;}
             movimientoSimpleActual={h:{...h},accion:'',payload:null};
             const modal=document.getElementById('movimientoSimple');
+            document.getElementById('msPaso').textContent='Paso 1 de 3 · Elegí qué querés hacer';
             document.getElementById('msTitulo').textContent=h.codigo+' · '+nombreVisibleHerramienta(h.tipo);
             document.getElementById('msSituacion').textContent=(h.responsable?'La tiene: '+nombrePersonaTool(h.responsable):'Ubicación: '+(h.ubicacion||'Sin indicar'))+' · Estado: '+(h.estado_tecnico||estadoTool(h.estado));
+            document.getElementById('msOpciones').hidden=false;
+            document.getElementById('msAyuda').hidden=false;
             document.getElementById('msFormulario').hidden=true;
             document.getElementById('msConfirmacion').hidden=true;
             document.getElementById('msMensaje').textContent='';
             document.getElementById('msEntrega').disabled=h.estado!=='EN_DEPOSITO';
             document.getElementById('msDevolucion').disabled=!h.responsable;
             document.getElementById('msEstado').disabled=!h.estado_tecnico;
+            document.getElementById('msAyuda').textContent=h.responsable?'Podés recibir la devolución o cambiar su condición. Para entregarla a otra persona, registrá primero la devolución.':h.estado==='EN_DEPOSITO'?'Está disponible para entregar. También podés actualizar su condición.':'Para entregarla, debe estar apta y ubicada en un depósito.';
             modal.showModal();
         }
         function elegirMovimientoSimple(accion) {
@@ -2690,8 +2808,11 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             actual.accion=accion;actual.payload=null;
             document.getElementById('msConfirmacion').hidden=true;
             document.getElementById('msFormulario').hidden=false;
+            document.getElementById('msOpciones').hidden=true;
+            document.getElementById('msAyuda').hidden=true;
             document.getElementById('msMensaje').textContent='';
             document.getElementById('msFormulario').reset();
+            document.getElementById('msPaso').textContent='Paso 2 de 3 · Completá los datos';
             document.getElementById('msCamposEntrega').hidden=accion!=='SALIDA';
             document.getElementById('msCamposDevolucion').hidden=accion!=='DEVOLUCION';
             document.getElementById('msCamposEstado').hidden=accion!=='ESTADO';
@@ -2701,7 +2822,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             document.getElementById('msObra').required=accion==='SALIDA';
             document.getElementById('msMotivo').required=accion==='ESTADO';
             document.getElementById('msNuevoEstado').value=actual.h.estado_tecnico||'APTO';
-            document.querySelector('#msFormulario input:not([type=hidden]), #msFormulario select')?.focus();
+            document.getElementById(({SALIDA:'msPersona',DEVOLUCION:'msEstadoVuelta',ESTADO:'msNuevoEstado'})[accion]).focus();
         }
         function prepararMovimientoSimple(e) {
             e.preventDefault();
@@ -2728,6 +2849,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             } else return;
             movimientoSimpleActual.payload=payload;
             document.getElementById('msResumen').textContent=resumen;
+            document.getElementById('msPaso').textContent='Paso 3 de 3 · Revisá y confirmá';
             document.getElementById('msFormulario').hidden=true;
             document.getElementById('msConfirmacion').hidden=false;
             document.getElementById('msGuardar').focus();
@@ -2744,7 +2866,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                 if(actual.accion==='ESTADO' && (!r.codigo||!r.estado)) throw Error('El Apps Script publicado no tiene la función de cambio de estado.');
                 movimientoSimpleActual=null;modal.close();
                 showToast('Movimiento guardado para '+actual.h.codigo);
-                await cargarHerramientas();
+                await cargarHerramientas(true);
             } catch(e) {
                 actual.payload=null;
                 msg.textContent=e.message+' Revisá el historial antes de repetir el movimiento.';
@@ -5685,7 +5807,6 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                 populateStockProductoFilter();
                 renderStock();
             } else if (state.activeTab === 'herramientas') {
-                renderToolsSummary();
                 renderHerramientas();
             } else if (state.activeTab === 'movherr') {
                 renderMovHerramientas();
@@ -6042,6 +6163,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                 document.getElementById('panel-movherr').style.display = state.activeTab === 'movherr' ? '' : 'none';
                 document.getElementById('panel-mov').style.display = state.activeTab === 'mov' ? '' : 'none';
                 document.getElementById('panel-reporte').style.display = state.activeTab === 'reporte' ? '' : 'none';
+                if (state.activeTab === 'herramientas' || state.activeTab === 'movherr') cargarHerramientas();
                 renderAll();
                 if (state.activeTab === 'mov') {
                     buscarMovimientosServidor(state.movUi.search, state.movUi.tipo);
@@ -6117,7 +6239,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         wireSortHeaders('stickyStockTable', state.stockUi, renderStock);
         wireSortHeaders('stickyMovTable', state.movUi, renderMov);
 
-        document.getElementById('btnRefresh').addEventListener('click', () => { cargarTodo(false); cargarHerramientas(); });
+        document.getElementById('btnRefresh').addEventListener('click', () => { cargarTodo(false); if(state.activeTab==='herramientas'||state.activeTab==='movherr') cargarHerramientas(true); });
         document.getElementById('btnExport').addEventListener('click', () => exportExcel('auto'));
         document.getElementById('btnExportAll').addEventListener('click', () => exportExcel('todos'));
 
@@ -6203,13 +6325,20 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
 
         document.getElementById('lightbox').addEventListener('click', closeLightbox);
 
-        renderToolsSummary();
-        document.getElementById('toolSearch').addEventListener('input', e => { state.herramientasUi.search=e.target.value; renderHerramientas(); });
-        document.getElementById('toolEstadoFilter').addEventListener('change', e => { state.herramientasUi.estado=e.target.value; renderHerramientas(); });
-        document.getElementById('toolTipoFilter').addEventListener('change', e => { state.herramientasUi.tipo=e.target.value; renderHerramientas(); });
+        document.querySelectorAll('[data-tools-view]').forEach(button => button.addEventListener('click', () => cambiarVistaHerramientas(button.dataset.toolsView)));
+        document.getElementById('toolSearch').addEventListener('input', debounceInput(e => { state.herramientasUi.search=e.target.value;state.herramientasUi.page=0; renderHerramientas(); }, 180));
+        document.getElementById('toolEstadoFilter').addEventListener('change', e => { state.herramientasUi.estado=e.target.value;state.herramientasUi.page=0; renderHerramientas(); });
+        document.getElementById('toolTipoFilter').addEventListener('change', e => { state.herramientasUi.tipo=e.target.value;state.herramientasUi.page=0; renderHerramientas(); });
+        document.getElementById('toolsStockPrev').addEventListener('click', () => { state.herramientasUi.page--; renderHerramientas(); });
+        document.getElementById('toolsStockNext').addEventListener('click', () => { state.herramientasUi.page++; renderHerramientas(); });
         document.getElementById('toolTraceSearch').addEventListener('input', renderTraceabilidadHerramientas);
         document.getElementById('toolsQuickManage').addEventListener('click', gestionarHerramientaPorCodigo);
+        document.getElementById('toolsQuickCode').addEventListener('input',()=>{busquedaRapidaFiltro='TODAS';busquedaRapidaPagina=0;renderBusquedaRapidaHerramientas();});
+        document.getElementById('toolsQuickClear').onclick=()=>{document.getElementById('toolsQuickCode').value='';busquedaRapidaFiltro='TODAS';busquedaRapidaPagina=0;renderBusquedaRapidaHerramientas();document.getElementById('toolsQuickCode').focus();};
         document.getElementById('toolsQuickCode').addEventListener('keydown', e => { if(e.key==='Enter') gestionarHerramientaPorCodigo(); });
+        document.getElementById('toolsOpenMovements').addEventListener('click', () => cambiarVistaHerramientas('movimientos'));
+        document.getElementById('toolManageCancel').addEventListener('click', cerrarGestionHerramienta);
+        document.getElementById('toolManageOverlay').addEventListener('click', e => { if(e.target.id==='toolManageOverlay') cerrarGestionHerramienta(); });
         document.getElementById('toolsHistoryToggle').addEventListener('click', () => document.querySelector('.tab-btn[data-tab="movherr"]')?.click());
         document.getElementById('toolsReportPrint').addEventListener('click', imprimirInformeHerramientas);
         ['toolsReportFrom','toolsReportTo','toolsReportPerson','toolsReportWork'].forEach(id => document.getElementById(id).addEventListener('input', renderInformeHerramientas));
@@ -6567,6 +6696,48 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         // Inicializar puntos con tema por defecto al cargar
         applyTheme('maestroSlate');
     </script>
+<style>
+#movimientoSimple{color:var(--txt);background:var(--bg-card);border:1px solid var(--line);border-radius:16px;padding:24px;width:min(620px,calc(100vw - 24px));max-height:90vh;overflow:auto;margin:auto;font:inherit}
+#movimientoSimple::backdrop{background:rgba(0,0,0,.7)}
+#movimientoSimple h2{font-size:20px;margin:0 0 10px}#movimientoSimple h3{font-size:17px;margin:12px 0}
+#movimientoSimple p{line-height:1.5;margin:10px 0 18px}#movimientoSimple .ms-opciones{display:grid;grid-template-columns:1fr;gap:10px;margin:18px 0}
+#movimientoSimple .ms-opciones button{padding:14px;text-align:left;white-space:normal;display:block;height:auto}
+#movimientoSimple .ms-opciones small{display:block;font-size:12px;font-weight:400;margin-top:4px}
+#movimientoSimple label{display:block;margin:12px 0}#movimientoSimple input,#movimientoSimple select,#movimientoSimple textarea{display:block;width:100%;padding:11px;margin-top:5px;background:var(--bg-elev);color:var(--txt);border:1px solid var(--line);border-radius:7px;font:inherit}
+#movimientoSimple [hidden]{display:none!important}#movimientoSimple button:disabled{opacity:.4;cursor:not-allowed}#movimientoSimple .ms-pie{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+</style>
+<dialog id="movimientoSimple" aria-labelledby="msTitulo">
+ <p id="msPaso" class="ms-paso"></p><h2 id="msTitulo">Herramienta</h2><button type="button" class="btn small" id="msFoto">Ver / agregar foto</button><p id="msSituacion"></p>
+ <p id="msAyuda" class="ms-ayuda"></p><div class="ms-opciones" id="msOpciones">
+  <button type="button" class="btn" id="msEntrega"><span class="ms-icono" aria-hidden="true">↗</span><strong>Entregar</strong><small>Sale del depósito. Elegís quién la recibe y a qué obra va.</small></button>
+  <button type="button" class="btn" id="msDevolucion"><span class="ms-icono" aria-hidden="true">↙</span><strong>Recibir devolución</strong><small>Vuelve a Depósito Arismendi. Indicás si funciona.</small></button>
+  <button type="button" class="btn" id="msEstado"><span class="ms-icono" aria-hidden="true">⚙</span><strong>Cambiar estado</strong><small>Indicás si funciona, necesita reparación, está vencida o se da de baja.</small></button>
+ </div>
+ <form id="msFormulario" hidden>
+  <h3 id="msPasoTitulo"></h3>
+  <div id="msCamposEntrega"><label>¿Quién la recibe?<input id="msPersona" autocomplete="off" placeholder="Nombre y apellido"></label><label>¿A qué obra o destino va?<input id="msObra" placeholder="Obra o destino"></label></div>
+  <div id="msCamposDevolucion"><p>Se guardará en <strong>Depósito Arismendi</strong> y dejará de estar a cargo de la persona.</p><label>¿Funciona?<select id="msEstadoVuelta"><option value="APTO">Sí, funciona</option><option value="NO APTO">No, necesita reparación</option></select></label></div>
+  <div id="msCamposEstado"><p>Este cambio conserva la persona y la ubicación actuales.</p><label>Nuevo estado<select id="msNuevoEstado"><option value="APTO">Funciona bien</option><option value="APTO CON OBSERVACIONES">Funciona, pero tiene observaciones</option><option value="NO APTO">No funciona / necesita reparación</option><option value="VENCIDO">Está vencida</option><option value="DADO DE BAJA">Dar de baja</option></select></label><label>¿Por qué cambiás el estado?<textarea id="msMotivo" rows="3" placeholder="Por ejemplo: cable cortado"></textarea></label></div>
+  <label id="msRemitoCampo">N.º de remito (opcional)<input id="msRemito"></label>
+  <div class="ms-pie"><button type="button" class="btn" id="msElegirOtra">← Elegir otra acción</button><button type="submit" class="btn primary">Continuar →</button></div>
+ </form>
+ <section id="msConfirmacion" hidden><h3>Revisá el movimiento</h3><p id="msResumen"></p><div class="ms-pie"><button type="button" class="btn" id="msVolver">Corregir</button><button type="button" class="btn primary" id="msGuardar">Confirmar y guardar</button></div></section>
+ <p id="msMensaje" role="status" aria-live="polite"></p>
+ <div class="ms-pie"><button type="button" class="btn" id="msCerrar">Cerrar</button></div>
+</dialog>
+<script>
+document.getElementById('msFoto').onclick=()=>abrirFotoHerramienta(movimientoSimpleActual.h.codigo);
+document.getElementById('msEntrega').onclick=()=>elegirMovimientoSimple('SALIDA');
+document.getElementById('msDevolucion').onclick=()=>elegirMovimientoSimple('DEVOLUCION');
+document.getElementById('msEstado').onclick=()=>elegirMovimientoSimple('ESTADO');
+document.getElementById('msFormulario').onsubmit=prepararMovimientoSimple;
+document.getElementById('msGuardar').onclick=guardarMovimientoSimple;
+document.getElementById('msElegirOtra').onclick=()=>gestionarHerramienta(movimientoSimpleActual.h.codigo);
+document.getElementById('msVolver').onclick=()=>{document.getElementById('msPaso').textContent='Paso 2 de 3 · Completá los datos';document.getElementById('msConfirmacion').hidden=true;document.getElementById('msFormulario').hidden=false;};
+document.getElementById('msCerrar').onclick=()=>{document.getElementById('movimientoSimple').close();movimientoSimpleActual=null;};
+document.getElementById('movimientoSimple').addEventListener('cancel',e=>{if(e.currentTarget.dataset.guardando)e.preventDefault();else movimientoSimpleActual=null;});
+</script>
+
 
 <script>
 // Estado de revisión aislado: cambiar el archivo invalida la confirmación anterior.
@@ -6642,47 +6813,128 @@ document.getElementById('responsablesAplicar').addEventListener('click',async()=
 </script>
 
 
+
 <style>
-#movimientoSimple{color:var(--txt);background:var(--bg-card);border:1px solid var(--line);border-radius:16px;padding:24px;width:min(620px,calc(100vw - 24px));max-height:90vh;overflow:auto;margin:auto;font:inherit}
-#movimientoSimple::backdrop{background:rgba(0,0,0,.7)}
-#movimientoSimple h2{font-size:20px;margin:0 0 10px}#movimientoSimple h3{font-size:17px;margin:12px 0}
-#movimientoSimple p{line-height:1.5;margin:10px 0 18px}#movimientoSimple .ms-opciones{display:grid;grid-template-columns:1fr;gap:10px;margin:18px 0}
-#movimientoSimple .ms-opciones button{padding:14px;text-align:left;white-space:normal;display:block;height:auto}
-#movimientoSimple .ms-opciones small{display:block;font-size:12px;font-weight:400;margin-top:4px}
-#movimientoSimple label{display:block;margin:12px 0}#movimientoSimple input,#movimientoSimple select,#movimientoSimple textarea{display:block;width:100%;padding:11px;margin-top:5px;background:var(--bg-elev);color:var(--txt);border:1px solid var(--line);border-radius:7px;font:inherit}
-#movimientoSimple [hidden]{display:none!important}#movimientoSimple button:disabled{opacity:.4;cursor:not-allowed}#movimientoSimple .ms-pie{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+#panel-herramientas .tools-page-head{padding:24px;border-radius:16px;background:linear-gradient(120deg,var(--bg-card),var(--bg-elev));margin-bottom:18px}
+#panel-herramientas .tools-page-head .brand-title{font-size:26px;line-height:1.2;margin:6px 0}
+#panel-herramientas .tools-subtabs{gap:8px;padding:7px;background:var(--bg-elev);border-radius:12px;display:flex;flex-wrap:wrap;margin:18px 0}
+#panel-herramientas .tools-subtab{flex:1;justify-content:center;padding:13px 16px;border-radius:8px;font-size:14px}
+#panel-herramientas .tools-subtab.active{background:var(--accent-soft);color:var(--txt);box-shadow:inset 0 -3px 0 var(--accent)}
+#toolsQuickSection{border:1px solid var(--accent);border-radius:14px;background:var(--bg-card)}
+#toolsQuickSection .tools-report-controls{padding:0 18px 18px;gap:10px;display:flex;flex-wrap:wrap}
+#toolsQuickCode{flex:1;min-width:180px;font-size:17px;padding:13px 15px}
+#toolsQuickManage{padding:13px 20px;min-height:48px}
+#panel-herramientas .tools-section{border-radius:12px}#panel-herramientas .tools-table td{padding-top:14px;padding-bottom:14px}
+#movimientoSimple{width:min(760px,calc(100vw - 24px));padding:28px;box-shadow:0 28px 90px #0008}
+#movimientoSimple .ms-paso{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--txt-dim);margin-bottom:10px}
+#movimientoSimple .ms-ayuda{padding:13px 16px;background:var(--bg-elev);border-radius:9px;font-size:13px}
+#movimientoSimple .ms-opciones{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#movimientoSimple .ms-opciones button{background:var(--bg-elev);border:1px solid var(--line);padding:18px 15px;border-radius:12px;line-height:1.4;min-height:180px;transition:transform .15s,border-color .15s}
+#movimientoSimple .ms-opciones button:not(:disabled):hover{transform:translateY(-3px);border-color:var(--accent)}
+#movimientoSimple .ms-opciones strong{display:block;font-size:15px;margin-top:12px}
+#movimientoSimple .ms-opciones small{color:var(--txt-dim);line-height:1.5}
+#movimientoSimple .ms-icono{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:10px;background:var(--accent-soft);font-size:23px;color:var(--txt)}
+#msConfirmacion{padding:18px;background:var(--bg-elev);border:1px solid var(--line);border-radius:12px;margin-top:18px}
+#msGuardar{min-height:46px}#msMensaje:empty{display:none}#movimientoSimple :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:600px){#movimientoSimple{padding:18px}#movimientoSimple .ms-opciones{grid-template-columns:1fr}#movimientoSimple .ms-opciones button{min-height:0;padding:14px}#movimientoSimple .ms-icono{float:left;margin-right:12px}#movimientoSimple .ms-opciones strong{margin-top:0}#panel-herramientas .tools-subtab{flex:1 1 100%}#toolsQuickManage{width:100%}}
 </style>
-<dialog id="movimientoSimple" aria-labelledby="msTitulo">
- <h2 id="msTitulo">Herramienta</h2><p id="msSituacion"></p>
- <div class="ms-opciones">
-  <button type="button" class="btn" id="msEntrega"><strong>Entregar a una persona</strong><small>Sale del depósito. Elegís quién la recibe y a qué obra va.</small></button>
-  <button type="button" class="btn" id="msDevolucion"><strong>Recibir devolución</strong><small>Vuelve a Depósito Arismendi. Indicás si funciona.</small></button>
-  <button type="button" class="btn" id="msEstado"><strong>Cambiar estado</strong><small>Indicás si funciona, necesita reparación, está vencida o se da de baja.</small></button>
- </div>
- <form id="msFormulario" hidden>
-  <h3 id="msPasoTitulo"></h3>
-  <div id="msCamposEntrega"><label>¿Quién la recibe?<input id="msPersona" autocomplete="off" placeholder="Nombre y apellido"></label><label>¿A qué obra o destino va?<input id="msObra" placeholder="Obra o destino"></label></div>
-  <div id="msCamposDevolucion"><p>Se guardará en <strong>Depósito Arismendi</strong> y dejará de estar a cargo de la persona.</p><label>¿Funciona?<select id="msEstadoVuelta"><option value="APTO">Sí, funciona</option><option value="NO APTO">No, necesita reparación</option></select></label></div>
-  <div id="msCamposEstado"><p>Este cambio conserva la persona y la ubicación actuales.</p><label>Nuevo estado<select id="msNuevoEstado"><option value="APTO">Funciona bien</option><option value="APTO CON OBSERVACIONES">Funciona, pero tiene observaciones</option><option value="NO APTO">No funciona / necesita reparación</option><option value="VENCIDO">Está vencida</option><option value="DADO DE BAJA">Dar de baja</option></select></label><label>¿Por qué cambiás el estado?<textarea id="msMotivo" rows="3" placeholder="Por ejemplo: cable cortado"></textarea></label></div>
-  <label id="msRemitoCampo">N.º de remito (opcional)<input id="msRemito"></label>
-  <button type="submit" class="btn primary">Revisar antes de guardar</button>
- </form>
- <section id="msConfirmacion" hidden><h3>Revisá el movimiento</h3><p id="msResumen"></p><div class="ms-pie"><button type="button" class="btn" id="msVolver">Corregir</button><button type="button" class="btn primary" id="msGuardar">Confirmar y guardar</button></div></section>
- <p id="msMensaje" role="status" aria-live="polite"></p>
- <div class="ms-pie"><button type="button" class="btn" id="msCerrar">Cerrar</button></div>
+
+
+<style>
+.foto-codigo{display:flex;align-items:center;gap:10px}.foto-herr-mini{width:48px;height:48px;flex:0 0 48px;border:1px solid var(--line);background:var(--bg-elev);color:var(--txt-dim);border-radius:9px;overflow:hidden;cursor:pointer;padding:0;display:grid;place-items:center;font-size:22px}.foto-herr-mini img{width:100%;height:100%;object-fit:cover}.foto-herr-mini:focus-visible{outline:3px solid var(--accent)}
+#fotoHerrDialog{margin:auto;width:min(650px,calc(100vw - 24px));max-height:90vh;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:15px;color:var(--txt);background:var(--bg-card);font:inherit}#fotoHerrDialog::backdrop{background:#000b}#fotoHerrDialog h2{margin-bottom:10px}#fotoHerrImagen{display:block;max-width:100%;max-height:52vh;object-fit:contain;margin:16px auto;border-radius:10px}#fotoHerrDialog [hidden]{display:none!important}#fotoHerrDialog p{line-height:1.5;margin:12px 0}#fotoHerrDialog .foto-acciones{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}#fotoHerrArchivo{margin:12px 0;max-width:100%}
+</style>
+<dialog id="fotoHerrDialog" aria-labelledby="fotoHerrTitulo">
+ <h2 id="fotoHerrTitulo">Foto de la herramienta</h2>
+ <p id="fotoHerrAyuda">Elegí una foto desde tu celular o computadora.</p>
+ <img id="fotoHerrImagen" alt="Vista previa de la herramienta" hidden>
+ <label for="fotoHerrArchivo">Agregar o reemplazar foto</label><br>
+ <input id="fotoHerrArchivo" type="file" accept="image/jpeg,image/png,image/webp">
+ <p>La foto queda asociada al código de esta unidad. No cambia su estado ni quién la tiene.</p>
+ <p id="fotoHerrMensaje" role="status" aria-live="polite"></p>
+ <div class="foto-acciones"><button type="button" class="btn primary" id="fotoHerrGuardar" disabled>Guardar foto</button><button type="button" class="btn" id="fotoHerrCerrar">Cerrar</button></div>
 </dialog>
 <script>
-document.getElementById('msEntrega').onclick=()=>elegirMovimientoSimple('SALIDA');
-document.getElementById('msDevolucion').onclick=()=>elegirMovimientoSimple('DEVOLUCION');
-document.getElementById('msEstado').onclick=()=>elegirMovimientoSimple('ESTADO');
-document.getElementById('msFormulario').onsubmit=prepararMovimientoSimple;
-document.getElementById('msGuardar').onclick=guardarMovimientoSimple;
-document.getElementById('msVolver').onclick=()=>{document.getElementById('msConfirmacion').hidden=true;document.getElementById('msFormulario').hidden=false;};
-document.getElementById('msCerrar').onclick=()=>{document.getElementById('movimientoSimple').close();movimientoSimpleActual=null;};
-document.getElementById('movimientoSimple').addEventListener('cancel',e=>{if(e.currentTarget.dataset.guardando)e.preventDefault();else movimientoSimpleActual=null;});
+const cacheFotosHerr=new Map();let fotoHerrActual=null, observadorFotosHerr=null;
+function botonFotoHerramienta(h) {
+ return `<button type="button" class="foto-herr-mini" data-foto-codigo="${escTool(h.codigo)}" data-foto-id="${escTool(h.foto_id||'')}" aria-label="${h.foto_id?'Ver':'Agregar'} foto de ${escTool(h.codigo)}"><span aria-hidden="true">${h.foto_id?'▧':'+'}</span></button>`;
+}
+async function leerFotoHerramienta(h) {
+ if(!h.foto_id)return '';
+ if(cacheFotosHerr.has(h.foto_id))return cacheFotosHerr.get(h.foto_id);
+ const url=new URL(CONFIG.WEB_APP_URL);url.searchParams.set('action','herr-foto');url.searchParams.set('codigo',h.codigo);url.searchParams.set('token',await getIdToken());
+ const res=await fetch(url,{cache:'no-store'}),r=await res.json();
+ if(!r.ok)throw Error(r.error||'No se pudo leer la foto.');
+ if(!/^data:image\/(jpeg|png|webp);base64,/.test(r.imagen||''))throw Error('El servidor devolvió una foto no válida.');
+ cacheFotosHerr.set(r.foto_id,r.imagen);return r.imagen;
+}
+let colaFotosHerr=[],lecturasFotosHerr=0;
+function procesarColaFotosHerr() {
+ while(lecturasFotosHerr<3&&colaFotosHerr.length) {
+  const boton=colaFotosHerr.shift();if(!boton.isConnected)continue;
+  const h=state.herramientas.find(x=>x.codigo===boton.dataset.fotoCodigo);if(!h?.foto_id)continue;
+  lecturasFotosHerr++;
+  leerFotoHerramienta(h).then(src=>{if(!boton.isConnected)return;const img=document.createElement('img');img.src=src;img.alt='Foto de '+h.codigo;boton.replaceChildren(img);}).catch(()=>{boton.title='No se pudo cargar. Tocá para abrir o reemplazar la foto.';}).finally(()=>{lecturasFotosHerr--;procesarColaFotosHerr();});
+ }
+}
+function activarFotosHerramientas(body) {
+ if(observadorFotosHerr)observadorFotosHerr.disconnect();colaFotosHerr=[];
+ observadorFotosHerr=new IntersectionObserver(entradas=>entradas.forEach(e=>{if(e.isIntersecting){observadorFotosHerr.unobserve(e.target);colaFotosHerr.push(e.target);procesarColaFotosHerr();}}),{rootMargin:'100px'});
+ body.querySelectorAll('[data-foto-codigo]').forEach(b=>{b.onclick=()=>abrirFotoHerramienta(b.dataset.fotoCodigo);if(b.dataset.fotoId)observadorFotosHerr.observe(b);});
+}
+async function abrirFotoHerramienta(codigo) {
+ const h=state.herramientas.find(x=>x.codigo===codigo);if(!h)return;
+ if(isDemo||!auth.currentUser){showToast('Ingresá al sistema para ver o agregar fotos.',true);return;}
+ const actual={h:{...h},imagen:'',guardando:false};fotoHerrActual=actual;
+ const d=document.getElementById('fotoHerrDialog'),img=document.getElementById('fotoHerrImagen'),msg=document.getElementById('fotoHerrMensaje');
+ document.getElementById('fotoHerrTitulo').textContent=h.codigo+' · '+nombreVisibleHerramienta(h.tipo);
+ document.getElementById('fotoHerrArchivo').value='';document.getElementById('fotoHerrGuardar').disabled=true;img.hidden=true;img.removeAttribute('src');
+ msg.textContent=h.foto_id?'Cargando foto…':'Esta herramienta todavía no tiene foto.';if(!d.open)d.showModal();
+ if(h.foto_id)try{const src=await leerFotoHerramienta(h);if(fotoHerrActual!==actual||actual.imagen)return;img.src=src;img.hidden=false;msg.textContent='Foto guardada. Podés reemplazarla seleccionando otra.';}catch(e){if(fotoHerrActual===actual&&!actual.imagen)msg.textContent=e.message;}
+}
+async function prepararFotoHerramienta(file) {
+ if(!file||!/^image\/(jpeg|png|webp)$/.test(file.type))throw Error('Seleccioná una foto JPG, PNG o WebP.');
+ if(file.size>20000000)throw Error('La foto supera 20 MB. Elegí una más pequeña.');
+ const url=URL.createObjectURL(file);
+ try {
+  const img=new Image();await new Promise((ok,error)=>{img.onload=ok;img.onerror=()=>error(Error('No se pudo abrir esta imagen.'));img.src=url;});
+  const escala=Math.min(1,1000/Math.max(img.naturalWidth,img.naturalHeight));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*escala));canvas.height=Math.max(1,Math.round(img.naturalHeight*escala));
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  const data=canvas.toDataURL('image/jpeg',.8);if(data.length>2000000)throw Error('La foto sigue siendo muy grande. Elegí una más pequeña.');return data;
+ }finally{URL.revokeObjectURL(url);}
+}
+document.getElementById('fotoHerrArchivo').onchange=async e=>{
+ const actual=fotoHerrActual;if(!actual)return;const archivo=e.target.files[0];
+ const turno={};actual.turno=turno;actual.imagen='';const btn=document.getElementById('fotoHerrGuardar');btn.disabled=true;
+ try{const imagen=await prepararFotoHerramienta(archivo);if(fotoHerrActual!==actual||actual.turno!==turno)return;actual.imagen=imagen;const img=document.getElementById('fotoHerrImagen');img.src=imagen;img.hidden=false;document.getElementById('fotoHerrMensaje').textContent='Vista previa. Tocá Guardar foto para confirmar.';btn.disabled=false;}catch(e){if(fotoHerrActual===actual&&actual.turno===turno)document.getElementById('fotoHerrMensaje').textContent=e.message;}
+};
+document.getElementById('fotoHerrGuardar').onclick=async()=>{
+ const actual=fotoHerrActual;if(!actual?.imagen||actual.guardando)return;actual.guardando=true;
+ const ids=['fotoHerrGuardar','fotoHerrCerrar','fotoHerrArchivo'];ids.forEach(id=>document.getElementById(id).disabled=true);
+ const msg=document.getElementById('fotoHerrMensaje');msg.textContent='Guardando foto…';
+ try {
+  const r=await apiPostSeguro({accion:'herr-foto-guardar',codigo:actual.h.codigo,foto_anterior:actual.h.foto_id||'',foto_base64:actual.imagen});
+  if(!r?.ok||!r.foto_id)throw Error(r?.error||'El Apps Script publicado no tiene la función de fotos.');
+  cacheFotosHerr.set(r.foto_id,actual.imagen);actual.h.foto_id=r.foto_id;actual.imagen='';
+  const h=state.herramientas.find(x=>x.codigo===actual.h.codigo);if(h)h.foto_id=r.foto_id;
+  msg.textContent='Foto guardada para '+actual.h.codigo+'.';renderHerramientas();
+ }catch(e){actual.imagen='';msg.textContent=e.message+' Actualizá el panel para comprobar si se guardó antes de repetir.';}
+ finally{actual.guardando=false;document.getElementById('fotoHerrCerrar').disabled=false;document.getElementById('fotoHerrArchivo').disabled=false;}
+};
+document.getElementById('fotoHerrCerrar').onclick=()=>{document.getElementById('fotoHerrDialog').close();fotoHerrActual=null;};
+document.getElementById('fotoHerrDialog').addEventListener('cancel',e=>{if(fotoHerrActual?.guardando)e.preventDefault();else fotoHerrActual=null;});
 </script>
+
+
+<style>
+#toolsQuickSection #toolsQuickCode{max-width:none;flex:1 1 320px}#toolsQuickSection #toolsQuickManage{min-width:160px}
+.quick-results{padding:0 18px 20px}.quick-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 16px}.quick-heading p{margin-top:6px}
+.quick-counts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}.quick-count{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--bg-elev);color:var(--txt);text-align:left;cursor:pointer;font:inherit}.quick-count span{display:block;font-size:12px;color:var(--txt-dim)}.quick-count strong{display:block;font-size:28px;line-height:1.2;margin-top:8px;font-variant-numeric:tabular-nums}.quick-count:hover,.quick-count.selected{border-color:var(--accent);background:var(--accent-soft)}.quick-count[data-quick-filter="EN_DEPOSITO"] strong{color:var(--ok-fg)}.quick-count[data-quick-filter="CON_PERSONAL"] strong{color:var(--amber)}
+.quick-explanation{line-height:1.5;margin:12px 0 18px}.quick-table{min-width:680px}.quick-table small{display:block;max-width:300px;white-space:normal;font-size:11px;color:var(--txt-dim);margin-top:5px;line-height:1.4}.quick-table td:last-child{white-space:nowrap}.quick-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;color:var(--txt-dim);font-size:12px}.quick-footer button:disabled{opacity:.4;cursor:not-allowed}.quick-empty{padding:20px;text-align:center;color:var(--txt-dim)}
+@media(max-width:750px){.quick-counts{grid-template-columns:repeat(2,minmax(0,1fr))}.quick-counts .quick-count:first-child{grid-column:1/-1}.quick-footer{align-items:flex-start;flex-direction:column}.quick-heading{align-items:flex-start}.quick-results{padding:0 12px 16px}}
+</style>
 
 </body>
 
 </html>
-
