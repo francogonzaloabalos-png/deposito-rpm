@@ -1948,7 +1948,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
  <p id="responsablesMensaje" role="status" style="margin:12px 0"></p>
  <div id="responsablesVista" class="table-scroll" style="max-height:420px;overflow:auto"></div></div>
 </section>
-<section class="table-wrap tools-section" id="toolsQuickSection"><div class="tools-section-title"><div><strong>Registrar movimiento</strong><div class="tools-report-note">Ingresá el código y continuá con las opciones habituales de entrega o devolución.</div></div></div><div class="tools-report-controls"><input id="toolsQuickCode" list="toolsQuickCodes" placeholder="Código de herramienta" aria-label="Código de herramienta"><datalist id="toolsQuickCodes"></datalist><button type="button" class="btn primary" id="toolsQuickManage">Buscar herramienta</button></div></section>
+<section class="table-wrap tools-section" id="toolsQuickSection"><div class="tools-section-title"><div><strong>¿Qué querés hacer con una herramienta?</strong><div class="tools-report-note">Buscá el código. Después elegí Entregar, Recibir devolución o Cambiar estado.</div></div></div><div class="tools-report-controls"><input id="toolsQuickCode" list="toolsQuickCodes" placeholder="Código de herramienta" aria-label="Código de herramienta"><datalist id="toolsQuickCodes"></datalist><button type="button" class="btn primary" id="toolsQuickManage">Ver opciones</button></div></section>
             <div class="table-wrap tools-section" id="toolsStockSection">
                 <div class="tools-section-title"><div><strong>Stock de herramientas</strong><div class="tools-report-note">Buscá por código, tipo, persona u obra y gestioná cada unidad desde su fila.</div></div></div>
                 <div class="toolbar"><div class="search-box"><input id="toolSearch" placeholder="Buscar código, tipo, responsable u obra"></div><select id="toolEstadoFilter" class="filter-select"><option value="">Todos los estados</option><option value="EN_DEPOSITO">En depósito</option><option value="CON_PERSONAL">Con personal</option><option value="EN_MANTENIMIENTO">En mantenimiento</option><option value="BAJA">Baja</option></select><select id="toolTipoFilter" class="filter-select"><option value="">Todos los tipos</option></select></div>
@@ -1972,7 +1972,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             <section class="table-wrap tools-section">
                 <div class="tools-report-controls tools-mov-filters">
                     <input type="search" id="toolsMovSearch" placeholder="Buscar código, herramienta, persona, obra, remito o motivo">
-                    <select id="toolsMovAction"><option value="">Todas las acciones</option><option value="SALIDA">Salida</option><option value="DEVOLUCION">Devolución</option><option value="MANTENIMIENTO">Mantenimiento</option><option value="BAJA">Baja</option></select>
+                    <select id="toolsMovAction"><option value="">Todas las acciones</option><option value="SALIDA">Salida</option><option value="DEVOLUCION">Devolución</option><option value="MANTENIMIENTO">Mantenimiento</option><option value="BAJA">Baja</option><option value="CAMBIO DE ESTADO">Cambio de estado</option></select>
                     <label>Desde <input type="date" id="toolsMovFrom"></label><label>Hasta <input type="date" id="toolsMovTo"></label>
                     <input type="search" id="toolsMovPerson" placeholder="Filtrar por persona">
                     <button type="button" class="btn small" id="toolsMovClear">Limpiar filtros</button>
@@ -2534,11 +2534,40 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         function toolsPorTipo() { const r={}; state.herramientas.forEach(h=>{const t=h.tipo||'SIN TIPO'; const x=r[t]||(r[t]={tipo:t,total:0,EN_DEPOSITO:0,CON_PERSONAL:0,EN_MANTENIMIENTO:0,BAJA:0}); x[h.estado]=(x[h.estado]||0)+1; if(h.estado!=='BAJA')x.total++;}); return Object.values(r).sort((a,b)=>a.tipo.localeCompare(b.tipo)); }
         function herramientasComoStock() { return toolsPorTipo().map(x => ({ id:'HERR-'+x.tipo, es_herramienta:true, tipo_herramienta:x.tipo, familia:'HERRAMIENTAS', descripcion:nombreVisibleHerramienta(x.tipo), marca:'HERRAMIENTA CONTROLADA', ubicacion_deposito:'', stock_minimo:0, stock_actual:x.total, unidad:'unidades', estado:x.total ? 'OK' : 'REPONER', ult_obs:`Depósito: ${x.EN_DEPOSITO} · Personal: ${x.CON_PERSONAL} · Mantenimiento: ${x.EN_MANTENIMIENTO} · Baja: ${x.BAJA}`, resumen_herramienta:x })); }
         function renderToolsSummary() { const body=document.getElementById('toolsSummaryBody'); if(!body)return; const rows=toolsPorTipo(); body.innerHTML=rows.length?rows.map(x=>`<tr><td><button class="tools-type-link" data-tool-type="${escTool(x.tipo)}"><i class="fa-solid fa-screwdriver-wrench"></i> ${escTool(nombreVisibleHerramienta(x.tipo))}</button></td><td class="num"><strong>${x.total}</strong></td><td class="num">${x.EN_DEPOSITO}</td><td class="num">${x.CON_PERSONAL}</td><td class="num">${x.EN_MANTENIMIENTO}</td><td class="num">${x.BAJA}</td></tr>`).join(''):'<tr><td colspan="6" class="tools-empty">No hay herramientas registradas.</td></tr>'; body.querySelectorAll('[data-tool-type]').forEach(b=>b.onclick=()=>{state.herramientasUi.tipo=b.dataset.toolType; document.getElementById('toolTipoFilter').value=b.dataset.toolType; renderHerramientas(); document.getElementById('toolsStockSection').scrollIntoView({behavior:'smooth',block:'start'});}); }
-        function toolsFiltradas() { const u=state.herramientasUi, q=(u.search||'').toUpperCase(); return state.herramientas.filter(h=>(!u.tipo||h.tipo===u.tipo)&&(!u.estado||h.estado===u.estado)&&(!q||[h.codigo,h.tipo,h.descripcion,h.responsable,h.obra,h.ubicacion,h.ultimo_movimiento,h.fecha_alta].join(' ').toUpperCase().includes(q))); }
-        function renderTraceabilidadHerramientas() { const area=document.getElementById('toolsTraceResults'); if(!area)return; const q=(document.getElementById('toolTraceSearch')?.value||'').trim().toLocaleUpperCase('es-AR'); if(q.length<2){area.innerHTML='<p class="tools-report-note">Escribí al menos 2 caracteres para buscar.</p>';return;} const encontrados=state.herramientas.filter(h=>{const movs=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')); const campos=[h.codigo,h.tipo,h.descripcion,h.responsable,h.obra,h.ubicacion,h.ultimo_movimiento,h.fecha_alta,...movs.flatMap(m=>[m.responsable,m.persona,m.obra,m.accion,m.remito])]; return campos.join(' ').toLocaleUpperCase('es-AR').includes(q);}).slice(0,30); area.innerHTML=encontrados.length?encontrados.map(h=>{const asignada=salidasActualesTool().find(x=>String(x.h.codigo)===String(h.codigo)); const historial=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')); const lugar=h.estado==='CON_PERSONAL'?(h.responsable||asignada?.persona?'Con '+(h.responsable||asignada.persona):'Con personal'):(h.ubicacion||h.ultimo_movimiento||estadoTool(h.estado)); const alta=parseFechaTool(h.fecha_alta); const histHtml=historial.length?`<div class="table-scroll"><table class="tools-table"><thead><tr><th>Fecha</th><th>Movimiento</th><th>Persona</th><th>Obra</th><th>N° Remito</th><th>Motivo</th></tr></thead><tbody>${historial.map(m=>`<tr><td>${escTool(m.fecha||'—')}</td><td>${escTool(m.accion||'—')}</td><td>${escTool(m.responsable||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${escTool(m.motivo||'—')}</td></tr>`).join('')}</tbody></table></div>`:'<p class="tools-report-note">No hay movimientos guardados para esta herramienta.</p>'; return `<article class="tools-trace-result"><h3>${escTool(nombreVisibleHerramienta(h.tipo))}${h.descripcion?` · ${escTool(nombreVisibleHerramienta(h.descripcion))}`:''} <span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></h3><div class="tools-trace-meta"><div>Código<strong>${escTool(h.codigo)}</strong></div><div>Responsable<strong>${escTool(h.responsable||'—')}</strong></div><div>Obra<strong>${escTool(asignada?.obra||h.obra||'—')}</strong></div><div>Ubicación actual<strong>${escTool(lugar)}</strong></div><div>Fecha de alta (Excel)<strong>${escTool(alta?fechaInformeTool(alta):h.fecha_alta||'Sin fecha en los datos recibidos')}</strong></div><div>Tiempo con personal<strong>${escTool(asignada?edadInformeTool(asignada.desde):'—')}</strong></div></div><details><summary>Trazabilidad · ${historial.length} movimiento(s)</summary>${histHtml}</details></article>`;}).join(''):'<p class="tools-report-note">No se encontraron herramientas o movimientos con esa búsqueda.</p>'; }        function renderHerramientas() { const sel=document.getElementById('toolTipoFilter'); if(!sel)return; const codes=document.getElementById('toolsQuickCodes'); if(codes) codes.innerHTML=state.herramientas.map(h=>'<option value="'+escTool(h.codigo)+'"></option>').join(''); const traceCodes=document.getElementById('toolTraceCodes'); if(traceCodes) traceCodes.innerHTML=state.herramientas.map(h=>'<option value="'+escTool(h.codigo)+'"></option>').join(''); const tipos=[...new Set(state.herramientas.map(h=>h.tipo))].sort(); sel.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option value="${escTool(t)}">${escTool(nombreVisibleHerramienta(t))}</option>`).join(''); sel.value=state.herramientasUi.tipo; const list=toolsFiltradas(), body=document.getElementById('toolsBody'); body.innerHTML=list.length?list.map(h=>`<tr><td class="mono">${escTool(h.codigo)}</td><td>${escTool(nombreVisibleHerramienta(h.tipo))}</td><td>${escTool(nombreVisibleHerramienta(h.descripcion))}</td><td><span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></td><td>${escTool(h.responsable||'—')}</td><td>${escTool(h.obra||'—')}</td><td>${escTool(h.fecha_alta||'—')}</td><td>${escTool(h.ubicacion||h.ultimo_movimiento||'—')}</td><td><button class="btn small tool-action" data-tool-code="${escTool(h.codigo)}">Gestionar</button></td></tr>`).join(''):'<tr><td colspan="9" class="tools-empty">No hay herramientas que coincidan con el filtro.</td></tr>'; body.querySelectorAll('[data-tool-code]').forEach(b=>b.onclick=()=>gestionarHerramienta(b.dataset.toolCode)); renderPersonasHerramientas(); renderHistorialHerramientas(); renderInformeHerramientas(); renderKpisHerramientas(); renderTraceabilidadHerramientas(); }
+
+        // Identidad por palabras completas: ignora orden, caja, tildes y espacios.
+        function palabrasPersonaTool(valor) {
+            return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .toLocaleUpperCase('es-AR').match(/[A-Z0-9]+/g) || [];
+        }
+        function clavePersonaTool(valor) {
+            return palabrasPersonaTool(valor).sort().join(' ');
+        }
+        function mismaPersonaTool(a, b) {
+            const clave = clavePersonaTool(a);
+            return !!clave && clave === clavePersonaTool(b);
+        }
+        function buscarPersonaTool(nombre, consulta) {
+            const pendientes = palabrasPersonaTool(nombre);
+            return palabrasPersonaTool(consulta).every(palabra => {
+                const i = pendientes.indexOf(palabra);
+                if (i < 0) return false;
+                pendientes.splice(i, 1);
+                return true;
+            });
+        }
+        function nombrePersonaTool(nombre) {
+            if (!clavePersonaTool(nombre)) return 'SIN RESPONSABLE';
+            // Preferimos la primera escritura presente en las unidades, sin alterar los datos guardados.
+            const existente = state.herramientas.find(h => mismaPersonaTool(h.responsable, nombre));
+            return String(existente?.responsable || nombre).trim().replace(/\s+/g, ' ').toLocaleUpperCase('es-AR');
+        }
+
+        function toolsFiltradas() { const u=state.herramientasUi, q=(u.search||'').toUpperCase(); return state.herramientas.filter(h=>(!u.tipo||h.tipo===u.tipo)&&(!u.estado||h.estado===u.estado)&&(!q||[h.codigo,h.tipo,h.descripcion,h.responsable,h.obra,h.ubicacion,h.ultimo_movimiento,h.fecha_alta].join(' ').toUpperCase().includes(q)||buscarPersonaTool(h.responsable,q))); }
+        function renderTraceabilidadHerramientas() { const area=document.getElementById('toolsTraceResults'); if(!area)return; const q=(document.getElementById('toolTraceSearch')?.value||'').trim().toLocaleUpperCase('es-AR'); if(q.length<2){area.innerHTML='<p class="tools-report-note">Escribí al menos 2 caracteres para buscar.</p>';return;} const encontrados=state.herramientas.filter(h=>{const movs=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')); const campos=[h.codigo,h.tipo,h.descripcion,h.responsable,h.obra,h.ubicacion,h.ultimo_movimiento,h.fecha_alta,...movs.flatMap(m=>[m.responsable,m.persona,m.obra,m.accion,m.remito])]; return campos.join(' ').toLocaleUpperCase('es-AR').includes(q)||[h.responsable,...movs.flatMap(m=>[m.responsable,m.persona])].some(nombre=>buscarPersonaTool(nombre,q));}).slice(0,30); area.innerHTML=encontrados.length?encontrados.map(h=>{const asignada=salidasActualesTool().find(x=>String(x.h.codigo)===String(h.codigo)); const historial=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')); const lugar=h.estado==='CON_PERSONAL'?(h.responsable||asignada?.persona?'Con '+(h.responsable||asignada.persona):'Con personal'):(h.ubicacion||h.ultimo_movimiento||estadoTool(h.estado)); const alta=parseFechaTool(h.fecha_alta); const histHtml=historial.length?`<div class="table-scroll"><table class="tools-table"><thead><tr><th>Fecha</th><th>Movimiento</th><th>Persona</th><th>Obra</th><th>N° Remito</th><th>Motivo</th></tr></thead><tbody>${historial.map(m=>`<tr><td>${escTool(m.fecha||'—')}</td><td>${escTool(m.accion||'—')}</td><td>${escTool(m.responsable||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${escTool(m.motivo||'—')}</td></tr>`).join('')}</tbody></table></div>`:'<p class="tools-report-note">No hay movimientos guardados para esta herramienta.</p>'; return `<article class="tools-trace-result"><h3>${escTool(nombreVisibleHerramienta(h.tipo))}${h.descripcion?` · ${escTool(nombreVisibleHerramienta(h.descripcion))}`:''} <span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></h3><div class="tools-trace-meta"><div>Código<strong>${escTool(h.codigo)}</strong></div><div>Responsable<strong>${escTool(h.responsable||'—')}</strong></div><div>Obra<strong>${escTool(asignada?.obra||h.obra||'—')}</strong></div><div>Ubicación actual<strong>${escTool(lugar)}</strong></div><div>Fecha de alta (Excel)<strong>${escTool(alta?fechaInformeTool(alta):h.fecha_alta||'Sin fecha en los datos recibidos')}</strong></div><div>Tiempo con personal<strong>${escTool(asignada?edadInformeTool(asignada.desde):'—')}</strong></div></div><details><summary>Trazabilidad · ${historial.length} movimiento(s)</summary>${histHtml}</details></article>`;}).join(''):'<p class="tools-report-note">No se encontraron herramientas o movimientos con esa búsqueda.</p>'; }        function renderHerramientas() { const sel=document.getElementById('toolTipoFilter'); if(!sel)return; const codes=document.getElementById('toolsQuickCodes'); if(codes) codes.innerHTML=state.herramientas.map(h=>'<option value="'+escTool(h.codigo)+'"></option>').join(''); const traceCodes=document.getElementById('toolTraceCodes'); if(traceCodes) traceCodes.innerHTML=state.herramientas.map(h=>'<option value="'+escTool(h.codigo)+'"></option>').join(''); const tipos=[...new Set(state.herramientas.map(h=>h.tipo))].sort(); sel.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option value="${escTool(t)}">${escTool(nombreVisibleHerramienta(t))}</option>`).join(''); sel.value=state.herramientasUi.tipo; const list=toolsFiltradas(), body=document.getElementById('toolsBody'); body.innerHTML=list.length?list.map(h=>`<tr><td class="mono">${escTool(h.codigo)}</td><td>${escTool(nombreVisibleHerramienta(h.tipo))}</td><td>${escTool(nombreVisibleHerramienta(h.descripcion))}</td><td><span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></td><td>${escTool(h.responsable||'—')}</td><td>${escTool(h.obra||'—')}</td><td>${escTool(h.fecha_alta||'—')}</td><td>${escTool(h.ubicacion||h.ultimo_movimiento||'—')}</td><td><button class="btn small tool-action" data-tool-code="${escTool(h.codigo)}">Ver opciones</button></td></tr>`).join(''):'<tr><td colspan="9" class="tools-empty">No hay herramientas que coincidan con el filtro.</td></tr>'; body.querySelectorAll('[data-tool-code]').forEach(b=>b.onclick=()=>gestionarHerramienta(b.dataset.toolCode)); renderPersonasHerramientas(); renderHistorialHerramientas(); renderInformeHerramientas(); renderKpisHerramientas(); renderTraceabilidadHerramientas(); }
         function renderPersonasHerramientas() {
             const groups={};
-            salidasActualesTool().forEach(x=>{const k=x.persona||'SIN RESPONSABLE';(groups[k]||(groups[k]={items:[],obras:new Set()})).items.push(x);groups[k].obras.add(x.obra||'—');});
+            salidasActualesTool().forEach(x=>{const k=nombrePersonaTool(x.persona);(groups[k]||(groups[k]={items:[],obras:new Set()})).items.push(x);groups[k].obras.add(x.obra||'—');});
             const rows=Object.entries(groups).sort((a,b)=>b[1].items.length-a[1].items.length||a[0].localeCompare(b[0]));
             const body=document.getElementById('toolsPeopleBody'); if(!body)return;
             body.innerHTML=rows.length?rows.map(([persona,g])=>{
@@ -2561,17 +2590,17 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         }
         function imprimirHerramientasPersona(persona) {
             const nombre = String(persona || '').trim() || 'SIN RESPONSABLE';
-            const rows = salidasActualesTool().filter(x => (String(x.persona || '').trim() || 'SIN RESPONSABLE') === nombre);
+            const rows = salidasActualesTool().filter(x => mismaPersonaTool(x.persona || 'SIN RESPONSABLE', nombre));
             if (!rows.length) return alert('Esta persona no tiene herramientas registradas a su cargo.');
             const filas = rows.map(x => `<tr><td>${escTool(nombreVisibleHerramienta(x.h.tipo))}${x.h.descripcion ? ` · ${escTool(nombreVisibleHerramienta(x.h.descripcion))}` : ''}</td><td>${escTool(x.h.codigo)}</td><td>${escTool(x.obra || '—')}</td><td>${escTool(fechaAltaInformeTool(x.h.fecha_alta || x.desde))}</td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.remito || '—')}</td></tr>`).join('');
             imprimirHtmlHerramientas(`Herramientas a cargo de ${nombre}`, `<table><thead><tr><th>Herramienta</th><th>Código</th><th>Obra</th><th>Fecha de alta</th><th>Tiempo a cargo</th><th>N.º de remito</th></tr></thead><tbody>${filas}</tbody></table>`);
         }
-        function renderHistorialHerramientas() { const body=document.getElementById('toolsHistoryBody'); if(!body)return; const q=(document.getElementById('toolsHistorySearch')?.value||'').trim().toLocaleUpperCase('es-AR'); const rows=state.herramientasMov.filter(m=>!q||[m.codigo,m.tipo,m.descripcion,m.accion,m.tipo_movimiento,m.responsable,m.persona,m.obra,m.remito,m.motivo,m.observaciones].join(' ').toLocaleUpperCase('es-AR').includes(q)); const visible=rows.slice(0,10); body.innerHTML=visible.length?visible.map(m=>{const h=state.herramientas.find(x=>String(x.codigo)===String(m.codigo)); const nombre=nombreVisibleHerramienta(m.descripcion||h?.descripcion||m.tipo||h?.tipo||m.codigo||'Herramienta'); return `<tr><td>${escTool(m.fecha||m.fecha_hora||'—')}</td><td>${escTool(m.codigo||'—')}<br>${escTool(nombre)}</td><td>${escTool(m.accion||m.tipo_movimiento||'—')}</td><td>${escTool(m.responsable||m.persona||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${escTool(m.motivo||m.observaciones||'—')}</td></tr>`;}).join(''):'<tr><td colspan="7" class="tools-empty">No hay movimientos que coincidan con la búsqueda.</td></tr>'; const btn=document.getElementById('toolsHistoryToggle'); if(btn)btn.textContent='Ver todo'; }function diasTranscurridosTool(d) { return d ? Math.max(0,Math.floor((Date.now()-d.getTime())/86400000)) : null; }
+        function renderHistorialHerramientas() { const body=document.getElementById('toolsHistoryBody'); if(!body)return; const q=(document.getElementById('toolsHistorySearch')?.value||'').trim().toLocaleUpperCase('es-AR'); const rows=state.herramientasMov.filter(m=>!q||[m.codigo,m.tipo,m.descripcion,m.accion,m.tipo_movimiento,m.responsable,m.persona,m.obra,m.remito,m.motivo,m.observaciones].join(' ').toLocaleUpperCase('es-AR').includes(q)||buscarPersonaTool(m.responsable||m.persona||'',q)); const visible=rows.slice(0,10); body.innerHTML=visible.length?visible.map(m=>{const h=state.herramientas.find(x=>String(x.codigo)===String(m.codigo)); const nombre=nombreVisibleHerramienta(m.descripcion||h?.descripcion||m.tipo||h?.tipo||m.codigo||'Herramienta'); return `<tr><td>${escTool(m.fecha||m.fecha_hora||'—')}</td><td>${escTool(m.codigo||'—')}<br>${escTool(nombre)}</td><td>${escTool(m.accion||m.tipo_movimiento||'—')}</td><td>${escTool(m.responsable||m.persona||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${escTool(m.motivo||m.observaciones||'—')}</td></tr>`;}).join(''):'<tr><td colspan="7" class="tools-empty">No hay movimientos que coincidan con la búsqueda.</td></tr>'; const btn=document.getElementById('toolsHistoryToggle'); if(btn)btn.textContent='Ver todo'; }function diasTranscurridosTool(d) { return d ? Math.max(0,Math.floor((Date.now()-d.getTime())/86400000)) : null; }
         function normalizarAccionHerramienta(v) { return String(v || '').toLocaleUpperCase('es-AR').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' '); }
         function movimientosHerramientasFiltrados() {
             const u=state.movHerrUi, q=String(u.search||'').trim().toLocaleUpperCase('es-AR'), persona=String(u.persona||'').trim().toLocaleUpperCase('es-AR');
             const from=u.desde?new Date(`${u.desde}T00:00:00`):null, to=u.hasta?new Date(`${u.hasta}T23:59:59`):null;
-            return state.herramientasMov.filter(m=>{const accion=normalizarAccionHerramienta(m.accion||m.tipo_movimiento), fecha=parseFechaTool(m.fecha||m.fecha_hora), responsable=String(m.responsable||m.persona||'').trim()||'SIN RESPONSABLE', campos=[m.codigo,m.tipo,m.descripcion,m.accion,m.responsable,m.persona,m.obra,m.remito,m.motivo].join(' ').toLocaleUpperCase('es-AR');return(!q||campos.includes(q))&&(!u.accion||accion.includes(u.accion))&&(!persona||responsable.toLocaleUpperCase('es-AR').includes(persona))&&(!from||(fecha&&fecha>=from))&&(!to||(fecha&&fecha<=to));}).sort((a,b)=>(parseFechaTool(b.fecha||b.fecha_hora)?.getTime()||0)-(parseFechaTool(a.fecha||a.fecha_hora)?.getTime()||0));
+            return state.herramientasMov.filter(m=>{const accion=normalizarAccionHerramienta(m.accion||m.tipo_movimiento), fecha=parseFechaTool(m.fecha||m.fecha_hora), responsable=String(m.responsable||m.persona||'').trim()||'SIN RESPONSABLE', campos=[m.codigo,m.tipo,m.descripcion,m.accion,m.responsable,m.persona,m.obra,m.remito,m.motivo].join(' ').toLocaleUpperCase('es-AR');return(!q||(campos.includes(q)||buscarPersonaTool(m.responsable||m.persona||'',q)))&&(!u.accion||accion.includes(u.accion))&&(!persona||buscarPersonaTool(responsable, persona))&&(!from||(fecha&&fecha>=from))&&(!to||(fecha&&fecha<=to));}).sort((a,b)=>(parseFechaTool(b.fecha||b.fecha_hora)?.getTime()||0)-(parseFechaTool(a.fecha||a.fecha_hora)?.getTime()||0));
         }
         function renderMovHerramientas() {
             const all=movimientosHerramientasFiltrados(), size=40, pages=Math.max(1,Math.ceil(all.length/size)); state.movHerrUi.page=Math.min(Math.max(0,state.movHerrUi.page),pages-1);
@@ -2588,8 +2617,8 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
          function fechaInformeTool(d) { return d ? d.toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'; }
         function fechaAltaInformeTool(v) { const d=parseFechaTool(v); return d ? d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) : (String(v||'').trim()||'—'); }
          function edadInformeTool(d) { if(!d)return 'Sin fecha registrada'; let ms=Math.max(0,Date.now()-d.getTime()); const dias=Math.floor(ms/86400000); const horas=Math.floor((ms%86400000)/3600000); return `${dias} día${dias===1?'':'s'} y ${horas} hora${horas===1?'':'s'}`; }
-         function salidasActualesTool() { return state.herramientas.filter(h=>h.estado==='CON_PERSONAL').map(h=>{const hist=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')).sort((a,b)=>(parseFechaTool(b.fecha||b.fecha_hora)?.getTime()||0)-(parseFechaTool(a.fecha||a.fecha_hora)?.getTime()||0)); let salida=null; for(const m of hist){const a=String(m.accion||m.tipo_movimiento||'').toUpperCase(); if(a.includes('DEVOL'))break; if(a.includes('SALIDA')){salida=m;break;}} const fecha=h.fecha_alta||salida?.fecha||salida?.fecha_hora||salida?.fecha_salida||h.ultimo_movimiento; const desde=parseFechaTool(fecha); return {h,persona:h.responsable||salida?.responsable||'',obra:h.obra||salida?.obra||'',remito:salida?.remito||'',fecha,desde};}); }
-         function renderInformeHerramientas() { const body=document.getElementById('toolsReportBody'); if(!body)return; const desde=document.getElementById('toolsReportFrom')?.value||'', hasta=document.getElementById('toolsReportTo')?.value||'', persona=(document.getElementById('toolsReportPerson')?.value||'').trim().toLocaleUpperCase('es-AR'), obra=(document.getElementById('toolsReportWork')?.value||'').trim().toLocaleUpperCase('es-AR'); const from=desde?new Date(`${desde}T00:00:00`):null, to=hasta?new Date(`${hasta}T23:59:59`):null; const rows=salidasActualesTool().filter(x=>(!persona||(x.persona||'SIN RESPONSABLE').toLocaleUpperCase('es-AR').includes(persona))&&(!obra||x.obra.toLocaleUpperCase('es-AR').includes(obra))&&(!from||(x.desde&&x.desde>=from))&&(!to||(x.desde&&x.desde<=to))); body.innerHTML=rows.length?rows.map(x=>`<tr><td>${escTool(fechaInformeTool(x.desde))}</td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.persona||'SIN RESPONSABLE')}</td><td>${escTool(x.obra||'—')}</td><td>${escTool(`${x.h.codigo} · ${nombreVisibleHerramienta(x.h.tipo)}${x.h.descripcion ? ` · ${nombreVisibleHerramienta(x.h.descripcion)}` : ``}`)}</td><td>${escTool(x.remito||'—')}</td><td>Con personal</td></tr>`).join(''):'<tr><td colspan="7" class="tools-empty">No hay herramientas actualmente a cargo que coincidan con los filtros.</td></tr>'; }
+         function salidasActualesTool() { return state.herramientas.filter(h=>h.estado==='CON_PERSONAL').map(h=>{const hist=state.herramientasMov.filter(m=>String(m.codigo||'')===String(h.codigo||'')).sort((a,b)=>(parseFechaTool(b.fecha||b.fecha_hora)?.getTime()||0)-(parseFechaTool(a.fecha||a.fecha_hora)?.getTime()||0)); let salida=null; for(const m of hist){const a=String(m.accion||m.tipo_movimiento||'').toUpperCase(); if(a.includes('DEVOL'))break; if(a.includes('SALIDA')){salida=m;break;}} const fecha=h.fecha_alta||salida?.fecha||salida?.fecha_hora||salida?.fecha_salida||h.ultimo_movimiento; const desde=parseFechaTool(fecha); return {h,persona:nombrePersonaTool(h.responsable||salida?.responsable||''),obra:h.obra||salida?.obra||'',remito:salida?.remito||'',fecha,desde};}); }
+         function renderInformeHerramientas() { const body=document.getElementById('toolsReportBody'); if(!body)return; const desde=document.getElementById('toolsReportFrom')?.value||'', hasta=document.getElementById('toolsReportTo')?.value||'', persona=(document.getElementById('toolsReportPerson')?.value||'').trim().toLocaleUpperCase('es-AR'), obra=(document.getElementById('toolsReportWork')?.value||'').trim().toLocaleUpperCase('es-AR'); const from=desde?new Date(`${desde}T00:00:00`):null, to=hasta?new Date(`${hasta}T23:59:59`):null; const rows=salidasActualesTool().filter(x=>(!persona||buscarPersonaTool(x.persona||'SIN RESPONSABLE', persona))&&(!obra||x.obra.toLocaleUpperCase('es-AR').includes(obra))&&(!from||(x.desde&&x.desde>=from))&&(!to||(x.desde&&x.desde<=to))); body.innerHTML=rows.length?rows.map(x=>`<tr><td>${escTool(fechaInformeTool(x.desde))}</td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.persona||'SIN RESPONSABLE')}</td><td>${escTool(x.obra||'—')}</td><td>${escTool(`${x.h.codigo} · ${nombreVisibleHerramienta(x.h.tipo)}${x.h.descripcion ? ` · ${nombreVisibleHerramienta(x.h.descripcion)}` : ``}`)}</td><td>${escTool(x.remito||'—')}</td><td>Con personal</td></tr>`).join(''):'<tr><td colspan="7" class="tools-empty">No hay herramientas actualmente a cargo que coincidan con los filtros.</td></tr>'; }
         function imprimirInformeHerramientas() {
             renderInformeHerramientas();
             const filas = [...document.querySelectorAll('#toolsReportBody tr')].filter(r => !r.querySelector('.tools-empty')).map(r => r.outerHTML).join('');
@@ -2622,6 +2651,8 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                     descripcion: [u.detalle, u.marca].filter(Boolean).join(' · '),
                     estado: mapearEstadoTool(u),
                     responsable: u.poder || '',
+                    estado_tecnico: u.estado || '',
+                    lugar_actual: u.lugar || '',
                     obra: u.obra || u.destino || '',
                     fecha_alta: u.fecha_alta || u.fechaAlta || '',
                     ubicacion: [u.lugar, u.ub?.deposito, u.ub?.estante, u.ub?.columna, u.ub?.fila].filter(Boolean).join(' · '),
@@ -2637,42 +2668,90 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         }
 
         function gestionarHerramientaPorCodigo() { const campo=document.getElementById('toolsQuickCode'); const codigo=(campo.value||'').trim().toUpperCase(); const h=state.herramientas.find(x=>String(x.codigo||'').toUpperCase()===codigo); if(!h){alert('No se encontró ese código de herramienta.'); campo.focus(); return;} gestionarHerramienta(h.codigo); }
-        async function gestionarHerramienta(codigo) {
-            const h = state.herramientas.find(x => x.codigo === codigo);
-            if (!h) return;
-            let payload, accion;
-            if (h.estado === 'EN_DEPOSITO') {
-                const responsable = (prompt(`${h.codigo} · ${h.descripcion}\n\nPersona que se la lleva:`) || '').trim().toUpperCase();
-                if (!responsable) return;
-                const obra = (prompt('Obra / destino:') || '').trim().toUpperCase();
-                if (!obra) return alert('La entrega requiere obra o destino.');
-                const remitoRespuesta = prompt('Número de remito de salida (opcional):');
-                if (remitoRespuesta === null) return;
-                const remito = remitoRespuesta.trim().toUpperCase();
-                accion = 'SALIDA';
-                payload = { accion:'herr-movimiento', tipo_movimiento:'SALIDA', responsable, obra, remito, observaciones:'', items:[{ codigos:[h.codigo] }] };
-            } else if (h.estado === 'CON_PERSONAL') {
-                const pick = prompt(`${h.codigo} · ${h.descripcion}\nLa tiene: ${h.responsable}\n\nEstado en que vuelve:\n1 APTO\n2 NO APTO`);
-                if (!pick) return;
-                const estado = pick.trim() === '1' ? 'APTO' : (pick.trim() === '2' ? 'NO APTO' : '');
-                if (!estado) return alert('Opción inválida.');
-                const remitoRespuesta = prompt('Número de remito de devolución (opcional):');
-                if (remitoRespuesta === null) return;
-                const remito = remitoRespuesta.trim().toUpperCase();
-                accion = 'DEVOLUCION';
-                payload = { accion:'herr-movimiento', tipo_movimiento:'DEVOLUCIÓN', responsable:h.responsable, obra:'DEPÓSITO', remito, observaciones:'', items:[{ lugar:'DEPÓSITO', ubic:{ deposito:'', estante:'', columna:'', fila:'' }, codigos:[{ codigo:h.codigo, estado }] }] };
-            } else {
-                return alert(`${h.codigo} no se puede entregar ni devolver desde acá (lugar: ${h.ultimo_movimiento || 'sin indicar'}). Corregilo en la hoja "Unidades Herramientas".`);
-            }
+
+        let movimientoSimpleActual=null;
+        function gestionarHerramienta(codigo) {
+            const h=state.herramientas.find(x=>x.codigo===codigo);
+            if(!h)return;
+            movimientoSimpleActual={h:{...h},accion:'',payload:null};
+            const modal=document.getElementById('movimientoSimple');
+            document.getElementById('msTitulo').textContent=h.codigo+' · '+nombreVisibleHerramienta(h.tipo);
+            document.getElementById('msSituacion').textContent=(h.responsable?'La tiene: '+nombrePersonaTool(h.responsable):'Ubicación: '+(h.ubicacion||'Sin indicar'))+' · Estado: '+(h.estado_tecnico||estadoTool(h.estado));
+            document.getElementById('msFormulario').hidden=true;
+            document.getElementById('msConfirmacion').hidden=true;
+            document.getElementById('msMensaje').textContent='';
+            document.getElementById('msEntrega').disabled=h.estado!=='EN_DEPOSITO';
+            document.getElementById('msDevolucion').disabled=!h.responsable;
+            document.getElementById('msEstado').disabled=!h.estado_tecnico;
+            modal.showModal();
+        }
+        function elegirMovimientoSimple(accion) {
+            const actual=movimientoSimpleActual; if(!actual)return;
+            actual.accion=accion;actual.payload=null;
+            document.getElementById('msConfirmacion').hidden=true;
+            document.getElementById('msFormulario').hidden=false;
+            document.getElementById('msMensaje').textContent='';
+            document.getElementById('msFormulario').reset();
+            document.getElementById('msCamposEntrega').hidden=accion!=='SALIDA';
+            document.getElementById('msCamposDevolucion').hidden=accion!=='DEVOLUCION';
+            document.getElementById('msCamposEstado').hidden=accion!=='ESTADO';
+            document.getElementById('msRemitoCampo').hidden=accion==='ESTADO';
+            document.getElementById('msPasoTitulo').textContent=({SALIDA:'¿Quién se lleva la herramienta?',DEVOLUCION:'¿Cómo vuelve la herramienta?',ESTADO:'¿Cómo está la herramienta ahora?'})[accion];
+            document.getElementById('msPersona').required=accion==='SALIDA';
+            document.getElementById('msObra').required=accion==='SALIDA';
+            document.getElementById('msMotivo').required=accion==='ESTADO';
+            document.getElementById('msNuevoEstado').value=actual.h.estado_tecnico||'APTO';
+            document.querySelector('#msFormulario input:not([type=hidden]), #msFormulario select')?.focus();
+        }
+        function prepararMovimientoSimple(e) {
+            e.preventDefault();
+            const {h,accion}=movimientoSimpleActual;
+            const leer=id=>document.getElementById(id).value.trim().toUpperCase();
+            const remito=leer('msRemito');let payload,resumen;
+            if(accion==='SALIDA') {
+                const responsable=leer('msPersona'),obra=leer('msObra');
+                if(!responsable||!obra)return;
+                payload={accion:'herr-movimiento',tipo_movimiento:'SALIDA',responsable,obra,remito,observaciones:'',items:[{codigos:[h.codigo]}]};
+                resumen=`Entregar ${h.codigo} a ${responsable}. Destino: ${obra}.`;
+            } else if(accion==='DEVOLUCION') {
+                const estado=leer('msEstadoVuelta');
+                payload={accion:'herr-movimiento',tipo_movimiento:'DEVOLUCIÓN',responsable:h.responsable,
+                    obra:'DEPÓSITO ARISMENDI',remito,observaciones:'',items:[{lugar:'DEPÓSITO ARISMENDI',
+                    ubic:{deposito:'ARISMENDI',estante:'',columna:'',fila:''},codigos:[{codigo:h.codigo,estado}]}]};
+                resumen=`Recibir ${h.codigo} de ${nombrePersonaTool(h.responsable)} en Depósito Arismendi. Estado: ${estado}.`;
+            } else if(accion==='ESTADO') {
+                const estado=leer('msNuevoEstado'),motivo=leer('msMotivo');
+                if(estado===h.estado_tecnico){document.getElementById('msMensaje').textContent='Elegí un estado diferente al actual.';return;}
+                if(!motivo)return;
+                payload={accion:'herr-cambiar-estado',codigo:h.codigo,estado_anterior:h.estado_tecnico,estado,motivo};
+                resumen=`Cambiar ${h.codigo} de ${h.estado_tecnico} a ${estado}. Motivo: ${motivo}.`;
+            } else return;
+            movimientoSimpleActual.payload=payload;
+            document.getElementById('msResumen').textContent=resumen;
+            document.getElementById('msFormulario').hidden=true;
+            document.getElementById('msConfirmacion').hidden=false;
+            document.getElementById('msGuardar').focus();
+        }
+        async function guardarMovimientoSimple() {
+            const actual=movimientoSimpleActual;if(!actual?.payload)return;
+            const modal=document.getElementById('movimientoSimple'),msg=document.getElementById('msMensaje');
+            const controles=[...modal.querySelectorAll('button,input,select,textarea')];
+            const estadosPrevios=controles.map(c=>c.disabled);
+            controles.forEach(c=>c.disabled=true);modal.dataset.guardando='si';msg.textContent='Guardando movimiento…';
             try {
-                const r = await apiPostSeguro(payload);
-                if (!r || !r.ok) return alert('No se guardó: ' + ((r && r.error) || 'error desconocido'));
-                state.herramientasMov.unshift({ fecha:fechaTool(), codigo:h.codigo, tipo:h.tipo, descripcion:h.descripcion, accion, responsable:payload.responsable, obra:payload.obra, remito:payload.remito||'', motivo:'' });
-                state.herramientasMov=unificarMovimientosHerramientas(state.herramientasMov); guardarMovimientosHerramientasLocales();
-                showToast(`${h.codigo}: ${accion === 'SALIDA' ? 'entrega' : 'devolución'} registrada${payload.remito ? ' · Remito '+payload.remito : ''} ✓`);
+                const r=await apiPostSeguro(actual.payload);
+                if(!r?.ok) throw Error(r?.error||'No se pudo guardar.');
+                if(actual.accion==='ESTADO' && (!r.codigo||!r.estado)) throw Error('El Apps Script publicado no tiene la función de cambio de estado.');
+                movimientoSimpleActual=null;modal.close();
+                showToast('Movimiento guardado para '+actual.h.codigo);
                 await cargarHerramientas();
-            } catch (e) {
-                alert('No se pudo confirmar el movimiento. Revisá la hoja "Movimientos Herramientas" antes de repetirlo.');
+            } catch(e) {
+                actual.payload=null;
+                msg.textContent=e.message+' Revisá el historial antes de repetir el movimiento.';
+                document.getElementById('msConfirmacion').hidden=true;
+            } finally {
+                delete modal.dataset.guardando;
+                controles.forEach((c,i)=>c.disabled=estadosPrevios[i]);
             }
         }
         function abrirHerramientas(){ document.querySelector('.side-btn[data-side-tab="herramientas"]').click(); }
@@ -6560,6 +6639,47 @@ document.getElementById('responsablesAplicar').addEventListener('click',async()=
   msg.textContent=e.message+' Revisá Unidades Herramientas y Movimientos Herramientas antes de volver a importar.';
  } finally {revisar.disabled=false;archivo.disabled=false;}
 });
+</script>
+
+
+<style>
+#movimientoSimple{color:var(--txt);background:var(--bg-card);border:1px solid var(--line);border-radius:16px;padding:24px;width:min(620px,calc(100vw - 24px));max-height:90vh;overflow:auto;margin:auto;font:inherit}
+#movimientoSimple::backdrop{background:rgba(0,0,0,.7)}
+#movimientoSimple h2{font-size:20px;margin:0 0 10px}#movimientoSimple h3{font-size:17px;margin:12px 0}
+#movimientoSimple p{line-height:1.5;margin:10px 0 18px}#movimientoSimple .ms-opciones{display:grid;grid-template-columns:1fr;gap:10px;margin:18px 0}
+#movimientoSimple .ms-opciones button{padding:14px;text-align:left;white-space:normal;display:block;height:auto}
+#movimientoSimple .ms-opciones small{display:block;font-size:12px;font-weight:400;margin-top:4px}
+#movimientoSimple label{display:block;margin:12px 0}#movimientoSimple input,#movimientoSimple select,#movimientoSimple textarea{display:block;width:100%;padding:11px;margin-top:5px;background:var(--bg-elev);color:var(--txt);border:1px solid var(--line);border-radius:7px;font:inherit}
+#movimientoSimple [hidden]{display:none!important}#movimientoSimple button:disabled{opacity:.4;cursor:not-allowed}#movimientoSimple .ms-pie{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+</style>
+<dialog id="movimientoSimple" aria-labelledby="msTitulo">
+ <h2 id="msTitulo">Herramienta</h2><p id="msSituacion"></p>
+ <div class="ms-opciones">
+  <button type="button" class="btn" id="msEntrega"><strong>Entregar a una persona</strong><small>Sale del depósito. Elegís quién la recibe y a qué obra va.</small></button>
+  <button type="button" class="btn" id="msDevolucion"><strong>Recibir devolución</strong><small>Vuelve a Depósito Arismendi. Indicás si funciona.</small></button>
+  <button type="button" class="btn" id="msEstado"><strong>Cambiar estado</strong><small>Indicás si funciona, necesita reparación, está vencida o se da de baja.</small></button>
+ </div>
+ <form id="msFormulario" hidden>
+  <h3 id="msPasoTitulo"></h3>
+  <div id="msCamposEntrega"><label>¿Quién la recibe?<input id="msPersona" autocomplete="off" placeholder="Nombre y apellido"></label><label>¿A qué obra o destino va?<input id="msObra" placeholder="Obra o destino"></label></div>
+  <div id="msCamposDevolucion"><p>Se guardará en <strong>Depósito Arismendi</strong> y dejará de estar a cargo de la persona.</p><label>¿Funciona?<select id="msEstadoVuelta"><option value="APTO">Sí, funciona</option><option value="NO APTO">No, necesita reparación</option></select></label></div>
+  <div id="msCamposEstado"><p>Este cambio conserva la persona y la ubicación actuales.</p><label>Nuevo estado<select id="msNuevoEstado"><option value="APTO">Funciona bien</option><option value="APTO CON OBSERVACIONES">Funciona, pero tiene observaciones</option><option value="NO APTO">No funciona / necesita reparación</option><option value="VENCIDO">Está vencida</option><option value="DADO DE BAJA">Dar de baja</option></select></label><label>¿Por qué cambiás el estado?<textarea id="msMotivo" rows="3" placeholder="Por ejemplo: cable cortado"></textarea></label></div>
+  <label id="msRemitoCampo">N.º de remito (opcional)<input id="msRemito"></label>
+  <button type="submit" class="btn primary">Revisar antes de guardar</button>
+ </form>
+ <section id="msConfirmacion" hidden><h3>Revisá el movimiento</h3><p id="msResumen"></p><div class="ms-pie"><button type="button" class="btn" id="msVolver">Corregir</button><button type="button" class="btn primary" id="msGuardar">Confirmar y guardar</button></div></section>
+ <p id="msMensaje" role="status" aria-live="polite"></p>
+ <div class="ms-pie"><button type="button" class="btn" id="msCerrar">Cerrar</button></div>
+</dialog>
+<script>
+document.getElementById('msEntrega').onclick=()=>elegirMovimientoSimple('SALIDA');
+document.getElementById('msDevolucion').onclick=()=>elegirMovimientoSimple('DEVOLUCION');
+document.getElementById('msEstado').onclick=()=>elegirMovimientoSimple('ESTADO');
+document.getElementById('msFormulario').onsubmit=prepararMovimientoSimple;
+document.getElementById('msGuardar').onclick=guardarMovimientoSimple;
+document.getElementById('msVolver').onclick=()=>{document.getElementById('msConfirmacion').hidden=true;document.getElementById('msFormulario').hidden=false;};
+document.getElementById('msCerrar').onclick=()=>{document.getElementById('movimientoSimple').close();movimientoSimpleActual=null;};
+document.getElementById('movimientoSimple').addEventListener('cancel',e=>{if(e.currentTarget.dataset.guardando)e.preventDefault();else movimientoSimpleActual=null;});
 </script>
 
 </body>
