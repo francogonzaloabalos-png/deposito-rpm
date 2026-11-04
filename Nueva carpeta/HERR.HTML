@@ -1693,6 +1693,15 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
     .stats{grid-template-columns:repeat(3,1fr)}
     @media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
 
+    /* KPIs de Herramientas: las 4 tarjetas siempre en una sola fila */
+    #panel-herramientas #toolsKpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+    @media(max-width:720px){
+        #panel-herramientas #toolsKpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+        #panel-herramientas #toolsKpis .stat{padding:10px 8px;text-align:center}
+        #panel-herramientas #toolsKpis .stat-num{font-size:20px}
+        #panel-herramientas #toolsKpis .stat-label{font-size:8.5px;letter-spacing:.3px}
+    }
+
     /* ---------- LOGO ADAPTABLE AL TEMA ---------- */
     .side-logo{background:color-mix(in srgb,var(--accent) 8%,var(--bg-card))}
     .side-logo img{mix-blend-mode:multiply}
