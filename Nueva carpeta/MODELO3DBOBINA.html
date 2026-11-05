@@ -19,7 +19,7 @@ input{flex:1;min-width:0}
 .on{background:#ffd000!important;color:#000!important}
 </style></head><body>
 <canvas id="c"></canvas>
-<div class="bar"><input id="q" placeholder="Buscar: PRE 12, SUB 05…" autocomplete="off"><button id="v">Planta</button><button id="mv">Mover</button><button id="cf">⚙</button></div>
+<div class="bar"><input id="q" placeholder="Buscar: PRE 12, SUB 05…" autocomplete="off"><button id="v">Planta</button><button id="mv">Mover</button><button id="im">🧲</button><button id="cf">⚙</button></div>
 <div id="pn">
  <h4>Depósito (metros)</h4>
  Ancho <input id="rw" inputmode="decimal"> Largo <input id="rd" inputmode="decimal"> <button id="ra">Aplicar</button>
@@ -101,16 +101,25 @@ function refresh(){restack();if(cur)sel(cur)}
 var tg=new THREE.Vector3(),az=.5,el=.8,dist=32;
 function upd(){cam.position.set(tg.x+dist*Math.sin(az)*Math.cos(el),dist*Math.sin(el),tg.z+dist*Math.cos(az)*Math.cos(el));cam.lookAt(tg)}
 function rs(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',rs);rs();
-var P={},mv=0,mvOn=false,drag=null,pl=new THREE.Plane(new THREE.Vector3(0,1,0),0),pv=new THREE.Vector3();
+var P={},mv=0,mvOn=false,magOn=false,dg=null,drag=null,pl=new THREE.Plane(new THREE.Vector3(0,1,0),0),pv=new THREE.Vector3();
 function ray(e){rc.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),cam)}
+// bloque: la bobina agarrada + todas las que están apiladas encima (directa o indirectamente)
+function bloque(r){var g=[r],ch=true;
+ while(ch){ch=false;reels.forEach(function(q){if(g.indexOf(q)>-1)return;
+  for(var i=0;i<g.length;i++){var m=g[i];if(q.y>m.y+.01&&Math.hypot(q.x-m.x,q.z-m.z)<(tam(q).d+tam(m).d)/2*.7){g.push(q);ch=true;return}}})}
+ return g}
+// imán: centra el bloque sobre la bobina más cercana que se le superponga
+function iman(){var t=tam(drag),best=null,bd=1e9;
+ reels.forEach(function(q){if(dg.some(function(m){return m.r===q}))return;var d=Math.hypot(q.x-drag.x,q.z-drag.z);if(d<(t.d+tam(q).d)/2*.9&&d<bd){bd=d;best=q}});
+ if(best){drag.x=best.x;drag.z=best.z;dg.forEach(function(m){m.r.x=drag.x+m.dx;m.r.z=drag.z+m.dz;m.r.y=1e3+m.y0})}}
 cv.addEventListener('pointerdown',function(e){cv.setPointerCapture(e.pointerId);P[e.pointerId]=[e.clientX,e.clientY];mv=0;drag=null;
- if(mvOn&&Object.keys(P).length===1){ray(e);var x=rc.intersectObjects(meshes)[0];if(x){drag=x.object.userData;sel(drag)}}});
+ if(mvOn&&Object.keys(P).length===1){ray(e);var x=rc.intersectObjects(meshes)[0];if(x){drag=x.object.userData;dg=bloque(drag).map(function(r){return {r:r,dx:r.x-drag.x,dz:r.z-drag.z,y0:r.y}});sel(drag)}}});
 cv.addEventListener('pointermove',function(e){var p=P[e.pointerId];if(!p)return;var ids=Object.keys(P);
-  if(drag&&ids.length===1){ray(e);if(rc.ray.intersectPlane(pl,pv)){var q=tam(drag).d/2;drag.x=Math.max(-W/2+q,Math.min(W/2-q,pv.x));drag.z=Math.max(-D/2+q,Math.min(D/2-q,pv.z));drag.y=1e3;restack();arrow.userData.y=drag.y+tam(drag).a+.5;arrow.position.set(drag.x,arrow.userData.y,drag.z);ring.position.set(drag.x,drag.y+.05,drag.z)}}
+  if(drag&&ids.length===1){ray(e);if(rc.ray.intersectPlane(pl,pv)){var q=tam(drag).d/2;drag.x=Math.max(-W/2+q,Math.min(W/2-q,pv.x));drag.z=Math.max(-D/2+q,Math.min(D/2-q,pv.z));dg.forEach(function(m){m.r.x=drag.x+m.dx;m.r.z=drag.z+m.dz;m.r.y=1e3+m.y0});restack();arrow.userData.y=drag.y+tam(drag).a+.5;arrow.position.set(drag.x,arrow.userData.y,drag.z);ring.position.set(drag.x,drag.y+.05,drag.z)}}
  else if(ids.length===2){var o=P[ids.find(function(i){return i!=e.pointerId})];dist=Math.max(5,Math.min(50,dist*Math.hypot(p[0]-o[0],p[1]-o[1])/Math.hypot(e.clientX-o[0],e.clientY-o[1])))}
  else{az-=(e.clientX-p[0])*.008;el=Math.max(.15,Math.min(1.55,el+(e.clientY-p[1])*.008))}
  mv+=Math.abs(e.clientX-p[0])+Math.abs(e.clientY-p[1]);P[e.pointerId]=[e.clientX,e.clientY]});
-cv.addEventListener('pointerup',function(e){delete P[e.pointerId];if(drag){drag=null;restack();sel(cur);guardar();return}if(mv<6)pick(e)});
+cv.addEventListener('pointerup',function(e){delete P[e.pointerId];if(drag){if(magOn)iman();drag=null;dg=null;restack();sel(cur);guardar();return}if(mv<6)pick(e)});
 cv.addEventListener('pointercancel',function(e){delete P[e.pointerId]});
 cv.addEventListener('wheel',function(e){e.preventDefault();dist=Math.max(5,Math.min(50,dist*(1+e.deltaY*.001)))},{passive:false});
 var am=new THREE.MeshBasicMaterial({color:0xff1f1f,depthTest:false}),arrow=new THREE.Group();
@@ -133,6 +142,7 @@ function guardar(){try{localStorage.setItem('dep2',JSON.stringify({W:W,D:D,TAM:T
 function cargar(){try{var s=JSON.parse(localStorage.getItem('dep2'));if(!s)return;W=s.W;D=s.D;TAM.length=0;s.TAM.forEach(function(t){TAM.push(t)});if(s.C)for(var k in s.C)COL[k]=s.C[k];(s.X||[]).forEach(function(x){reels.push({id:x.id,t:'TA',x:0,z:0,l:0,y:0,tam:1,sec:x.sec,m:x.m,extra:true})});var m={};reels.forEach(function(r){m[r.id]=r});s.R.forEach(function(a){var r=m[a[0]];if(r){r.x=a[1];r.z=a[2];r.y=a[3];r.tam=a[4];if(a[5])r.t=a[5]}})}catch(e){}}
 // Botones
 var mb=document.getElementById('mv');mb.onclick=function(){mvOn=!mvOn;mb.classList.toggle('on',mvOn);mb.textContent=mvOn?'Mover ✓':'Mover'};
+var ib=document.getElementById('im');ib.onclick=function(){magOn=!magOn;ib.classList.toggle('on',magOn)};
 document.getElementById('cf').onclick=function(){var p=document.getElementById('pn');p.style.display=p.style.display==='block'?'none':'block'};
 // Depósito
 var rw=document.getElementById('rw'),rd=document.getElementById('rd');rw.value=W;rd.value=D;

@@ -3125,9 +3125,9 @@ const HERR_COLS_MOVS = [
 const HERR_SIGLAS_SIN_MEDIDA = ['KHA'];
 // Agregamos 'Nombre Principal' como 2° columna y mantenemos una fila por cada variante/detalle
 const HERR_COLS_STOCK = [
-  'Categoría', 'Nombre Principal', 'Detalle / Variante', 'Medida / Características', 'Marcas', 'Modo',
-  'Cantidad total (sin bajas)', 'Apto', 'Apto con obs.', 'No apto', 'Vencido',
-  'En depósito', 'En poder (total)', 'En poder de', 'No disponibles', 'Bajas', 'Códigos'
+  'Categoría', 'Nombre Principal', 'Total del Grupo', 'Disp. del Grupo',
+  'Código', 'Detalle', 'Medida / Características', 'Marca', 'Modelo', 'N° Serie',
+  'Estado Técnico', 'Situación', 'Lugar / Persona a Cargo', 'Ubicación Depósito', 'Observaciones'
 ];
 
 // ============================================================
@@ -3284,6 +3284,7 @@ function herr_calcularStock(objs) {
   );
 }
 
+// Escribe en Stock Herramientas Prueba 1 fila por cada código individual, ordenada por Nombre Principal y Detalle
 function herr_escribirStock(ss, objs) {
   const hoja = ss.getSheetByName(HERR_HOJA_STOCK);
   if (!hoja) return;
@@ -3292,25 +3293,65 @@ function herr_escribirStock(ss, objs) {
   hoja.getRange(1, 1, 1, nc).setValues([HERR_COLS_STOCK])
     .setFontWeight('bold').setBackground('#2563eb').setFontColor('#ffffff');
   hoja.setFrozenRows(1);
-  const filas = herr_calcularStock(objs).map(s => [
-    s.familia,
-    s.nombrePrincipal,
-    s.tipo,
-    s.medida,
-    Object.keys(s.marcas).sort().join(', '),
-    s.modo,
-    s.total,
-    s.apto, s.aptoObs, s.noApto, s.vencido,
-    s.deposito, s.poder,
-    Object.keys(s.poderDetalle).map(n => n + ': ' + s.poderDetalle[n]).join(' | '),
-    s.nodisp, s.bajas, s.codigos.join(', ')
-  ]);
+
+  // Calcular totales por Nombre Principal (sin contar bajas) para mostrarlos como referencia
+  const totalesGrupo = {};
+  objs.forEach(u => {
+    const nom = String(u.tipo || u.detalle || 'SIN TIPO').trim().toUpperCase();
+    if (!totalesGrupo[nom]) totalesGrupo[nom] = { total: 0, disp: 0 };
+    if (!u.baja) {
+      totalesGrupo[nom].total++;
+      const enDep = herr_norm(u.lugar).indexOf('DEPOSITO') === 0;
+      if (!u.poder && u.disp && enDep) totalesGrupo[nom].disp++;
+    }
+  });
+
+  // Ordenar por Categoría -> Nombre Principal -> Detalle -> Medida -> Marca -> Código
+  const ordenados = objs.slice().sort((a, b) => {
+    const ka = [herr_nombreFamilia(a.sigla), a.tipo, a.detalle, a.medida, a.marca, a.codigo].join('|');
+    const kb = [herr_nombreFamilia(b.sigla), b.tipo, b.detalle, b.medida, b.marca, b.codigo].join('|');
+    return ka.localeCompare(kb, 'es', { numeric: true });
+  });
+
+  const filas = ordenados.map(u => {
+    const nom   = String(u.tipo || u.detalle || 'SIN TIPO').trim().toUpperCase();
+    const infoG = totalesGrupo[nom] || { total: 0, disp: 0 };
+    const enDep = herr_norm(u.lugar).indexOf('DEPOSITO') === 0;
+    let situacion = 'EN MANTENIMIENTO / NO DISP.';
+    if (u.baja) situacion = 'DADO DE BAJA';
+    else if (u.poder) situacion = 'A CARGO DE PERSONAL';
+    else if (u.disp && enDep) situacion = 'DISPONIBLE EN DEPÓSITO';
+
+    const ubTxt = [u.ub?.deposito, u.ub?.estante, u.ub?.columna, u.ub?.fila].filter(Boolean).join(' / ');
+
+    return [
+      herr_nombreFamilia(u.sigla),
+      nom,
+      infoG.total,
+      infoG.disp,
+      u.codigo,
+      u.detalle || nom,
+      u.medida || '',
+      u.marca || '',
+      u.modelo || '',
+      u.serie || '',
+      u.estado || '',
+      situacion,
+      u.lugar || '',
+      ubTxt,
+      u.obs || ''
+    ];
+  });
+
   const maxF = hoja.getMaxRows();
   if (maxF > 1) hoja.getRange(2, 1, maxF - 1, hoja.getMaxColumns()).clearContent();
   const faltan = filas.length + 1 - maxF;
   if (faltan > 0) hoja.insertRowsAfter(maxF, faltan);
-  if (filas.length) hoja.getRange(2, 1, filas.length, nc).setValues(filas);
-  [190, 160, 280, 140, 140, 100, 90, 65, 85, 70, 70, 90, 95, 250, 95, 65, 340]
+  if (filas.length) {
+    hoja.getRange(2, 5, filas.length, 1).setNumberFormat('@'); // Código como texto
+    hoja.getRange(2, 1, filas.length, nc).setValues(filas);
+  }
+  [180, 150, 95, 95, 95, 230, 160, 120, 110, 110, 130, 165, 220, 120, 220]
     .forEach((w, i) => { if (i < nc) hoja.setColumnWidth(i + 1, w); });
 }
 
@@ -4867,7 +4908,30 @@ function herr_extraerCaractDesdeDetalle_(detalle) {
   return hallados.join(' | ');
 }
 
-// EJECUTAR UNA SOLA VEZ DESDE EL EDITOR DE APPS SCRIPT
+function herr_limpiarDetalleEspecifico_(nombrePrincipal, detalle, marca, caractExtraida) {
+  let d = String(detalle || '').trim().toUpperCase();
+  if (marca) {
+    Object.keys(HERR_MAPA_MARCAS_NORM).forEach(k => {
+      if (HERR_MAPA_MARCAS_NORM[k] === marca) {
+        const esc = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        d = d.replace(new RegExp('(?:^|[\\s\\-\\(\\/])' + esc + '(?:$|[\\s\\-\\),\\."])', 'gi'), ' ');
+      }
+    });
+  }
+  if (caractExtraida) {
+    caractExtraida.split(' | ').forEach(token => {
+      const t = token.trim();
+      if (t) d = d.split(t).join(' ');
+    });
+  }
+  d = d.replace(/\bHASTA\s*1[,\.]?000\s*V\b/gi, ' ')
+       .replace(/\(\s*\)/g, ' ')
+       .replace(/^[\s\-\/,]+|[\s\-\/,]+$/g, '')
+       .replace(/\s+/g, ' ')
+       .trim();
+  return d || nombrePrincipal;
+}
+
 function herr_crearHojasPruebaYNormalizar() {
   const ss = herr_abrirSS();
   herr_cargarRef(ss);
@@ -4890,24 +4954,20 @@ function herr_crearHojasPruebaYNormalizar() {
   const ult = hu.getLastRow();
   if (ult <= 1) return;
 
-  // Renombrar cabecera de columna 17 para que quede claro que es el Nombre Principal / Tipo
   hu.getRange(1, HERR_U.TIPO + 1).setValue('NOMBRE PRINCIPAL / TIPO');
 
   const rango = hu.getRange(2, 1, ult - 1, HERR_U.TOTAL);
   const filas = rango.getValues();
 
-  let marcasCompletadas = 0, caractCompletadas = 0, tiposNormalizados = 0;
-
   filas.forEach(r => {
-    const sigla   = String(r[HERR_U.SIGLA] || '').trim().toUpperCase();
-    const detalle = String(r[HERR_U.DETALLE] || '').trim().toUpperCase();
-    let codigo    = String(r[HERR_U.CODIGO] || '').trim().toUpperCase();
-    let lugar     = String(r[HERR_U.LUGAR] || '').trim().toUpperCase();
-    let caract    = String(r[HERR_U.CARACT] || '').trim().toUpperCase();
-    let marca     = String(r[HERR_U.MARCA] || '').trim().toUpperCase();
-    let modelo    = String(r[HERR_U.MODELO] || '').trim().toUpperCase();
+    const sigla      = String(r[HERR_U.SIGLA] || '').trim().toUpperCase();
+    const detalleOrig = String(r[HERR_U.DETALLE] || '').trim().toUpperCase();
+    let codigo       = String(r[HERR_U.CODIGO] || '').trim().toUpperCase();
+    let lugar        = String(r[HERR_U.LUGAR] || '').trim().toUpperCase();
+    let caractOrig   = String(r[HERR_U.CARACT] || '').trim().toUpperCase();
+    let marcaOrig    = String(r[HERR_U.MARCA] || '').trim().toUpperCase();
+    let modelo       = String(r[HERR_U.MODELO] || '').trim().toUpperCase();
 
-    // Fix fila CHA-001 donde escribieron "A CARGO DE RUBEN TOLABA" en CODIGO
     if (codigo.indexOf('A CARGO DE ') === 0 && !lugar && r[HERR_U.ID]) {
       lugar = codigo;
       codigo = String(r[HERR_U.ID]).trim().toUpperCase();
@@ -4915,47 +4975,43 @@ function herr_crearHojasPruebaYNormalizar() {
       r[HERR_U.LUGAR]  = lugar;
     }
 
-    if (marca === '-' || marca === 'DESTORN' || marca === 'MACHETE') marca = '';
-    if (caract === '-') caract = '';
+    if (marcaOrig === '-' || marcaOrig === 'DESTORN' || marcaOrig === 'MACHETE') marcaOrig = '';
+    if (caractOrig === '-') caractOrig = '';
     if (modelo === '-') modelo = '';
 
-    // 1. Nombre Principal limpio en columna TIPO
-    const nuevoTipo = herr_detectarNombrePrincipal_(sigla, detalle, r[HERR_U.CATEGORÍA]);
-    if (nuevoTipo && r[HERR_U.TIPO] !== nuevoTipo) {
-      r[HERR_U.TIPO] = nuevoTipo;
-      tiposNormalizados++;
-    }
-
-    // 2. Extraer Marca si está vacía
+    // 1. Normalizar marca existente o extraerla del detalle
+    let marca = HERR_MAPA_MARCAS_NORM[marcaOrig] || marcaOrig;
     if (!marca) {
-      const marcaDet = herr_extraerMarcaDesdeDetalle_(detalle);
-      if (marcaDet) {
-        marca = marcaDet;
-        marcasCompletadas++;
-      }
+      marca = herr_extraerMarcaDesdeDetalle_(detalleOrig);
     }
-    r[HERR_U.MARCA] = marca;
 
-    // 3. Extraer Características / Medidas si está vacía
+    // 2. Extraer características / medidas del detalle
+    const caractExt = herr_extraerCaractDesdeDetalle_(detalleOrig);
+    let caract = caractOrig;
     if (!caract) {
-      const caractDet = herr_extraerCaractDesdeDetalle_(detalle);
-      if (caractDet) {
-        caract = caractDet;
-        caractCompletadas++;
-      }
+      caract = caractExt;
+    } else if (sigla === 'KHA' && caractExt && caract.indexOf(caractExt) === -1) {
+      caract = caractExt + ' (' + caract + ')';
     }
-    r[HERR_U.CARACT] = caract;
-    r[HERR_U.MODELO] = modelo;
+
+    // 3. Detectar Nombre Principal (TIPO)
+    const nuevoTipo = herr_detectarNombrePrincipal_(sigla, detalleOrig, r[HERR_U.CATEGORIA]);
+
+    // 4. Limpiar Detalle en herramientas manuales para no duplicar marca ni medida
+    const detalleLimpio = (sigla === 'HER' || sigla === 'KHA')
+      ? herr_limpiarDetalleEspecifico_(nuevoTipo, detalleOrig, marca, caractExt)
+      : detalleOrig;
+
+    r[HERR_U.TIPO]    = nuevoTipo;
+    r[HERR_U.DETALLE] = detalleLimpio;
+    r[HERR_U.CARACT]  = caract;
+    r[HERR_U.MARCA]   = marca;
+    r[HERR_U.MODELO]  = modelo;
   });
 
   rango.setValues(filas);
 
-  // Recalcular Stock Herramientas Prueba agrupado por Nombre Principal
   const objs = filas.filter(r => String(r[HERR_U.CODIGO] || '').trim() !== '').map(herr_filaAObjeto);
   herr_escribirStock(ss, objs);
-
-  Logger.log('=== PASO 1 COMPLETADO ===');
-  Logger.log('Tipos normalizados: ' + tiposNormalizados);
-  Logger.log('Marcas extraídas del detalle: ' + marcasCompletadas);
-  Logger.log('Características extraídas del detalle: ' + caractCompletadas);
+  Logger.log('Listo: Stock Herramientas Prueba generado con 1 fila por código individual.');
 }
