@@ -593,6 +593,8 @@ function doGet(e) {
   }
   // ⬆️ FIN NUEVO
 
+  if (params.action === 'rpm-registro-datos') return rpm_regDatos(params);
+  if (params.action === 'herr-foto') return herr_fotoLeer(params);
   if (params.action === 'herr-datos') return herr_doGet(params);
   if (params.action === 'firmas') return firmas_doGet(params);
   if (params.action === 'ficha-salida') return fichaSalida_doGet(params);   // ⬅️ NUEVO
@@ -973,6 +975,7 @@ function sanitizarPayloadMayusculas(obj, clavePadre) {
     'firma_base64': true,
     'foto_base64': true,
     'fotos_base64': true,
+    'foto_anterior': true,
     'imagen_base64': true,
     'imagen': true,
     'foto': true,
@@ -1056,6 +1059,10 @@ function doPost(e) {
       if (!auth.ok) return jsonResp({ ok: false, auth: false, error: 'No autorizado' });
       if (auth.rol === 'lectura') return jsonResp({ ok: false, permiso: false, error: 'Tu usuario es de solo lectura.' });
     }
+    if (data.accion === 'herr-foto-guardar' || data.accion === 'herr-confirmar-fecha' || /^rpm-registro-/.test(data.accion || '')) {
+      const authFoto = autenticar_(data.token);
+      if (!authFoto.ok || authFoto.rol === 'lectura') return jsonResp({ok:false,error:'Ingresá con un usuario con permiso de escritura para guardar fotos o registros.'});
+    }
     delete data.token;
     // ⬆️ FIN NUEVO
 
@@ -1063,7 +1070,7 @@ function doPost(e) {
     data = sanitizarPayloadMayusculas(data);
     // ⬆️ FIN NORMALIZACIÓN A MAYÚSCULAS
 
-     Logger.log('Payload recibido: ' + JSON.stringify(Object.assign({}, data, { firma_base64: data.firma_base64 ? '[firma]' : undefined })));
+     Logger.log('Payload recibido: ' + JSON.stringify(Object.assign({}, data, { firma_base64: data.firma_base64 ? '[firma]' : undefined, foto_base64: data.foto_base64 ? '[foto]' : undefined })));
 
     const ss = SpreadsheetApp.openById('1PWCKGAQgZfBEWPwqWppsbylLdJLxJe3I6XWrEAhBwQk');
 
@@ -1099,6 +1106,18 @@ function doPost(e) {
       respuesta = actualizarDatosProducto(data, ss);
     } else if (data.accion === 'crear-producto') {
       respuesta = crearProductoNuevo(data, ss);
+    } else if (data.accion === 'herr-importar-fechas') {
+      respuesta = herr_importarSoloFechas(data, ss);
+    } else if (data.accion === 'herr-importar-responsables') {
+      respuesta = herr_importarResponsables(data, ss);
+    } else if (data.accion === 'rpm-registro-revisar' || data.accion === 'rpm-registro-guardar') {
+      respuesta = rpm_regEjecutar(data, ss);
+    } else if (data.accion === 'herr-foto-guardar') {
+      respuesta = herr_fotoGuardar(data, ss);
+    } else if (data.accion === 'herr-confirmar-fecha') {
+      respuesta = herr_confirmarFechaEntrega(data, ss);
+    } else if (data.accion === 'herr-cambiar-estado') {
+      respuesta = herr_cambiarEstadoSimple(data, ss);
     } else if (data.accion === 'herr-movimiento') {
       respuesta = herr_procesarMovimiento(data, ss);
     } else if (String(data.tipo || '').trim().toUpperCase() === 'TRASLADO') {
@@ -3089,20 +3108,25 @@ const HERR_PREFIJO_PODER  = 'A CARGO DE ';       // mismo formato que ya usa el 
 const HERR_COLS_UNIDADES = [
   'FECHA DE ALTA', 'SIGLA', 'NUM.', 'CODIGO', 'DETALLE', 'CARACTERISTICAS', 'MARCA', 'MODELO', 'N° SERIE',
   'NUEVO / USADO', 'CODIGO ANTERIOR', 'CRÍTICO?', 'ESTADO', 'FECHA DE INICIO DE MTO PREV.', 'LUGAR / PERSONA', 'OBSERVACIONES',
-  'TIPO', 'UBIC. DEPÓSITO', 'UBIC. ESTANTE', 'UBIC. COLUMNA', 'UBIC. FILA'
+  'TIPO', 'UBIC. DEPÓSITO', 'UBIC. ESTANTE', 'UBIC. COLUMNA', 'UBIC. FILA',
+  'CATEGORÍA', 'ID UNIDAD'
 ];
 const HERR_U = {
   FECHA: 0, SIGLA: 1, NUM: 2, CODIGO: 3, DETALLE: 4, CARACT: 5, MARCA: 6, MODELO: 7, SERIE: 8,
   NUEVO: 9, CODANT: 10, CRITICO: 11, ESTADO: 12, MTO: 13, LUGAR: 14, OBS: 15,
-  TIPO: 16, UB_DEP: 17, UB_EST: 18, UB_COL: 19, UB_FIL: 20, TOTAL: 21
+  TIPO: 16, UB_DEP: 17, UB_EST: 18, UB_COL: 19, UB_FIL: 20,
+  CATEGORIA: 21, ID: 22, TOTAL: 23
 };
 const HERR_COLS_MOVS = [
   'ID Mov.', 'Fecha', 'Tipo', 'Responsable', 'Obra / destino', 'Familia', 'Tipo herramienta', 'Medida',
   'Cantidad', 'Códigos', 'Estado devolución', 'Depósito', 'Estante', 'Columna', 'Fila', 'Obs. generales'
 ];
+// Siglas cuya "medida" no sirve para agrupar (en KHA trae "KIT 001 X 16 PIEZAS").
+const HERR_SIGLAS_SIN_MEDIDA = ['KHA'];
 const HERR_COLS_STOCK = [
-  'Familia', 'Tipo', 'Medida', 'Modo', 'Total (sin bajas)', 'En depósito', 'En poder (total)',
-  'En poder de', 'No disponibles', 'Bajas'
+  'Categoría', 'Tipo', 'Medida', 'Marcas', 'Modo', 'Cantidad total (sin bajas)',
+  'Apto', 'Apto con obs.', 'No apto', 'Vencido',
+  'En depósito', 'En poder (total)', 'En poder de', 'No disponibles', 'Bajas', 'Códigos'
 ];
 
 // ============================================================
@@ -3164,10 +3188,22 @@ function herr_sembrarRef() {
   [90, 280, 110, 190, 320, 130, 110].forEach((w, i) => h.setColumnWidth(i + 1, w));
 }
 
+// ID único interno de cada unidad. Es el CÓDIGO de siempre, salvo en los códigos
+// repetidos del Excel: ahí el 2° se identifica como "HER-327 (2)" SIN cambiar
+// la columna CODIGO (que sigue igual a la etiqueta física).
+function herr_clave(r) {
+  return String(r[HERR_U.ID] || '').trim().toUpperCase() ||
+         String(r[HERR_U.CODIGO] || '').trim().toUpperCase();
+}
+
 function herr_leerUnidades(hoja) {
   const ult = hoja.getLastRow();
   if (ult <= 1) return [];
-  return hoja.getRange(2, 1, ult - 1, HERR_U.TOTAL).getValues();
+  const ncol = Math.min(Math.max(hoja.getLastColumn(), 1), HERR_U.TOTAL);
+  return hoja.getRange(2, 1, ult - 1, ncol).getValues().map(r => {
+    while (r.length < HERR_U.TOTAL) r.push('');
+    return r;
+  });
 }
 
 function herr_filaAObjeto(r) {
@@ -3176,8 +3212,11 @@ function herr_filaAObjeto(r) {
   const info   = herr_infoEstado(estado);
   const sigla  = String(r[HERR_U.SIGLA] || '').trim().toUpperCase();
   return {
-    codigo:  String(r[HERR_U.CODIGO] || '').trim().toUpperCase(),
+    fecha_alta: r[HERR_U.FECHA] instanceof Date ? Utilities.formatDate(r[HERR_U.FECHA], Session.getScriptTimeZone(), 'dd/MM/yyyy') : String(r[HERR_U.FECHA] || ''),
+    codigo:  herr_clave(r),
+    codigo_real: String(r[HERR_U.CODIGO] || '').trim().toUpperCase(),
     sigla:   sigla,
+    categoria: String(r[HERR_U.CATEGORIA] || '').trim() || herr_nombreFamilia(sigla),
     detalle: String(r[HERR_U.DETALLE] || ''),
     medida:  String(r[HERR_U.CARACT] || ''),
     marca:   String(r[HERR_U.MARCA] || ''),
@@ -3196,22 +3235,31 @@ function herr_filaAObjeto(r) {
   };
 }
 
-// Stock por TIPO (la marca no suma). Herramientas manuales: tipo + medida. Equipos: un renglón por familia.
+// Stock por TIPO. Mantiene todos los campos que ya usa el panel y suma desglose por estado,
+// marcas y códigos. "En depósito" = disponible Y con lugar DEPÓSITO (taller o lugar vacío van a "No disponibles").
 function herr_calcularStock(objs) {
   const mapa = {};
   objs.forEach(u => {
     const modo = herr_modo(u.sigla);
-    const medida = modo === 'HERRAMIENTA' ? u.medida : '';
+    const medida = (modo === 'HERRAMIENTA' && HERR_SIGLAS_SIN_MEDIDA.indexOf(u.sigla) === -1) ? u.medida : '';
     const k = u.sigla + '|' + u.tipo + '|' + medida;
     if (!mapa[k]) mapa[k] = {
       sigla: u.sigla, familia: herr_nombreFamilia(u.sigla), tipo: u.tipo, medida: medida, modo: modo,
-      total: 0, deposito: 0, poder: 0, poderDetalle: {}, nodisp: 0, bajas: 0
+      total: 0, deposito: 0, poder: 0, poderDetalle: {}, nodisp: 0, bajas: 0,
+      apto: 0, aptoObs: 0, noApto: 0, vencido: 0, marcas: {}, codigos: []
     };
     const s = mapa[k];
     if (u.baja) { s.bajas++; return; }
     s.total++;
+    s.codigos.push(u.codigo);
+    if (u.marca) s.marcas[u.marca] = true;
+    if (u.estado === 'APTO') s.apto++;
+    else if (u.estado === 'APTO CON OBSERVACIONES') s.aptoObs++;
+    else if (u.estado === 'NO APTO') s.noApto++;
+    else if (u.estado === 'VENCIDO') s.vencido++;
+    const enDeposito = herr_norm(u.lugar).indexOf('DEPOSITO') === 0;
     if (u.poder) { s.poder++; s.poderDetalle[u.poder] = (s.poderDetalle[u.poder] || 0) + 1; }
-    else if (u.disp) s.deposito++;
+    else if (u.disp && enDeposito) s.deposito++;
     else s.nodisp++;
   });
   return Object.keys(mapa).map(k => mapa[k]).sort((a, b) =>
@@ -3219,16 +3267,25 @@ function herr_calcularStock(objs) {
 }
 
 function herr_escribirStock(ss, objs) {
-  let hoja = ss.getSheetByName(HERR_HOJA_STOCK);
+  const hoja = ss.getSheetByName(HERR_HOJA_STOCK);
   if (!hoja) return;
+  const nc = HERR_COLS_STOCK.length;
+  if (hoja.getMaxColumns() < nc) hoja.insertColumnsAfter(hoja.getMaxColumns(), nc - hoja.getMaxColumns());
+  hoja.getRange(1, 1, 1, nc).setValues([HERR_COLS_STOCK])
+    .setFontWeight('bold').setBackground('#2563eb').setFontColor('#ffffff');
+  hoja.setFrozenRows(1);
   const filas = herr_calcularStock(objs).map(s => [
-    s.familia, s.tipo, s.medida, s.modo, s.total, s.deposito, s.poder,
+    s.familia, s.tipo, s.medida, Object.keys(s.marcas).sort().join(', '), s.modo, s.total,
+    s.apto, s.aptoObs, s.noApto, s.vencido,
+    s.deposito, s.poder,
     Object.keys(s.poderDetalle).map(n => n + ': ' + s.poderDetalle[n]).join(' | '),
-    s.nodisp, s.bajas
+    s.nodisp, s.bajas, s.codigos.join(', ')
   ]);
   const maxF = hoja.getMaxRows();
-  if (maxF > 1) hoja.getRange(2, 1, maxF - 1, HERR_COLS_STOCK.length).clearContent();
-  if (filas.length) hoja.getRange(2, 1, filas.length, HERR_COLS_STOCK.length).setValues(filas);
+  if (maxF > 1) hoja.getRange(2, 1, maxF - 1, nc).clearContent();
+  const faltan = filas.length + 1 - maxF;
+  if (faltan > 0) hoja.insertRowsAfter(maxF, faltan);
+  if (filas.length) hoja.getRange(2, 1, filas.length, nc).setValues(filas);
 }
 
 function herr_catalogo() {
@@ -3278,7 +3335,34 @@ function herr_doGet(params) {
     const hojaU = ss.getSheetByName(HERR_HOJA_UNIDADES);
     if (!hojaU) return jsonResp({ ok: false, error: 'Falta la hoja "' + HERR_HOJA_UNIDADES + '". Ejecutá herr_prepararHojas() una vez.' });
     const unidades = herr_leerUnidades(hojaU).filter(r => String(r[HERR_U.CODIGO] || '').trim() !== '').map(herr_filaAObjeto);
-    return jsonResp({ ok: true, catalogo: herr_catalogo(), unidades: unidades, stock: herr_calcularStock(unidades) });
+    const fechasEntrega=rpm_fechaMetadatos(hojaU),codigosEntrega=herr_leerUnidades(hojaU);
+    const indiceFechas={};codigosEntrega.forEach((r,i)=>indiceFechas[herr_clave(r)]=fechasEntrega[i]);
+    unidades.forEach(u=>{const f=indiceFechas[u.codigo];if(f&&u.poder&&rpm_fechaPersona(f.responsable)===rpm_fechaPersona(u.poder)){u.fecha_salida=f.fecha;u.obra=f.obra;u.remito_actual=f.remito;u.origen_fecha_entrega=f.origen;}});
+    const fotos = herr_fotoMapa(hojaU);
+    unidades.forEach(u => u.foto_id = fotos[herr_codigoImport(u.codigo_real || u.codigo)] || '');
+    // Historial individual leído de la hoja "Movimientos Herramientas".
+    const hojaM = ss.getSheetByName(HERR_HOJA_MOVS);
+    const ultM = hojaM ? hojaM.getLastRow() : 0;
+    const movimientos = ultM > 1
+      ? hojaM.getRange(2, 1, ultM - 1, HERR_COLS_MOVS.length).getValues().reverse().flatMap(r => {
+          const codigos = String(r[9] || '').split(',').map(c => c.trim().toUpperCase()).filter(Boolean);
+          const fecha = r[1] instanceof Date
+            ? Utilities.formatDate(r[1], Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm')
+            : String(r[1] || '');
+          return codigos.map(codigo => ({
+            fecha: fecha,
+            codigo: codigo,
+            accion: String(r[2] || ''),
+            responsable: String(r[3] || ''),
+            obra: String(r[4] || ''),
+            familia: String(r[5] || ''),
+            tipo_herramienta: String(r[6] || ''),
+            medida: String(r[7] || ''),
+            motivo: String(r[15] || '')
+          }));
+        })
+      : [];
+    return jsonResp({ ok: true, catalogo: herr_catalogo(), unidades: unidades, stock: herr_calcularStock(unidades), movimientos: movimientos });
   } catch (err) {
     Logger.log('ERROR herr_doGet: ' + err.message);
     return jsonResp({ ok: false, error: err.message });
@@ -3314,9 +3398,9 @@ function herr_procesarMovimiento(data, ss) {
   const nuevas = [];
   const objs = () => filas.concat(nuevas).map(herr_filaAObjeto);
   const idxCodigo = {};
-  filas.forEach((r, i) => { idxCodigo[String(r[HERR_U.CODIGO]).trim().toUpperCase()] = i; });
+  filas.forEach((r, i) => { idxCodigo[herr_clave(r)] = i; });
   const usados = {};
-  filas.forEach(r => { usados[String(r[HERR_U.CODIGO]).trim().toUpperCase()] = true; });
+  filas.forEach(r => { usados[herr_clave(r)] = true; });
 
   // máximo numérico por sigla = máx(hoja, Excel original); se actualiza al asignar
   const maxSig = {};
@@ -3433,6 +3517,8 @@ function herr_procesarMovimiento(data, ss) {
         fila[HERR_U.TIPO] = tipoU;
         fila[HERR_U.UB_DEP] = ub.deposito; fila[HERR_U.UB_EST] = ub.estante;
         fila[HERR_U.UB_COL] = ub.columna;  fila[HERR_U.UB_FIL] = ub.fila;
+        fila[HERR_U.CATEGORIA] = herr_nombreFamilia(sigla);
+        fila[HERR_U.ID] = codigo;
         nuevas.push(fila);
         asignados.push(codigo);
         registrar(sigla, tipoU, modo === 'HERRAMIENTA' ? medida : '', codigo, '', ub);
@@ -3452,6 +3538,7 @@ function herr_procesarMovimiento(data, ss) {
         const o = herr_filaAObjeto(filas[i]);
         if (o.poder) { errs.push(rot + cod + ' ya está en poder de ' + o.poder + '.'); return; }
         if (!o.disp) { errs.push(rot + cod + ' no está disponible (estado ' + o.estado + ').'); return; }
+        if (herr_norm(o.lugar).indexOf('DEPOSITO') !== 0) { errs.push(rot + cod + ' no está en depósito (lugar: ' + (o.lugar || 'sin indicar') + ').'); return; }
         filas[i][HERR_U.LUGAR] = HERR_PREFIJO_PODER + responsable;
         filas[i][HERR_U.UB_DEP] = ''; filas[i][HERR_U.UB_EST] = ''; filas[i][HERR_U.UB_COL] = ''; filas[i][HERR_U.UB_FIL] = '';
         modificoExistentes = true;
@@ -3514,6 +3601,7 @@ function herr_procesarMovimiento(data, ss) {
     ], false));
   });
 
+  rpm_fechaActualizarMovimiento(ss,tipo,regs,responsable,obra,ahora,String(data.remito||''));
   herr_escribirStock(ss, filas.concat(nuevas).map(herr_filaAObjeto));
   return jsonResp({ ok: true, id: idMov, codigos: asignados });
 }
@@ -3807,4 +3895,687 @@ function pasarTodoAMayusculas() {
   });
 
   Logger.log('Listo.');
+}
+// ============================================================================
+// SECCIÓN 3 — IMPORTACIÓN DEL LISTADO
+// ============================================================================
+const HERR_HOJA_ORIGEN = 'Listado de Equipos y herramient';
+const HERR_HOJA_REVISION = 'Revisión Import Herramientas';
+// Lugares que NO son una persona: se dejan tal cual (no se les antepone "A CARGO DE") y se avisan para revisar.
+const HERR_LUGARES_NO_PERSONA = ['OBRA ', 'MANTENIMIENTO', 'PURMAMARCA', 'PALPAL', 'PRESTADO'];
+
+// Siglas que estaban en el Excel y no en el catálogo. Modo: HERRAMIENTA = se mueve por tipo+cantidad; EQUIPO = por código.
+const HERR_SIGLAS_NUEVAS = {
+  'CON':  ['CONO DE SEÑALIZACIÓN', 'HERRAMIENTA'],
+  'KHA':  ['KIT HERRAMIENTAS AISLADAS', 'HERRAMIENTA'],
+  'MOCH': ['MOCHILA PORTA HERRAMIENTAS', 'HERRAMIENTA'],
+  'CHA':  ['CHALECO PORTA HERRAMIENTAS', 'HERRAMIENTA'],
+  'AMOI': ['AMOLADORA ANGULAR INALÁMBRICA', 'EQUIPO'],
+  'EPI':  ['EQUIPO PARA PINTAR ELÉCTRICO', 'EQUIPO'],
+  'TAT':  ['TALADRO ATORNILLADOR', 'EQUIPO'],
+  'APE':  ['APAREJO ELÉCTRICO', 'EQUIPO'],
+  'PIN':  ['PISTOLA PARA INFLAR NEUMÁTICO', 'EQUIPO']
+};
+
+function herr_importarSimulacion()            { herr_importar_(false, false); }
+function herr_importarListado()               { herr_importar_(true,  false); }
+function herr_importarListadoReemplazando()   { herr_importar_(true,  true);  }
+
+function herr_hojaOrigen_(ss) {
+  const h = ss.getSheetByName(HERR_HOJA_ORIGEN);
+  if (h) return h;
+  return ss.getSheets().filter(s => herr_norm(s.getName()).indexOf('LISTADO DE EQUIPOS') === 0)[0] || null;
+}
+
+// Tipo = DETALLE sin la marca y sin la medida (para que "10 martillos" se junten en un tipo).
+function herr_tipoDesdeDetalle(detalle, marca, medida) {
+  const orig = String(detalle || '').replace(/\s+/g, ' ').trim();
+  let s = orig;
+  const esc = t => String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const m = String(marca || '').trim();
+  const md = String(medida || '').trim();
+  if (m && m !== '-') {
+    s = s.replace(new RegExp('\\s*-\\s*' + esc(m) + '\\s*$', 'i'), '');
+    s = s.replace(new RegExp('(^|[\\s(])' + esc(m) + '(?=$|[\\s),])', 'i'), '$1');
+  }
+  if (md && md !== '-') s = s.replace(new RegExp('(^|[\\s(])' + esc(md) + '(?=$|[\\s),])', 'i'), '$1');
+  s = s.replace(/\s+/g, ' ').replace(/^[\s,\-–]+|[\s,\-–]+$/g, '').trim();
+  return s || orig;
+}
+
+function herr_asegurarEstructura() {
+  herr_prepararHojas();   // crea las hojas que falten (no pisa datos)
+  const ss = herr_abrirSS();
+  const hu = ss.getSheetByName(HERR_HOJA_UNIDADES);
+  if (hu.getMaxColumns() < HERR_U.TOTAL) hu.insertColumnsAfter(hu.getMaxColumns(), HERR_U.TOTAL - hu.getMaxColumns());
+  hu.getRange(1, 1, 1, HERR_COLS_UNIDADES.length).setValues([HERR_COLS_UNIDADES])
+    .setFontWeight('bold').setBackground('#1a1a2e').setFontColor('#ffffff');
+  hu.setFrozenRows(1);
+  hu.setColumnWidth(HERR_U.CATEGORIA + 1, 230);
+  hu.setColumnWidth(HERR_U.ID + 1, 120);
+  const hs = ss.getSheetByName(HERR_HOJA_STOCK);
+  if (hs.getMaxColumns() < HERR_COLS_STOCK.length) hs.insertColumnsAfter(hs.getMaxColumns(), HERR_COLS_STOCK.length - hs.getMaxColumns());
+  hs.getRange(1, 1, 1, HERR_COLS_STOCK.length).setValues([HERR_COLS_STOCK])
+    .setFontWeight('bold').setBackground('#2563eb').setFontColor('#ffffff');
+  [230, 300, 120, 220, 110, 100, 70, 90, 70, 70, 90, 100, 260, 100, 60, 400]
+    .forEach((w, i) => hs.setColumnWidth(i + 1, w));
+}
+
+function herr_importar_(escribir, reemplazar) {
+  const ss = herr_abrirSS();
+  const origen = herr_hojaOrigen_(ss);
+  if (!origen) throw new Error('No encuentro la hoja "' + HERR_HOJA_ORIGEN + '". Importala a esta planilla (Archivo > Importar > Insertar hoja nueva).');
+
+  // ---- encabezados (se buscan por nombre, no por posición) ----
+  const data = origen.getDataRange().getValues();
+  let hdr = -1, col = {};
+  for (let i = 0; i < Math.min(data.length, 15); i++) {
+    const m = {};
+    data[i].forEach((v, j) => { const k = herr_norm(v); if (k && m[k] === undefined) m[k] = j; });
+    if (m['CODIGO'] !== undefined && m['SIGLA'] !== undefined) { hdr = i; col = m; break; }
+  }
+  if (hdr === -1) throw new Error('No encontré la fila de encabezados (CODIGO / SIGLA) en la hoja de origen.');
+  const NEC = ['FECHA DE ALTA', 'SIGLA', 'NUM.', 'CODIGO', 'DETALLE', 'CARACTERISTICAS', 'MARCA', 'MODELO', 'N° SERIE',
+    'NUEVO / USADO', 'CODIGO ANTERIOR', 'CRITICO?', 'ESTADO', 'FECHA DE INICIO DE MTO PREV.', 'LUGAR / PERSONA', 'OBSERVACIONES'];
+  const faltan = NEC.filter(k => col[k] === undefined);
+  if (faltan.length) throw new Error('Faltan columnas en la hoja de origen: ' + faltan.join(', '));
+
+  // ---- catálogo de familias (REF + siglas nuevas) ----
+  herr_cargarRef(ss);
+  const refNuevas = [];
+  Object.keys(HERR_SIGLAS_NUEVAS).forEach(s => {
+    if (HERR_NOMBRES_FAMILIA[s]) return;
+    const nm = HERR_SIGLAS_NUEVAS[s][0], md = HERR_SIGLAS_NUEVAS[s][1];
+    HERR_NOMBRES_FAMILIA[s] = nm;
+    if (md === 'HERRAMIENTA' && HERR_FAMILIAS_MANUALES.indexOf(s) === -1) HERR_FAMILIAS_MANUALES.push(s);
+    refNuevas.push([s, nm, md]);
+  });
+
+  // ---- recorrer el listado ----
+  const avisos = [];
+  const vistos = {}, primeraFila = {}, tiposCanon = {};
+  const filas = [];
+  let vaciasGuion = 0;
+  const num = v => String(v === null || v === undefined ? '' : v).trim();
+
+  for (let i = hdr + 1; i < data.length; i++) {
+    const r = data[i], nFila = i + 1;
+    const g = k => r[col[k]];
+    const codigo = num(g('CODIGO')).toUpperCase();
+    const detalle = num(g('DETALLE'));
+    if (!codigo || codigo === '-') {
+      const hayOtros = r.some((v, j) => j !== col['CODIGO'] && num(v) !== '');
+      if (hayOtros) avisos.push(['SIN CÓDIGO PERO CON DATOS', codigo, nFila, detalle, 'NO se importó: tiene datos pero no código.']);
+      else vaciasGuion++;
+      continue;
+    }
+
+    const mt = codigo.match(/^([A-Z]+)\s*-\s*(\d+)(?:-\d+)?$/);
+    let sigla = num(g('SIGLA')).toUpperCase();
+    if (!sigla && mt) sigla = mt[1];
+    if (mt && sigla !== mt[1]) avisos.push(['SIGLA DISTINTA AL CÓDIGO', codigo, nFila, detalle, 'Sigla de la planilla: ' + sigla + '. Se usó esa.']);
+    if (!mt) avisos.push(['CÓDIGO CON FORMATO RARO', codigo, nFila, detalle, 'No tiene formato SIGLA-123. Se importó igual.']);
+    const nro = mt ? mt[2] : num(g('NUM.'));
+
+    // id único: el código no se modifica, solo se distingue el repetido
+    vistos[codigo] = (vistos[codigo] || 0) + 1;
+    if (vistos[codigo] === 1) primeraFila[codigo] = nFila;
+    const id = vistos[codigo] === 1 ? codigo : codigo + ' (' + vistos[codigo] + ')';
+    if (vistos[codigo] > 1) avisos.push(['CÓDIGO REPETIDO', codigo, nFila, detalle,
+      'Se conserva el código. Repite el de la fila ' + primeraFila[codigo] + '. ID interno: ' + id]);
+
+    let categoria = HERR_NOMBRES_FAMILIA[sigla];
+    if (!categoria) { categoria = 'SIN CLASIFICAR'; avisos.push(['SIGLA SIN CATEGORÍA', codigo, nFila, detalle, 'La sigla ' + sigla + ' no está en el catálogo.']); }
+
+    // estado
+    let estado = num(g('ESTADO')).toUpperCase();
+    if (estado === 'BAJA') estado = 'DADO DE BAJA';
+    if (!estado) avisos.push(['ESTADO VACÍO', codigo, nFila, detalle, 'Quedó sin estado: figura como no disponible hasta que lo completes.']);
+    else if (!HERR_ESTADOS[estado]) avisos.push(['ESTADO DESCONOCIDO', codigo, nFila, detalle, 'Estado "' + estado + '" no está en el catálogo.']);
+
+    // lugar
+    let lugar = num(g('LUGAR / PERSONA')).toUpperCase().replace(/\s+/g, ' ');
+    if (!lugar) avisos.push(['LUGAR VACÍO', codigo, nFila, detalle, 'Sin lugar: figura como no disponible hasta que lo completes.']);
+    else if (herr_norm(lugar).indexOf('DEPOSITO') === 0) lugar = lugar.replace(/^DEP[OÓ]SITO/, 'DEPÓSITO');
+    else if (!/^A CARGO/.test(lugar) && !/^TALLER/.test(lugar)) {
+      const noPersona = HERR_LUGARES_NO_PERSONA.some(p => herr_norm(lugar).indexOf(p) === 0);
+      if (noPersona) {
+        avisos.push(['LUGAR NO ES UNA PERSONA', codigo, nFila, detalle, '"' + lugar + '" se dejó igual (figura como no disponible). Si la tiene una persona, corregilo a "A CARGO DE …".']);
+      } else {
+        avisos.push(['LUGAR CONVERTIDO', codigo, nFila, detalle, '"' + lugar + '" pasó a "' + HERR_PREFIJO_PODER + lugar + '".']);
+        lugar = HERR_PREFIJO_PODER + lugar;
+      }
+    }
+
+    // tipo
+    const marca = num(g('MARCA')).toUpperCase();
+    const medida = num(g('CARACTERISTICAS')).toUpperCase();
+    let tipo = herr_modo(sigla) === 'EQUIPO'
+      ? (categoria === 'SIN CLASIFICAR' ? detalle : categoria)
+      : herr_tipoDesdeDetalle(detalle, marca, medida);
+    const kT = sigla + '|' + herr_norm(tipo);
+    if (!tiposCanon[kT]) tiposCanon[kT] = tipo;
+    tipo = tiposCanon[kT];
+
+    const f = new Array(HERR_U.TOTAL).fill('');
+    const fAlta = g('FECHA DE ALTA'), fMto = g('FECHA DE INICIO DE MTO PREV.');
+    f[HERR_U.FECHA] = (fAlta instanceof Date) ? fAlta : num(fAlta);
+    f[HERR_U.SIGLA] = sigla;
+    f[HERR_U.NUM] = nro;
+    f[HERR_U.CODIGO] = codigo;
+    f[HERR_U.DETALLE] = detalle;
+    f[HERR_U.CARACT] = medida;
+    f[HERR_U.MARCA] = marca;
+    f[HERR_U.MODELO] = num(g('MODELO'));
+    f[HERR_U.SERIE] = num(g('N° SERIE'));
+    f[HERR_U.NUEVO] = num(g('NUEVO / USADO'));
+    f[HERR_U.CODANT] = num(g('CODIGO ANTERIOR'));
+    f[HERR_U.CRITICO] = num(g('CRITICO?'));
+    f[HERR_U.ESTADO] = estado;
+    f[HERR_U.MTO] = (fMto instanceof Date) ? fMto : num(fMto);
+    f[HERR_U.LUGAR] = lugar;
+    f[HERR_U.OBS] = num(g('OBSERVACIONES'));
+    f[HERR_U.TIPO] = tipo;
+    f[HERR_U.CATEGORIA] = categoria;
+    f[HERR_U.ID] = id;
+    filas.push(f);
+  }
+
+  const filasFinal = limpiarMatrizMayusculas_(filas, false);
+  const objs = filasFinal.map(herr_filaAObjeto);
+  const grupos = herr_calcularStock(objs);
+
+  // ---- resumen ----
+  const porAviso = {};
+  avisos.forEach(a => { porAviso[a[0]] = (porAviso[a[0]] || 0) + 1; });
+  const porCat = {};
+  filasFinal.forEach(f => { porCat[f[HERR_U.CATEGORIA]] = (porCat[f[HERR_U.CATEGORIA]] || 0) + 1; });
+  Logger.log('=== ' + (escribir ? 'IMPORTACIÓN' : 'SIMULACIÓN (no se escribió nada)') + ' ===');
+  Logger.log('Unidades a cargar: ' + filasFinal.length + ' | Filas vacías con "-" ignoradas: ' + vaciasGuion);
+  Logger.log('Categorías: ' + Object.keys(porCat).length + ' | Grupos en Stock Herramientas: ' + grupos.length);
+  Logger.log('Siglas nuevas que se agregan a REF: ' + (refNuevas.map(x => x[0] + '(' + x[2] + ')').join(', ') || 'ninguna'));
+  Logger.log('Avisos: ' + JSON.stringify(porAviso));
+  avisos.filter(a => a[0] === 'CÓDIGO REPETIDO').forEach(a => Logger.log('  Repetido ' + a[1] + ' fila ' + a[2] + ': ' + a[3] + ' -> ' + a[4]));
+  if (!escribir) { Logger.log('Si te cierra, ejecutá herr_importarListado().'); return { unidades: filasFinal.length, avisos: avisos.length, grupos: grupos }; }
+
+  // ---- escritura ----
+  herr_asegurarEstructura();
+  const hojaU = ss.getSheetByName(HERR_HOJA_UNIDADES);
+  const yaHay = hojaU.getLastRow() - 1;
+  if (yaHay > 0 && !reemplazar) {
+    throw new Error('"' + HERR_HOJA_UNIDADES + '" ya tiene ' + yaHay + ' filas. No se escribió nada. ' +
+      'Si querés borrarlas y cargar de nuevo, ejecutá herr_importarListadoReemplazando().');
+  }
+  if (refNuevas.length) {
+    const hojaR = ss.getSheetByName(HERR_HOJA_REF);
+    hojaR.getRange(hojaR.getLastRow() + 1, 1, refNuevas.length, 3).setValues(limpiarMatrizMayusculas_(refNuevas, false));
+  }
+  if (yaHay > 0 && reemplazar) hojaU.getRange(2, 1, hojaU.getMaxRows() - 1, HERR_U.TOTAL).clearContent();
+  const necesarias = filasFinal.length + 1;
+  if (necesarias > hojaU.getMaxRows()) hojaU.insertRowsAfter(hojaU.getMaxRows(), necesarias - hojaU.getMaxRows() + 200);
+  [HERR_U.NUM, HERR_U.CODIGO, HERR_U.SERIE, HERR_U.ID].forEach(c =>
+    hojaU.getRange(2, c + 1, hojaU.getMaxRows() - 1, 1).setNumberFormat('@'));
+  if (filasFinal.length) hojaU.getRange(2, 1, filasFinal.length, HERR_U.TOTAL).setValues(filasFinal);
+
+  herr_escribirRevision_(ss, avisos);
+  herr_escribirStock(ss, objs);
+  Logger.log('Listo. Revisá la hoja "' + HERR_HOJA_REVISION + '" (avisos) y "' + HERR_HOJA_STOCK + '".');
+}
+
+function herr_escribirRevision_(ss, avisos) {
+  const h = ss.getSheetByName(HERR_HOJA_REVISION) || ss.insertSheet(HERR_HOJA_REVISION);
+  h.clear();
+  const cab = ['Aviso', 'Código', 'Fila en el Excel', 'Detalle', 'Qué se hizo / qué revisar'];
+  h.getRange(1, 1, 1, cab.length).setValues([cab]).setFontWeight('bold').setBackground('#1a1a2e').setFontColor('#ffffff');
+  h.setFrozenRows(1);
+  if (avisos.length) h.getRange(2, 1, avisos.length, cab.length).setValues(avisos);
+  [220, 110, 110, 380, 520].forEach((w, i) => h.setColumnWidth(i + 1, w));
+}
+
+
+
+// Importación de responsables: únicamente códigos existentes, con revisión previa.
+function herr_codigoImport(v) {
+  return herr_norm(v).replace(/[–—]/g, '-').replace(/\s+/g, '');
+}
+function herr_importarResponsables(data, ss) {
+  const hu = ss.getSheetByName(HERR_HOJA_UNIDADES);
+  const hm = ss.getSheetByName(HERR_HOJA_MOVS);
+  if (!hu || !hm) return jsonResp({ok:false,error:'Faltan las hojas de unidades o movimientos.'});
+  const registros = data.registros;
+  if (!Array.isArray(registros) || !registros.length || registros.length > 10000)
+    return jsonResp({ok:false,error:'El archivo no tiene registros válidos o supera 10.000 filas.'});
+  const filas = herr_leerUnidades(hu), fechasAnteriores=rpm_fechaMetadatos(hu), porCodigo = {}, origen = {}, pendientes = [], cambios = [];
+  let sinCodigo = 0, iguales = 0;
+  filas.forEach((r,i) => {
+    const cod = herr_codigoImport(r[HERR_U.CODIGO]);
+    if (cod) (porCodigo[cod] || (porCodigo[cod]=[])).push(i);
+  });
+  registros.forEach(r => {
+    const bruto = String(r.codigo || '').trim();
+    if (!bruto) { sinCodigo++; return; }
+    // Separamos solo listas explícitas. No inventamos códigos ni interpretamos rangos.
+    const codigos = bruto.split(/[,;\n]+/).map(herr_codigoImport).filter(Boolean);
+    codigos.forEach(cod => (origen[cod] || (origen[cod]=[])).push(r));
+  });
+  Object.keys(origen).sort().forEach(cod => {
+    const registrosCod = origen[cod];
+    const avisar = motivo => pendientes.push({codigo:cod,filas:registrosCod.map(r=>r.fila).join(', '),motivo:motivo});
+    if (!/^[A-Z][A-Z0-9]*-\d+$/.test(cod)) return avisar('Formato de código no reconocido');
+    if (registrosCod.length !== 1) return avisar('Código repetido en el Excel: revisar historial antes de elegir');
+    if (!porCodigo[cod]) return avisar('Código no encontrado en Unidades Herramientas');
+    if (porCodigo[cod].length !== 1) return avisar('Código duplicado en Unidades Herramientas');
+    const r = registrosCod[0], i = porCodigo[cod][0], u = filas[i];
+    const mov = herr_norm(r.movimiento), persona = String(r.responsable || '').trim().toUpperCase();
+    const devuelto = mov === 'DEVUELTO';
+    if (!devuelto && ['A CARGO','PARA OBRA','PARA SERVICIO'].indexOf(mov) < 0)
+      return avisar('Movimiento sin importar: ' + (mov || 'vacío'));
+    if (!devuelto && !persona) return avisar('Falta responsable');
+    const destino = devuelto ? 'DEPÓSITO ARISMENDI' : HERR_PREFIJO_PODER + persona;
+    const deposito = devuelto ? 'ARISMENDI' : '';
+    const fechaEntrega=devuelto?'':rpm_fechaCanon(r.fecha),metaAnterior=fechasAnteriores[i]||{};
+    if(herr_norm(metaAnterior.origen)==='ENTREGA CONFIRMADA'&&rpm_fechaPersona(metaAnterior.responsable)===rpm_fechaPersona(persona)&&metaAnterior.fecha!==fechaEntrega)return avisar('La fecha fue confirmada en el panel y difiere de la base. Se conserva la confirmada.');
+    const fechaIgual=(metaAnterior.fecha||'')===fechaEntrega&&(metaAnterior.obra||'')===(devuelto?'':String(r.obra||''))&&(metaAnterior.remito||'')===(devuelto?'':String(r.remito||''))&&(metaAnterior.responsable||'')===(devuelto?'':persona);
+    if (fechaIgual && herr_norm(u[HERR_U.LUGAR]) === herr_norm(destino) &&
+        herr_norm(u[HERR_U.UB_DEP]) === herr_norm(deposito) &&
+        !u[HERR_U.UB_EST] && !u[HERR_U.UB_COL] && !u[HERR_U.UB_FIL]) { iguales++; return; }
+    cambios.push({codigo:cod,indice:i,fila:r.fila,anterior:String(u[HERR_U.LUGAR]||''),nuevo:destino,
+      deposito:deposito,devuelto:devuelto,responsable:devuelto ? herr_poder(u[HERR_U.LUGAR]) : persona,
+      obra:devuelto ? 'DEPÓSITO ARISMENDI' : String(r.obra||''),
+      fechaOrigen:String(r.fecha||''),fechaEntrega:fechaEntrega,metaAnterior:metaAnterior,remito:String(r.remito||''),estado:String(u[HERR_U.ESTADO]||'')});
+  });
+  const huella = Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,
+    JSON.stringify({filas:filas,cambios:cambios,pendientes:pendientes}))).toUpperCase();
+  if (data.fase !== 'APLICAR') return jsonResp({ok:true,huella:huella,cambios:cambios,pendientes:pendientes,sinCodigo:sinCodigo,iguales:iguales});
+  if (!data.huella || data.huella !== huella) return jsonResp({ok:false,error:'Los datos cambiaron. Volvé a revisar el archivo antes de aplicar.'});
+  if (!cambios.length) return jsonResp({ok:true,actualizados:0});
+  const ahora = new Date(), tz = Session.getScriptTimeZone();
+  const id = 'HIMP-' + Utilities.getUuid();
+  // Respaldo de las unidades anteriores a la aplicación. No modifica los originales adjuntos.
+  const respaldo = hu.copyTo(ss).setName('Respaldo resp ' + Utilities.formatDate(ahora,tz,'yyyyMMdd HHmmss') + '-' + id.slice(-5));
+  const logs = cambios.map(c => {
+    const u = filas[c.indice];
+    return [id,Utilities.formatDate(ahora,tz,'dd/MM/yyyy HH:mm:ss'),c.devuelto?'DEVOLUCION':'SALIDA',c.responsable,c.obra,
+      herr_nombreFamilia(String(u[HERR_U.SIGLA]||'')),u[HERR_U.TIPO]||u[HERR_U.DETALLE],u[HERR_U.CARACT],1,
+      String(u[HERR_U.CODIGO]),c.devuelto?u[HERR_U.ESTADO]:'',c.deposito,'','','',
+      'CONCILIACIÓN DESDE EXCEL (no es fecha de entrega). Origen: '+String(data.archivo||'')+'; fila '+c.fila+
+      '; fecha origen '+c.fechaOrigen+'; remito '+c.remito+'; anterior '+c.anterior+'; nuevo '+c.nuevo];
+  });
+  // Escribimos solo ubicación: conservamos estado técnico, códigos, series y fórmulas ajenas.
+  cambios.forEach(c => {
+    rpm_fechaGuardarUnidad(hu,c.indice+2,c.fechaEntrega,c.devuelto?'':c.obra,c.devuelto?'':c.remito,c.devuelto?'':(herr_norm(c.metaAnterior?.origen)==='ENTREGA CONFIRMADA'&&rpm_fechaPersona(c.metaAnterior.responsable)===rpm_fechaPersona(c.responsable)?'ENTREGA CONFIRMADA':'BASE DE DATOS'),c.devuelto?'':c.responsable);
+    hu.getRange(c.indice+2,HERR_U.LUGAR+1).setValue(c.nuevo);
+    hu.getRange(c.indice+2,HERR_U.UB_DEP+1,1,4).setValues([[c.deposito,'','','']]);
+    filas[c.indice][HERR_U.LUGAR]=c.nuevo;
+    [HERR_U.UB_DEP,HERR_U.UB_EST,HERR_U.UB_COL,HERR_U.UB_FIL].forEach((col,k)=>filas[c.indice][col]=k===0?c.deposito:'');
+  });
+  hm.getRange(hm.getLastRow()+1,1,logs.length,HERR_COLS_MOVS.length).setValues(logs);
+  herr_escribirStock(ss,filas.map(herr_filaAObjeto));
+  return jsonResp({ok:true,actualizados:cambios.length,respaldo:respaldo.getName(),id:id});
+}
+
+// Cambia la condición técnica, conservando el responsable y la ubicación.
+function herr_cambiarEstadoSimple(data, ss) {
+  const hu=ss.getSheetByName(HERR_HOJA_UNIDADES), hm=ss.getSheetByName(HERR_HOJA_MOVS);
+  if(!hu||!hm) return jsonResp({ok:false,error:'Faltan las hojas de herramientas.'});
+  const codigo=herr_codigoImport(data.codigo), estado=String(data.estado||'').trim().toUpperCase();
+  const motivo=String(data.motivo||'').trim();
+  if(!Object.prototype.hasOwnProperty.call(HERR_ESTADOS,estado)) return jsonResp({ok:false,error:'Estado no válido.'});
+  if(!motivo) return jsonResp({ok:false,error:'Escribí el motivo del cambio.'});
+  const filas=herr_leerUnidades(hu), coincidencias=[];
+  filas.forEach((r,i)=>{if(herr_codigoImport(herr_clave(r))===codigo) coincidencias.push(i);});
+  if(!codigo||coincidencias.length!==1) return jsonResp({ok:false,error:'Código inexistente o duplicado.'});
+  const i=coincidencias[0], fila=filas[i], anterior=String(fila[HERR_U.ESTADO]||'');
+  if(anterior!==String(data.estado_anterior||'')) return jsonResp({ok:false,error:'El estado cambió desde que abriste el formulario. Actualizá el panel.'});
+  if(anterior===estado) return jsonResp({ok:false,error:'Elegí un estado diferente al actual.'});
+  const o=herr_filaAObjeto(fila), ahora=new Date(), id='HEST-'+Utilities.getUuid();
+  const registro=[id,Utilities.formatDate(ahora,Session.getScriptTimeZone(),'dd/MM/yyyy HH:mm:ss'),
+    'CAMBIO DE ESTADO',o.poder||'',o.lugar||'',herr_nombreFamilia(o.sigla),o.tipo,o.medida,1,
+    herr_clave(fila),estado,o.ub.deposito,o.ub.estante,o.ub.columna,o.ub.fila,
+    'ESTADO ANTERIOR: '+anterior+'; NUEVO: '+estado+'; MOTIVO: '+motivo];
+  hu.getRange(i+2,HERR_U.ESTADO+1).setValue(estado);
+  const proxima=hm.getLastRow()+1;
+  if(proxima>hm.getMaxRows()) hm.insertRowsAfter(hm.getMaxRows(),100);
+  hm.getRange(proxima,1,1,HERR_COLS_MOVS.length).setValues([registro]);
+  fila[HERR_U.ESTADO]=estado;
+  herr_escribirStock(ss,filas.map(herr_filaAObjeto));
+  return jsonResp({ok:true,id:id,codigo:codigo,estado:estado});
+}
+
+// Fotos por código. FOTO se agrega al final sin desplazar columnas existentes.
+function herr_fotoColumna(hoja, crear) {
+  const ultima=hoja.getLastColumn();
+  const cabeceras=hoja.getRange(1,1,1,Math.max(ultima,1)).getDisplayValues()[0];
+  const encontradas=[];
+  cabeceras.forEach((v,i)=>{if(herr_norm(v)==='FOTO')encontradas.push(i+1);});
+  if(encontradas.length>1) throw new Error('Hay más de una columna FOTO. Revisá las cabeceras.');
+  if(encontradas.length)return encontradas[0];
+  if(!crear)return 0;
+  const col=ultima+1;
+  if(col>hoja.getMaxColumns())hoja.insertColumnsAfter(hoja.getMaxColumns(),col-hoja.getMaxColumns());
+  hoja.getRange(1,col).setValue('FOTO');hoja.setColumnWidth(col,220);
+  return col;
+}
+function herr_fotoId(valor) {
+  const s=String(valor||'').trim();
+  const m=s.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  return m?m[1]:(/^[a-zA-Z0-9_-]{15,}$/.test(s)?s:'');
+}
+function herr_fotoMapa(hoja) {
+  const col=herr_fotoColumna(hoja,false), mapa={};
+  if(!col||hoja.getLastRow()<2)return mapa;
+  const fotos=hoja.getRange(2,col,hoja.getLastRow()-1,1).getDisplayValues();
+  const codigos=hoja.getRange(2,HERR_U.CODIGO+1,fotos.length,1).getDisplayValues();
+  codigos.forEach((r,i)=>{const cod=herr_codigoImport(r[0]);if(cod)mapa[cod]=herr_fotoId(fotos[i][0]);});
+  return mapa;
+}
+function herr_fotoBuscar(hoja,codigo) {
+  const cod=herr_codigoImport(codigo), filas=herr_leerUnidades(hoja), indices=[];
+  filas.forEach((r,i)=>{if(herr_codigoImport(herr_clave(r))===cod)indices.push(i+2);});
+  if(!cod||indices.length!==1)throw new Error('Código inexistente o duplicado.');
+  return indices[0];
+}
+function herr_fotoCarpeta(ss) {
+  const props=PropertiesService.getScriptProperties(),clave='HERR_FOTOS_CARPETA_'+ss.getId();
+  const id=props.getProperty(clave);
+  if(id)return DriveApp.getFolderById(id);
+  const carpeta=DriveApp.createFolder('RPM - Fotos de herramientas');
+  props.setProperty(clave,carpeta.getId());return carpeta;
+}
+// Ejecutar desde el editor una vez para autorizar Drive y crear la columna.
+function herr_prepararFotos() {
+  const ss=herr_abrirSS(),hoja=ss.getSheetByName(HERR_HOJA_UNIDADES);
+  if(!hoja)throw new Error('Falta Unidades Herramientas.');
+  herr_fotoColumna(hoja,true);
+  Logger.log('Carpeta de fotos: '+herr_fotoCarpeta(ss).getUrl());
+}
+function herr_fotoGuardar(data,ss) {
+  const hoja=ss.getSheetByName(HERR_HOJA_UNIDADES);
+  if(!hoja)return jsonResp({ok:false,error:'Falta Unidades Herramientas.'});
+  const fila=herr_fotoBuscar(hoja,data.codigo);
+  const imagen=String(data.foto_base64||'');
+  const partes=imagen.match(/^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/);
+  if(!partes||partes[2].length>2100000)return jsonResp({ok:false,error:'Elegí una imagen JPG, PNG o WebP de hasta 1,5 MB.'});
+  const bytes=Utilities.base64Decode(partes[2]);
+  const b=i=>(bytes[i]+256)%256;
+  const esJPEG=partes[1]==='jpeg'&&b(0)===255&&b(1)===216;
+  const esPNG=partes[1]==='png'&&b(0)===137&&b(1)===80&&b(2)===78&&b(3)===71;
+  const esWEBP=partes[1]==='webp'&&b(0)===82&&b(1)===73&&b(2)===70&&b(3)===70&&b(8)===87&&b(9)===69&&b(10)===66&&b(11)===80;
+  if(!bytes.length||bytes.length>1572864||!(esJPEG||esPNG||esWEBP))return jsonResp({ok:false,error:'El archivo no es una imagen compatible.'});
+  const col=herr_fotoColumna(hoja,true), actual=herr_fotoId(hoja.getRange(fila,col).getDisplayValue());
+  if(actual!==String(data.foto_anterior||''))return jsonResp({ok:false,error:'Otra persona cambió la foto. Actualizá el panel y volvé a revisarla.'});
+  const codigo=herr_codigoImport(data.codigo),ext=partes[1]==='jpeg'?'jpg':partes[1];
+  const nombre=codigo+'_'+Utilities.getUuid()+'.'+ext;
+  const archivo=herr_fotoCarpeta(ss).createFile(Utilities.newBlob(bytes,'image/'+partes[1],nombre));
+  // Se guarda el enlace, no una imagen incrustada. No se cambian permisos de Drive.
+  hoja.getRange(fila,col).setValue(archivo.getUrl());
+  return jsonResp({ok:true,codigo:codigo,foto_id:archivo.getId()});
+}
+function herr_fotoLeer(params) {
+  try {
+    const auth=autenticar_(params.token);
+    if(!auth.ok)return jsonResp({ok:false,auth:false,error:'Ingresá para ver la foto.'});
+    const ss=herr_abrirSS(),hoja=ss.getSheetByName(HERR_HOJA_UNIDADES);
+    const fila=herr_fotoBuscar(hoja,params.codigo),col=herr_fotoColumna(hoja,false);
+    const id=col?herr_fotoId(hoja.getRange(fila,col).getDisplayValue()):'';
+    if(!id)return jsonResp({ok:false,error:'La herramienta todavía no tiene foto.'});
+    const archivo=DriveApp.getFileById(id),blob=archivo.getBlob(),tipo=blob.getContentType();
+    if(!/^image\/(jpeg|png|webp)$/.test(tipo)||blob.getBytes().length>1572864)throw new Error('Imagen no compatible.');
+    return jsonResp({ok:true,foto_id:id,imagen:'data:'+tipo+';base64,'+Utilities.base64Encode(blob.getBytes())});
+  } catch(e){return jsonResp({ok:false,error:'No se pudo abrir la foto: '+e.message});}
+}
+
+// Altas de productos y relevamiento. Todas las escrituras pasan por el lock de doPost.
+const RPM_RELEV_HOJA='Pendientes Relevamiento';
+const RPM_RELEV_CAB=['ID','FECHA REGISTRO','DESCRIPCION','MARCA','MODELO','SERIE','ESTADO TECNICO','TENENCIA','RESPONSABLE','LUGAR','OBRA','FECHA CONOCIDA','OBSERVACIONES','SITUACION','CODIGO FINAL','FECHA FINALIZADO','FOTO'];
+function rpm_regHoja(ss,nombre,cab,crear) {
+  let h=ss.getSheetByName(nombre);if(!h&&crear)h=ss.insertSheet(nombre);
+  if(h&&h.getLastRow()===0&&crear){h.getRange(1,1,1,cab.length).setValues([cab]);h.setFrozenRows(1);}
+  return h;
+}
+function rpm_regFilas(h,n) {return h&&h.getLastRow()>1?h.getRange(2,1,h.getLastRow()-1,n).getValues():[];}
+function rpm_regAsegurarFila(h,n) {if(n>h.getMaxRows())h.insertRowsAfter(h.getMaxRows(),n-h.getMaxRows()+100);}
+function rpm_regTexto(v){return String(v||'').trim().toUpperCase();}
+function rpm_regClave(v){return herr_norm(v).replace(/\s+/g,' ');}
+function rpm_regDatos(params) {
+  const auth=autenticar_(params.token);if(!auth.ok)return jsonResp({ok:false,auth:false,error:'Ingresá al sistema.'});
+  const ss=herr_abrirSS(),hp=rpm_regHoja(ss,RPM_RELEV_HOJA,RPM_RELEV_CAB,false);
+  const pendientes=rpm_regFilas(hp,RPM_RELEV_CAB.length).filter(r=>r[13]==='PENDIENTE').map(r=>({id:r[0],descripcion:r[2],marca:r[3],modelo:r[4],serie:r[5],estado:r[6],tenencia:r[7],responsable:r[8],lugar:r[9],obra:r[10],fecha:r[11],observaciones:r[12],tiene_foto:!!r[16]}));
+  const hc=ss.getSheetByName('Clasificacion Productos'),grupos={};rpm_regFilas(hc,4).forEach(r=>grupos[String(r[0])]=r[1]);
+  return jsonResp({ok:true,pendientes,grupos});
+}
+function rpm_regPlan(d,ss) {
+  const tipo=rpm_regTexto(d.grupo);if(['CONSUMIBLE','EPP','HERRAMIENTA'].indexOf(tipo)<0)throw new Error('Elegí consumible, EPP o herramienta.');
+  const p={grupo:tipo,descripcion:rpm_regTexto(d.descripcion),marca:rpm_regTexto(d.marca),observaciones:rpm_regTexto(d.observaciones),operador:rpm_regTexto(d.operador)};
+  if(!p.descripcion)throw new Error('Falta la descripción.');
+  if(!p.operador)throw new Error('Indicá quién hace esta carga.');
+  const ahora=new Date(),hoy=Utilities.formatDate(ahora,Session.getScriptTimeZone(),'yyyy-MM-dd');
+  let referencia=[];
+  if(tipo!=='HERRAMIENTA') {
+    const hs=ss.getSheetByName('Stock');if(!hs)throw new Error('Falta la hoja Stock.');
+    const existentes=rpm_regFilas(hs,DEP_COL_STOCK.TOTAL),c=DEP_COL_STOCK;
+    p.operacion=rpm_regTexto(d.operacion)||'INGRESO';if(['SALIDA','INGRESO'].indexOf(p.operacion)<0)throw new Error('Elegí ingreso o entrega.');
+    p.unidad=rpm_regTexto(d.unidad);p.familia=rpm_regTexto(d.familia);p.zona=rpm_regTexto(d.zona)||tipo;p.deposito=rpm_regTexto(d.lugar);
+    p.cantidad=Number(d.cantidad);p.minimo=Number(d.minimo||0);p.operador=rpm_regTexto(d.operador);
+    if(!p.operador||!p.unidad||!p.familia)throw new Error('Completá quién registra, familia y unidad.');
+    if(!Number.isFinite(p.cantidad)||p.cantidad<0||!Number.isFinite(p.minimo)||p.minimo<0)throw new Error('Cantidad y mínimo deben ser números mayores o iguales a cero.');
+    const id=rpm_regTexto(d.producto_id);
+    const candidatos=existentes.filter(r=>id?rpm_regTexto(r[c.ID-1])===id:
+      rpm_regClave(r[c.ZONA-1])===rpm_regClave(p.zona)&&rpm_regClave(r[c.FAMILIA-1])===rpm_regClave(p.familia)&&rpm_regClave(r[c.MARCA-1]||'—')===rpm_regClave(p.marca||'—')&&rpm_regClave(r[c.DESCRIPCION-1])===rpm_regClave(p.descripcion));
+    if(candidatos.length>1)throw new Error('Hay productos duplicados. Revisá el stock antes de ingresar cantidades.');
+    if(id&&!candidatos.length)throw new Error('El producto seleccionado ya no existe. Actualizá el panel.');
+    if(candidatos.length) {
+      const r=candidatos[0];if(rpm_regClave(r[c.UNIDAD-1])!==rpm_regClave(p.unidad))throw new Error('La unidad no coincide con la del producto existente. No se sumaron cantidades.');
+      p.producto_id=String(r[c.ID-1]);p.descripcion=String(r[c.DESCRIPCION-1]);p.marca=String(r[c.MARCA-1]);p.familia=String(r[c.FAMILIA-1]);p.zona=String(r[c.ZONA-1]);p.deposito=String(r[c.UBIC_DEPOSITO-1]||'');
+      p.stock_anterior=Number(r[c.STOCK_ACTUAL-1])||0;p.minimo=Number(r[c.STOCK_MINIMO-1])||0;
+      p.modo=p.cantidad?'ENTRADA_EXISTENTE':'CLASIFICAR_EXISTENTE';referencia=r;
+    }else {if(!p.deposito)throw new Error('Indicá el depósito del nuevo producto.');p.modo='PRODUCTO_NUEVO';}
+    if(p.operacion==='SALIDA'){
+      if(!id||!p.producto_id)throw new Error('Para entregar, seleccioná un producto existente en stock. Si no existe, registrá primero su ingreso.');
+      if(!(p.cantidad>0))throw new Error('Indicá una cantidad a entregar mayor que cero.');
+      if(p.cantidad>p.stock_anterior)throw new Error('Stock insuficiente: hay '+p.stock_anterior+' '+p.unidad+'.');
+      p.receptor=rpm_regTexto(d.receptor);p.destino_salida=rpm_regTexto(d.destino_salida);p.fecha_salida=rpm_fechaCanon(d.fecha_salida);
+      if(!p.receptor||!p.destino_salida)throw new Error('Indicá quién recibe y la obra o destino.');
+      if(!p.fecha_salida||p.fecha_salida>hoy)throw new Error('Indicá una fecha de entrega válida, hasta hoy.');
+      const f=Utilities.parseDate(p.fecha_salida,Session.getScriptTimeZone(),'yyyy-MM-dd');if(Utilities.formatDate(f,Session.getScriptTimeZone(),'yyyy-MM-dd')!==p.fecha_salida)throw new Error('Fecha de entrega inválida.');
+      p.modo='SALIDA_EXISTENTE';
+    }
+  }else {
+    p.modelo=rpm_regTexto(d.modelo);p.serie=rpm_regTexto(d.serie);p.estado=rpm_regTexto(d.estado);p.tenencia=rpm_regTexto(d.tenencia);
+    p.responsable=rpm_regTexto(d.responsable);p.lugar=rpm_regTexto(d.lugar);p.obra=rpm_regTexto(d.obra);p.fecha=String(d.fecha||'').trim();p.pendiente_id=rpm_regTexto(d.pendiente_id);
+    if(!Object.prototype.hasOwnProperty.call(HERR_ESTADOS,p.estado))throw new Error('Elegí un estado técnico válido.');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(p.fecha)||p.fecha>hoy)throw new Error('Indicá una fecha conocida válida, hasta hoy.');
+    const fecha=Utilities.parseDate(p.fecha,Session.getScriptTimeZone(),'yyyy-MM-dd');
+    if(Utilities.formatDate(fecha,Session.getScriptTimeZone(),'yyyy-MM-dd')!==p.fecha)throw new Error('La fecha no es válida.');
+    if(['PERSONAL','DEPOSITO','OTRO'].indexOf(p.tenencia)<0)throw new Error('Elegí dónde está la herramienta.');
+    if(p.tenencia==='PERSONAL'&&!p.responsable)throw new Error('Indicá quién tiene la herramienta.');
+    if(p.tenencia!=='PERSONAL'&&!p.lugar)throw new Error('Indicá dónde está la herramienta.');
+    p.destino=p.tenencia==='PERSONAL'?HERR_PREFIJO_PODER+p.responsable:p.tenencia==='DEPOSITO'?'DEPÓSITO '+p.lugar:p.lugar;
+    const hu=ss.getSheetByName(HERR_HOJA_UNIDADES);if(!hu)throw new Error('Falta Unidades Herramientas.');
+    const unidades=herr_leerUnidades(hu);const modo=rpm_regTexto(d.modo_codigo);
+    if(p.pendiente_id){const hp=rpm_regHoja(ss,RPM_RELEV_HOJA,RPM_RELEV_CAB,false);const filas=rpm_regFilas(hp,RPM_RELEV_CAB.length);const i=filas.findIndex(r=>String(r[0])===p.pendiente_id&&r[13]==='PENDIENTE');if(i<0)throw new Error('Ese pendiente ya fue completado o no existe. Actualizá la lista.');p.pendiente_fila=i+2;referencia.push(filas[i]);}
+    if(modo==='SIN_CODIGO') {p.modo=p.pendiente_id?'ACTUALIZAR_PENDIENTE':'PENDIENTE_NUEVO';p.codigo='';}
+    else {
+      let codigo=herr_codigoImport(d.codigo);
+      if(modo==='GENERAR'){
+        const sigla=rpm_regTexto(d.sigla);if(!/^[A-Z]{2,5}$/.test(sigla))throw new Error('La sigla debe tener de 2 a 5 letras.');
+        let max=0;unidades.forEach(r=>{const m=herr_codigoImport(r[HERR_U.CODIGO]).match(/^([A-Z]+)-(\d+)$/);if(m&&m[1]===sigla)max=Math.max(max,Number(m[2]));});
+        codigo=sigla+'-'+String(max+1).padStart(3,'0');
+      }else if(modo!=='EXISTENTE')throw new Error('Elegí cómo identificar la herramienta.');
+      if(!/^[A-Z]{2,5}-\d+$/.test(codigo))throw new Error('Código inválido. Ejemplo: HER-1057.');
+      const indices=[];unidades.forEach((r,i)=>{if(herr_codigoImport(r[HERR_U.CODIGO])===codigo)indices.push(i);});
+      if(indices.length>1)throw new Error('El código está duplicado. Revisalo antes de modificarlo.');
+      p.codigo=codigo;p.sigla=codigo.split('-')[0];p.modo=indices.length?'RELEVAR_EXISTENTE':'HERRAMIENTA_NUEVA';
+      if(indices.length){p.fila_unidad=indices[0]+2;const r=unidades[indices[0]];p.anterior=String(r[HERR_U.LUGAR]||'');p.estado_anterior=String(r[HERR_U.ESTADO]||'');p.descripcion_actual=String(r[HERR_U.DETALLE]||'');referencia.push(r);}
+      if(p.serie){const otra=unidades.find(r=>rpm_regClave(r[HERR_U.SERIE])===rpm_regClave(p.serie)&&herr_codigoImport(r[HERR_U.CODIGO])!==codigo);if(otra)throw new Error('Esa serie ya está registrada con el código '+otra[HERR_U.CODIGO]+'.');}
+    }
+  }
+  const huella=Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,JSON.stringify({plan:p,referencia,foto:!!d.foto_base64}))).toUpperCase();
+  return {plan:p,huella};
+}
+function rpm_regEjecutar(d,ss) {
+  try {
+    const revision=rpm_regPlan(d,ss),p=revision.plan;
+    if(d.accion==='rpm-registro-revisar')return jsonResp({ok:true,plan:p,huella:revision.huella});
+    if(String(d.huella||'')!==revision.huella)return jsonResp({ok:false,error:'Los datos cambiaron. Revisá la carga nuevamente.'});
+    if(p.grupo!=='HERRAMIENTA') {
+      let id=p.producto_id,existente=!!id;
+      if(p.modo==='SALIDA_EXISTENTE'){
+        const respuesta=JSON.parse(ajusteRapidoStockOpcionB({tipo_movimiento:'SALIDA',fecha:p.fecha_salida.split('-').reverse().join('/'),responsable:p.receptor,obra:p.destino_salida,zona:p.zona,obs_general:'ENTREGA '+p.grupo+' | REGISTRADO POR: '+p.operador+' | '+p.observaciones,items:[{id:p.producto_id,cantidad:p.cantidad}]},ss).getContent());
+        if(!respuesta.ok)return jsonResp(respuesta);
+      }else if(p.modo!=='CLASIFICAR_EXISTENTE') {
+        const respuesta=JSON.parse(crearProductoNuevo({zona:p.zona,familia:p.familia,marca:p.marca,descripcion:p.descripcion,unidad:p.unidad,stock_inicial:p.cantidad,stock_minimo:p.minimo,deposito:p.deposito,responsable:p.operador,observaciones:p.observaciones,obs_general:'REGISTRO '+p.grupo,tipo_alta:'DEPOSITO'},ss).getContent());
+        if(!respuesta.ok)return jsonResp(respuesta);id=respuesta.id;existente=!!respuesta.existente;
+      }
+      const hc=rpm_regHoja(ss,'Clasificacion Productos',['ID PRODUCTO','GRUPO','FECHA','REGISTRADO POR'],true),filas=rpm_regFilas(hc,4),i=filas.findIndex(r=>String(r[0])===String(id));
+      const filaGrupo=i<0?hc.getLastRow()+1:i+2;rpm_regAsegurarFila(hc,filaGrupo);
+      hc.getRange(filaGrupo,1,1,4).setValues([[id,p.grupo,new Date(),p.operador]]);
+      return jsonResp({ok:true,id,grupo:p.grupo,existente,modo:p.modo});
+    }
+    const hu=ss.getSheetByName(HERR_HOJA_UNIDADES),hm=ss.getSheetByName(HERR_HOJA_MOVS);if(!hm)throw new Error('Falta Movimientos Herramientas.');
+    const hp=rpm_regHoja(ss,RPM_RELEV_HOJA,RPM_RELEV_CAB,true);
+    const pendFoto=p.pendiente_fila?String(hp.getRange(p.pendiente_fila,17).getDisplayValue()):'';
+    const fecha=Utilities.parseDate(p.fecha,Session.getScriptTimeZone(),'yyyy-MM-dd');
+    if(p.modo==='PENDIENTE_NUEVO'||p.modo==='ACTUALIZAR_PENDIENTE') {
+      const id=p.pendiente_id||'REL-'+Utilities.getUuid().toUpperCase(),fila=p.pendiente_fila||hp.getLastRow()+1;
+      rpm_regAsegurarFila(hp,fila);
+      hp.getRange(fila,1,1,RPM_RELEV_CAB.length).setValues([[id,new Date(),p.descripcion,p.marca,p.modelo,p.serie,p.estado,p.tenencia,p.responsable,p.lugar,p.obra,p.fecha,p.observaciones+' | REGISTRADO POR: '+p.operador,'PENDIENTE','','',pendFoto]]);
+      let aviso='';if(d.foto_base64)try{hp.getRange(fila,17).setValue(rpm_regGuardarFoto(d.foto_base64,ss,id));}catch(e){aviso='El registro se guardó, pero la foto no: '+e.message;}
+      return jsonResp({ok:true,id,modo:p.modo,pendiente:true,aviso});
+    }
+    let fila=p.fila_unidad;const nueva=!fila;
+    if(nueva){
+      fila=hu.getLastRow()+1;rpm_regAsegurarFila(hu,fila);const r=Array(HERR_U.TOTAL).fill('');
+      r[HERR_U.FECHA]=fecha;r[HERR_U.SIGLA]=p.sigla;r[HERR_U.NUM]=p.codigo.split('-')[1];r[HERR_U.CODIGO]=p.codigo;
+      r[HERR_U.DETALLE]=p.descripcion;r[HERR_U.MARCA]=p.marca;r[HERR_U.MODELO]=p.modelo;r[HERR_U.SERIE]=p.serie;
+      r[HERR_U.ESTADO]=p.estado;r[HERR_U.LUGAR]=p.destino;r[HERR_U.OBS]=p.observaciones;r[HERR_U.TIPO]=p.descripcion;
+      r[HERR_U.CATEGORIA]=herr_nombreFamilia(p.sigla);r[HERR_U.ID]=p.codigo;r[HERR_U.UB_DEP]=p.tenencia==='DEPOSITO'?p.lugar:'';
+      hu.getRange(fila,HERR_U.NUM+1,1,1).setNumberFormat('@');hu.getRange(fila,1,1,HERR_U.TOTAL).setValues([r]);
+    }else {
+      // En una unidad existente se actualiza solo la verificación; se preservan descripción, serie, foto y alta originales.
+      hu.getRange(fila,HERR_U.ESTADO+1).setValue(p.estado);hu.getRange(fila,HERR_U.LUGAR+1).setValue(p.destino);
+      hu.getRange(fila,HERR_U.UB_DEP+1,1,4).setValues([[p.tenencia==='DEPOSITO'?p.lugar:'','','','']]);
+    }
+    rpm_fechaGuardarUnidad(hu,fila,p.tenencia==='PERSONAL'?p.fecha:'',p.tenencia==='PERSONAL'?p.obra:'','','RELEVAMIENTO',p.tenencia==='PERSONAL'?p.responsable:'');
+    const log=['HREL-'+Utilities.getUuid(),Utilities.formatDate(fecha,Session.getScriptTimeZone(),'dd/MM/yyyy')+' 12:00:00',p.tenencia==='PERSONAL'?'SALIDA':'RELEVAMIENTO',p.responsable,p.obra||p.destino,herr_nombreFamilia(p.sigla),p.descripcion,'',1,p.codigo,p.estado,p.tenencia==='DEPOSITO'?p.lugar:'','','','',
+      'RELEVAMIENTO: fecha conocida '+p.fecha+' (no acredita fecha exacta de entrega). Registrado por '+p.operador+' el '+Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'dd/MM/yyyy HH:mm:ss')+'. Estado anterior '+(p.estado_anterior||'ALTA')+'; ubicación anterior '+(p.anterior||'SIN ALTA')+'; '+p.observaciones];
+    rpm_regAsegurarFila(hm,hm.getLastRow()+1);
+    hm.getRange(hm.getLastRow()+1,1,1,HERR_COLS_MOVS.length).setValues([log]);
+    let aviso='';
+    if(pendFoto)hu.getRange(fila,herr_fotoColumna(hu,true)).setValue(pendFoto);
+    if(d.foto_base64)try{hu.getRange(fila,herr_fotoColumna(hu,true)).setValue(rpm_regGuardarFoto(d.foto_base64,ss,p.codigo));}catch(e){aviso='La herramienta se guardó, pero la foto no: '+e.message;}
+    if(p.pendiente_fila)hp.getRange(p.pendiente_fila,14,1,3).setValues([['COMPLETADO',p.codigo,new Date()]]);
+    herr_escribirStock(ss,herr_leerUnidades(hu).map(herr_filaAObjeto));
+    return jsonResp({ok:true,codigo:p.codigo,modo:p.modo,aviso});
+  }catch(e){return jsonResp({ok:false,error:e.message});}
+}
+function rpm_regGuardarFoto(imagen,ss,codigo) {
+  const m=String(imagen||'').match(/^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/);if(!m||m[1].length>2100000)throw new Error('Foto no válida.');
+  const bytes=Utilities.base64Decode(m[1]);if(bytes.length>1572864||((bytes[0]+256)%256)!==255||((bytes[1]+256)%256)!==216)throw new Error('Foto no válida.');
+  return herr_fotoCarpeta(ss).createFile(Utilities.newBlob(bytes,'image/jpeg',codigo+'_'+Utilities.getUuid()+'.jpg')).getUrl();
+}
+
+// Fechas de entrega separadas del alta del código. Columnas nuevas siempre al final.
+const RPM_FECHA_CAB=['FECHA ENTREGA','OBRA ACTUAL','REMITO ACTUAL','ORIGEN FECHA ENTREGA','RESPONSABLE ENTREGA'];
+function rpm_fechaCanon(v) {
+  if(v instanceof Date)return isNaN(v.getTime())?'':Utilities.formatDate(v,Session.getScriptTimeZone(),'yyyy-MM-dd');
+  const s=String(v||'').trim();let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m)return m[1]+'-'+m[2]+'-'+m[3];
+  m=s.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{2}|\d{4})(?:\s|$)/);
+  if(m)return(m[3].length===2?'20'+m[3]:m[3])+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+  if(/^\d{5}(\.\d+)?$/.test(s)){const d=new Date(Date.UTC(1899,11,30)+Math.floor(Number(s))*86400000);return d.toISOString().slice(0,10);}
+  return '';
+}
+function rpm_fechaPersona(s){return herr_norm(s).replace(/[^A-Z0-9 ]/g,' ').split(/\s+/).filter(Boolean).sort().join(' ');}
+function rpm_fechaColumnas(hoja,crear) {
+  const n=Math.max(1,hoja.getLastColumn()),cab=hoja.getRange(1,1,1,n).getDisplayValues()[0];
+  return RPM_FECHA_CAB.map(t=>{let i=cab.findIndex(c=>herr_norm(c)===t);if(i<0&&crear){i=cab.length;cab.push(t);if(i+1>hoja.getMaxColumns())hoja.insertColumnsAfter(hoja.getMaxColumns(),i+1-hoja.getMaxColumns());hoja.getRange(1,i+1).setValue(t);}return i<0?0:i+1;});
+}
+function rpm_fechaMetadatos(hoja) {
+  const cols=rpm_fechaColumnas(hoja,false),n=hoja.getLastRow()-1;if(n<1)return [];
+  const datos=cols.map(c=>c?hoja.getRange(2,c,n,1).getValues():Array.from({length:n},()=>['']));
+  return Array.from({length:n},(_,i)=>({fecha:rpm_fechaCanon(datos[0][i][0]),obra:String(datos[1][i][0]||''),remito:String(datos[2][i][0]||''),origen:String(datos[3][i][0]||''),responsable:String(datos[4][i][0]||'')}));
+}
+function rpm_fechaGuardarUnidad(hoja,fila,fecha,obra,remito,origen,responsable) {
+  const cols=rpm_fechaColumnas(hoja,true),valores=[rpm_fechaCanon(fecha),obra||'',remito||'',origen||'',responsable||''];
+  cols.forEach((c,i)=>{const celda=hoja.getRange(fila,c);if(i===0)celda.setNumberFormat('@');celda.setValue(valores[i]);});
+}
+function rpm_fechaActualizarMovimiento(ss,tipo,regs,responsable,obra,fecha,remito) {
+  if(tipo!=='SALIDA'&&tipo!=='DEVOLUCIÓN')return;
+  const hoja=ss.getSheetByName(HERR_HOJA_UNIDADES),filas=herr_leerUnidades(hoja),codigos=[];
+  Object.keys(regs).forEach(k=>regs[k].codigos.forEach(c=>codigos.push(herr_codigoImport(c))));
+  filas.forEach((r,i)=>{if(codigos.indexOf(herr_codigoImport(herr_clave(r)))<0)return;
+    if(tipo==='SALIDA')rpm_fechaGuardarUnidad(hoja,i+2,fecha,obra,remito,'ENTREGA REGISTRADA',responsable);
+    else rpm_fechaGuardarUnidad(hoja,i+2,'','','','','');});
+}
+
+// Corrige fechas de todos los responsables desde BASE DE DATOS, sin cambiar custodia ni stock.
+function herr_importarSoloFechas(data,ss) {
+  try {
+    const hu=ss.getSheetByName(HERR_HOJA_UNIDADES),hm=ss.getSheetByName(HERR_HOJA_MOVS);
+    if(!hu||!hm)throw new Error('Faltan las hojas de herramientas.');
+    if(!Array.isArray(data.registros)||data.registros.length>10000)throw new Error('Archivo no válido.');
+    const filas=herr_leerUnidades(hu),meta=rpm_fechaMetadatos(hu),indices={},porCodigo={},cambios=[],pendientes=[];
+    let sinCodigo=0,iguales=0;
+    filas.forEach((r,i)=>{const cod=herr_codigoImport(r[HERR_U.CODIGO]);if(cod)(indices[cod]||(indices[cod]=[])).push(i);});
+    data.registros.forEach(r=>{const bruto=String(r.codigo||'').trim();if(!bruto){sinCodigo++;return;}bruto.split(/[,;\n]+/).map(herr_codigoImport).filter(Boolean).forEach(c=>(porCodigo[c]||(porCodigo[c]=[])).push(r));});
+    const hoy=Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyy-MM-dd');
+    Object.keys(porCodigo).sort().forEach(cod=>{
+      const rr=porCodigo[cod],aviso=motivo=>pendientes.push({codigo:cod,filas:rr.map(r=>r.fila).join(', '),motivo});
+      if(rr.length!==1)return aviso('Código repetido en la base: revisar los movimientos antes de elegir una fecha.');
+      if(!indices[cod])return aviso('Código no encontrado en Unidades Herramientas.');
+      if(indices[cod].length!==1)return aviso('Código duplicado en las unidades.');
+      const r=rr[0],i=indices[cod][0],u=filas[i],mov=herr_norm(r.movimiento),actual=herr_poder(u[HERR_U.LUGAR]);
+      if(['A CARGO','PARA OBRA','PARA SERVICIO'].indexOf(mov)<0){if(actual)return aviso('La base no indica una entrega vigente, pero la unidad tiene responsable. Revisar.');iguales++;return;}
+      if(!actual||rpm_fechaPersona(actual)!==rpm_fechaPersona(r.responsable))return aviso('El responsable de la base no coincide con el actual. La corrección de fechas no cambia responsables.');
+      const fecha=rpm_fechaCanon(r.fecha);if(!fecha||fecha>hoy)return aviso('Falta una fecha válida de entrega o es posterior a hoy.');
+      let comprobada='';try{comprobada=Utilities.formatDate(Utilities.parseDate(fecha,Session.getScriptTimeZone(),'yyyy-MM-dd'),Session.getScriptTimeZone(),'yyyy-MM-dd');}catch(e){}
+      if(comprobada!==fecha)return aviso('Fecha de entrega inválida.');
+      const anterior=meta[i]||{},obra=String(r.obra||''),remito=String(r.remito||'');
+      if(herr_norm(anterior.origen)==='ENTREGA CONFIRMADA'){if(anterior.fecha!==fecha)return aviso('Entrega confirmada en el panel: se conserva '+anterior.fecha+'; la base indica '+fecha+'.');iguales++;return;}
+      if(anterior.fecha===fecha&&anterior.obra===obra&&anterior.remito===remito&&rpm_fechaPersona(anterior.responsable)===rpm_fechaPersona(actual)&&anterior.origen==='BASE DE DATOS'){iguales++;return;}
+      cambios.push({codigo:cod,indice:i,fila:r.fila,anterior:anterior.fecha||'SIN FECHA DE ENTREGA',nuevo:fecha,fechaEntrega:fecha,responsable:actual,obra,remito,estado:String(u[HERR_U.ESTADO]||''),devuelto:false,metaAnterior:anterior});
+    });
+    const huella=Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,JSON.stringify({filas,cambios,pendientes}))).toUpperCase();
+    if(data.fase!=='APLICAR')return jsonResp({ok:true,soloFechas:true,huella,cambios,pendientes,sinCodigo,iguales});
+    if(data.huella!==huella)throw new Error('Los datos cambiaron. Revisá nuevamente antes de confirmar.');
+    if(!cambios.length)return jsonResp({ok:true,actualizados:0,soloFechas:true});
+    const fechaRegistro=Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'dd/MM/yyyy HH:mm:ss'),id='HFECHA-'+Utilities.getUuid();
+    const respaldo=hu.copyTo(ss).setName('Respaldo fechas '+Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyyMMdd HHmmss')+'-'+id.slice(-5));
+    const logs=[];
+    cambios.forEach(c=>{
+      rpm_fechaGuardarUnidad(hu,c.indice+2,c.fechaEntrega,c.obra,c.remito,'BASE DE DATOS',c.responsable);
+      const u=filas[c.indice];logs.push([id,fechaRegistro,'FECHA ACTUALIZADA',c.responsable,c.obra,herr_nombreFamilia(u[HERR_U.SIGLA]),u[HERR_U.TIPO]||u[HERR_U.DETALLE],u[HERR_U.CARACT],1,String(u[HERR_U.CODIGO]),'','','','','',
+        'CORRECCIÓN DE FECHA DESDE BASE DE DATOS. Entrega: '+c.fechaEntrega+'; remito '+c.remito+'; fila origen '+c.fila+'; fecha anterior '+c.anterior+'. No modifica responsable, ubicación, estado técnico ni stock.']);
+    });
+    rpm_regAsegurarFila(hm,hm.getLastRow()+logs.length);
+    hm.getRange(hm.getLastRow()+1,1,logs.length,HERR_COLS_MOVS.length).setValues(logs);
+    return jsonResp({ok:true,soloFechas:true,actualizados:cambios.length,respaldo:respaldo.getName(),id});
+  }catch(e){return jsonResp({ok:false,error:e.message});}
+}
+
+// La confirmación es explícita y no cambia custodia, stock, estado técnico ni fotos.
+function herr_confirmarFechaEntrega(d,ss) {
+  try{
+    const hu=ss.getSheetByName(HERR_HOJA_UNIDADES),hm=ss.getSheetByName(HERR_HOJA_MOVS);
+    if(!hu||!hm)throw new Error('Faltan las hojas de herramientas.');
+    const filas=herr_leerUnidades(hu),codigo=herr_codigoImport(d.codigo),coincidencias=[];
+    filas.forEach((r,i)=>{if(herr_codigoImport(herr_clave(r))===codigo)coincidencias.push(i);});
+    if(!codigo||coincidencias.length!==1)throw new Error('El código no existe o está duplicado.');
+    const i=coincidencias[0],u=filas[i],responsable=herr_poder(u[HERR_U.LUGAR]);
+    if(!responsable||rpm_fechaPersona(responsable)!==rpm_fechaPersona(d.responsable))throw new Error('Cambió quién tiene la herramienta. Actualizá el panel antes de confirmar.');
+    const meta=rpm_fechaMetadatos(hu)[i]||{},anterior=rpm_fechaCanon(meta.fecha);
+    if(anterior!==rpm_fechaCanon(d.fecha_anterior)||String(meta.origen||'')!==String(d.origen_anterior||''))throw new Error('La fecha cambió desde que abriste la revisión. Actualizá el panel.');
+    const fecha=rpm_fechaCanon(d.fecha),hoy=Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyy-MM-dd');
+    if(!fecha||fecha>hoy)throw new Error('La fecha de entrega debe ser válida y no posterior a hoy.');
+    const validada=Utilities.formatDate(Utilities.parseDate(fecha,Session.getScriptTimeZone(),'yyyy-MM-dd'),Session.getScriptTimeZone(),'yyyy-MM-dd');
+    if(validada!==fecha)throw new Error('La fecha no existe en el calendario.');
+    const motivo=String(d.motivo||'').trim();if(!motivo)throw new Error('Indicá cómo verificaste la fecha de entrega.');
+    const obra=String(d.obra||''),remito=String(d.remito||''),id='HCONF-'+Utilities.getUuid();
+    rpm_fechaGuardarUnidad(hu,i+2,fecha,obra,remito,'ENTREGA CONFIRMADA',responsable);
+    const log=[id,Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'dd/MM/yyyy HH:mm:ss'),'FECHA CONFIRMADA',responsable,obra,herr_nombreFamilia(u[HERR_U.SIGLA]),u[HERR_U.TIPO]||u[HERR_U.DETALLE],u[HERR_U.CARACT],1,String(u[HERR_U.CODIGO]),'','','','','',
+      'FECHA DE ENTREGA CONFIRMADA: '+fecha+'; remito '+remito+'; fecha anterior '+(anterior||'SIN FECHA')+'; origen anterior '+(meta.origen||'SIN ORIGEN')+'; verificación: '+motivo+'. No modifica la fecha de carga del relevamiento.'];
+    rpm_regAsegurarFila(hm,hm.getLastRow()+1);hm.getRange(hm.getLastRow()+1,1,1,HERR_COLS_MOVS.length).setValues([log]);
+    return jsonResp({ok:true,codigo,fecha,origen:'ENTREGA CONFIRMADA',id});
+  }catch(e){return jsonResp({ok:false,error:e.message});}
 }

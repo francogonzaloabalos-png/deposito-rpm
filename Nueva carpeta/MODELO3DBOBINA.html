@@ -12,9 +12,34 @@ input,button{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid v
 input{flex:1;min-width:0}
 #info{position:fixed;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.4}
 .k{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px 0 8px}
+#pn{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 56px);max-height:55vh;overflow:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;font-size:14px;display:none}
+#pn input{width:70px;padding:5px 6px;margin:2px}
+#pn select{padding:5px 6px;margin:2px}
+#pn h4{margin:10px 0 4px}
+.on{background:#ffd000!important;color:#000!important}
 </style></head><body>
 <canvas id="c"></canvas>
-<div class="bar"><input id="q" placeholder="Buscar: PRE 12, SUB 05…" autocomplete="off"><button id="v">Planta</button></div>
+<div class="bar"><input id="q" placeholder="Buscar: PRE 12, SUB 05…" autocomplete="off"><button id="v">Planta</button><button id="mv">Mover</button><button id="cf">⚙</button></div>
+<div id="pn">
+ <h4>Depósito (metros)</h4>
+ Ancho <input id="rw" inputmode="decimal"> Largo <input id="rd" inputmode="decimal"> <button id="ra">Aplicar</button>
+ <h4>Tamaños de bobina (metros)</h4>
+ <div id="tl"></div>
+ <button id="ta">+ Agregar tamaño</button>
+ <h4>Bobina seleccionada</h4>
+ <div id="ss">Tocá una bobina para asignarle tamaño.</div>
+ <h4>Asignar tamaño a un grupo</h4>
+ <select id="gt"><option value="PRE">PRE AL</option><option value="CU">SUB</option><option value="AL">SUB AL</option><option value="TA">CABLE TALLER</option></select> → <select id="gs"></select> <button id="gb">Aplicar</button>
+ <h4>Colores por tipo</h4>
+ <div id="cl"></div>
+ <h4>Grilla</h4>
+ Cada <input id="gm" value="1" inputmode="decimal"> m <button id="gr">Mostrar grilla</button>
+ <h4>Agregar bobina</h4>
+ <select id="ntp"></select> <input id="nnm" placeholder="Nombre" style="width:120px"><br>
+ Sección <input id="nsc" style="width:90px"> Metros <input id="nmt"> <button id="nad">Agregar</button>
+ <h4>Diseño</h4>
+ <button id="rs">Restablecer todo</button>
+</div>
 <div id="info"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -22,62 +47,140 @@ var PREm=[2000,2010,2010,1910,1250,2010,2010,1970,2040,1946,2010,1500,900,1025,1
 var PREs=[[22,'2x16 / 1x16+16'],[41,'2x25'],[42,'1x25/25'],[49,'1x35/35'],[58,'3x25/50'],[59,'3x50/50'],[61,'3x35/50'],[72,'3x50/50'],[77,'3x50/50/25'],[88,'3x70/50'],[95,'3x95/50'],[103,'3x95/70']];
 var SUBd=['4x10|500','4x4|3000','4x10|2209','2x2,5|680','4x4|640','3x4|981','4x6|1388','2x4|1300','4x10|1356','4x16|471','4x6|692','4x10|955','4x16|360','4x16|939','3x4|901','3x25/16|270','3x25/16|1028','3x25/16|1020','3x35/16|35','4x2,5|1000','4x6|1790','3x35/16|621','3x35/16|1050','4x6|128','3x50/25|?','3x50/25|408','3x50/25|173','3x50/25|344','3x50/25|280','3x70/35|261','3x70/35|303','3x95/50|335','3x95/50|302','3x95/50|267','3x4|3000','3x2,5|1013','1x240|290','1x185|503','1x120|413','1x95|546'];
 var SUBn=[];for(var i=1;i<=35;i++)SUBn.push('SUB '+(i<10?'0':'')+i);SUBn.push('SUB TALLER','SUB BOB A','SUB BOB B','SUB BOB C','SUB BOB D');
-var W=13.5,D=19,pat=[2,2,1];
+var W=10,D=25,pat=[2,2,1];
+var TAM=[{d:1.0,a:.68},{d:1.2,a:.8},{d:1.7,a:1.16}]; // tamaño 1,2,3 · d = diámetro (m) · a = ancho/alto de la bobina (m)
 function slots(x0,dir,z0,dz,cols,count,pt){var o=[],s=0;for(var r=0;o.length<count;r++)for(var c=0;c<cols&&o.length<count;c++,s++){var h=pt[s%pt.length];for(var l=0;l<h&&o.length<count;l++)o.push({x:x0+dir*c*1.05,z:z0+dz*r,l:l})}return o}
 var reels=[];
 // SUB (moradas): lado izquierdo, desde el portón hacia el fondo
-slots(-3.7,-1,8.6,-1.05,3,40,[1,1,1,2]).forEach(function(p,i){var a=SUBd[i].split('|');reels.push({id:SUBn[i],t:'CU',x:p.x,z:p.z,l:p.l,sec:a[0],m:a[1]})});
+slots(-2.4,-1,8.6,-1.05,3,40,[1,1,1,2]).forEach(function(p,i){var a=SUBd[i].split('|');reels.push({id:SUBn[i],t:'CU',x:p.x,z:p.z,l:p.l,sec:a[0],m:a[1]})});
 // PRE: PRE AL 01 empieza justo después del último morado (izquierda) y sigue hacia el fondo; el resto cruza al lado derecho
 var zEnd=8.6-1.05*11;
-var L=slots(-3.7,-1,zEnd,-1.05,3,16,[1,1,1,2]),Rr=slots(3.7,1,-8.9,1.05,3,87,[2,2,2,1]);
+var L=slots(-2.4,-1,zEnd,-1.05,3,16,[1,1,1,2]),Rr=slots(2.4,1,-8.9,1.05,3,87,[2,2,2,1]);
 L.concat(Rr).forEach(function(p,i){var n=i+1,sec='';for(var k=0;k<PREs.length;k++)if(n<=PREs[k][0]){sec=PREs[k][1];break}
  reels.push({id:'PRE AL '+(n<10?'0':'')+n,t:'PRE',x:p.x,z:p.z,l:p.l,sec:sec,m:PREm[i]})});
-reels.push({id:'SUB AL 01',t:'AL',x:-1.7,z:-8.2,l:0,k:1.7,sec:'subterráneo de aluminio (grande)',m:'s/d'},{id:'SUB AL 02',t:'AL',x:-1.7,z:-8.2,l:1,k:1.7,sec:'subterráneo de aluminio (grande)',m:'s/d'});
-var COL={PRE:0xd0782c,CU:0x7b4fc4,AL:0x3a7bd5};
+reels.push({id:'SUB AL 01',t:'AL',x:0,z:-11.3,l:0,k:1.7,sec:'subterráneo de aluminio (grande)',m:'s/d'},{id:'SUB AL 02',t:'AL',x:0,z:-11.3,l:1,k:1.7,sec:'subterráneo de aluminio (grande)',m:'s/d'});
+var COL={PRE:0xd0782c,CU:0x7b4fc4,AL:0x3a7bd5,TA:0x2fa36b};
+var TN={PRE:'PRE AL',CU:'SUB (cobre)',AL:'SUB AL',TA:'Cable taller'};
+function hx(n){return ('000000'+n.toString(16)).slice(-6)}
+reels.forEach(function(r){r.tam=r.t==='AL'?3:1;r.y=r.l*10});cargar();
 var info=document.getElementById('info');
-var base='Arrastrá para girar · pellizcá para acercar · tocá una bobina.<br><span class="k" style="background:#d0782c"></span>PRE AL (103)<span class="k" style="background:#7b4fc4"></span>SUB (40, moradas)<span class="k" style="background:#3a7bd5"></span>SUB AL (grandes)<br><small>Posiciones de ejemplo. Los datos (sección y metros) son los de tus planillas.</small>';info.innerHTML=base;
+function legend(){var s='Arrastrá para girar · pellizcá para acercar · tocá una bobina.<br>';for(var k in TN)s+='<span class="k" style="background:#'+hx(COL[k])+'"></span>'+TN[k]+' ('+reels.filter(function(r){return r.t===k}).length+') ';return s+'<br><small>Posiciones de ejemplo. Los datos (sección y metros) son los de tus planillas.</small>'}
+var base=legend();info.innerHTML=base;
+function upLeg(){base=legend();if(!cur)info.innerHTML=base}
 var cv=document.getElementById('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
 var S=new THREE.Scene(),cam=new THREE.PerspectiveCamera(50,1,.1,200);
 S.add(new THREE.HemisphereLight(0xffffff,0x555555,.9));var dl=new THREE.DirectionalLight(0xffffff,.6);dl.position.set(5,12,8);S.add(dl);
-var fl=new THREE.Mesh(new THREE.PlaneGeometry(W,D),new THREE.MeshLambertMaterial({color:0x9a968c}));fl.rotation.x=-Math.PI/2;S.add(fl);
 var wm=new THREE.MeshLambertMaterial({color:0xb9b4a6,transparent:true,opacity:.35,side:THREE.DoubleSide});
-function wall(w,x,z,ry){var m=new THREE.Mesh(new THREE.PlaneGeometry(w,3),wm);m.position.set(x,1.5,z);m.rotation.y=ry;S.add(m)}
-wall(W,0,-D/2,0);wall(D,-W/2,0,Math.PI/2);wall(D,W/2,0,Math.PI/2);
-var gt=new THREE.Mesh(new THREE.BoxGeometry(5,.05,.3),new THREE.MeshBasicMaterial({color:0xe0b020}));gt.position.set(0,.03,D/2);S.add(gt);
+var room=new THREE.Group();S.add(room);
+function wall(w,x,z,ry){var m=new THREE.Mesh(new THREE.PlaneGeometry(w,3),wm);m.position.set(x,1.5,z);m.rotation.y=ry;room.add(m)}
+function buildRoom(){
+ while(room.children.length)room.remove(room.children[0]);
+ var fl=new THREE.Mesh(new THREE.PlaneGeometry(W,D),new THREE.MeshLambertMaterial({color:0x9a968c}));fl.rotation.x=-Math.PI/2;room.add(fl);
+ wall(W,0,-D/2,0);wall(D,-W/2,0,Math.PI/2);wall(D,W/2,0,Math.PI/2);
+ var gt=new THREE.Mesh(new THREE.BoxGeometry(Math.min(5,W*.6),.05,.3),new THREE.MeshBasicMaterial({color:0xe0b020}));gt.position.set(0,.03,D/2);room.add(gt);
+ room.add(label('PORTÓN (entrada)',0,1,D/2-.8,3));room.add(label('PASILLO CAMIÓN GRÚA',0,.6,0,3));
+}
 function label(t,x,y,z,sz){var k=document.createElement('canvas');k.width=256;k.height=64;var g=k.getContext('2d');g.fillStyle='rgba(20,20,20,.75)';g.fillRect(0,0,256,64);g.fillStyle='#fff';g.font='bold 28px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(t,128,34);
  var s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(k),depthTest:false}));s.scale.set(sz*2,sz*.5,1);s.position.set(x,y,z);s.renderOrder=5;S.add(s);return s}
-label('PORTÓN (entrada)',0,1,D/2-.8,3);label('PASILLO CAMIÓN GRÚA',0,.6,0,3);
-var meshes=[],wood=new THREE.MeshLambertMaterial({color:0xa9834f}),h=.62;
-reels.forEach(function(r){var g=new THREE.Group();
+buildRoom();
+var meshes=[],wood=new THREE.MeshLambertMaterial({color:0xa9834f}),h=.62,HT=h+.06;
+function mk(r){var g=new THREE.Group();
  var b=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,h,20),new THREE.MeshLambertMaterial({color:COL[r.t]}));b.position.y=h/2;g.add(b);
  [0,h].forEach(function(y){var f=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.06,20),wood);f.position.y=y+.03;g.add(f)});
- var k=r.k||1;g.scale.setScalar(k);r.y=r.l*(h+.12)*k;g.position.set(r.x,r.y,r.z);S.add(g);b.userData=r;r.body=b;meshes.push(b);
- r.lab=label(r.id,r.x,r.y+h*k+.45,r.z,.9);r.lab.visible=false});
+ S.add(g);r.g=g;b.userData=r;r.body=b;meshes.push(b);
+  r.lab=label(r.id,0,0,0,.9);r.lab.visible=false}
+reels.forEach(mk);
+function tam(r){return TAM[r.tam-1]||TAM[0]}
+function place(r){var t=tam(r);r.g.scale.set(t.d,t.a/HT,t.d);r.g.position.set(r.x,r.y,r.z);r.lab.position.set(r.x,r.y+t.a+.45,r.z)}
+// apila: cada bobina queda sobre las que tiene debajo (si se superponen en planta)
+function restack(){reels.forEach(function(r){var q=tam(r).d/2;r.x=Math.max(-W/2+q,Math.min(W/2-q,r.x));r.z=Math.max(-D/2+q,Math.min(D/2-q,r.z))});
+ var o=reels.slice().sort(function(a,b){return a.y-b.y}),done=[];
+ o.forEach(function(r){var t=tam(r),y=0;done.forEach(function(q){var u=tam(q);if(Math.hypot(r.x-q.x,r.z-q.z)<(t.d+u.d)/2*.7)y=Math.max(y,q.y+u.a)});r.y=y;done.push(r);place(r)})}
+restack();
+function refresh(){restack();if(cur)sel(cur)}
 var tg=new THREE.Vector3(),az=.5,el=.8,dist=32;
 function upd(){cam.position.set(tg.x+dist*Math.sin(az)*Math.cos(el),dist*Math.sin(el),tg.z+dist*Math.cos(az)*Math.cos(el));cam.lookAt(tg)}
 function rs(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',rs);rs();
-var P={},mv=0;
-cv.addEventListener('pointerdown',function(e){cv.setPointerCapture(e.pointerId);P[e.pointerId]=[e.clientX,e.clientY];mv=0});
+var P={},mv=0,mvOn=false,drag=null,pl=new THREE.Plane(new THREE.Vector3(0,1,0),0),pv=new THREE.Vector3();
+function ray(e){rc.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),cam)}
+cv.addEventListener('pointerdown',function(e){cv.setPointerCapture(e.pointerId);P[e.pointerId]=[e.clientX,e.clientY];mv=0;drag=null;
+ if(mvOn&&Object.keys(P).length===1){ray(e);var x=rc.intersectObjects(meshes)[0];if(x){drag=x.object.userData;sel(drag)}}});
 cv.addEventListener('pointermove',function(e){var p=P[e.pointerId];if(!p)return;var ids=Object.keys(P);
- if(ids.length===2){var o=P[ids.find(function(i){return i!=e.pointerId})];dist=Math.max(5,Math.min(50,dist*Math.hypot(p[0]-o[0],p[1]-o[1])/Math.hypot(e.clientX-o[0],e.clientY-o[1])))}
+  if(drag&&ids.length===1){ray(e);if(rc.ray.intersectPlane(pl,pv)){var q=tam(drag).d/2;drag.x=Math.max(-W/2+q,Math.min(W/2-q,pv.x));drag.z=Math.max(-D/2+q,Math.min(D/2-q,pv.z));drag.y=1e3;restack();arrow.userData.y=drag.y+tam(drag).a+.5;arrow.position.set(drag.x,arrow.userData.y,drag.z);ring.position.set(drag.x,drag.y+.05,drag.z)}}
+ else if(ids.length===2){var o=P[ids.find(function(i){return i!=e.pointerId})];dist=Math.max(5,Math.min(50,dist*Math.hypot(p[0]-o[0],p[1]-o[1])/Math.hypot(e.clientX-o[0],e.clientY-o[1])))}
  else{az-=(e.clientX-p[0])*.008;el=Math.max(.15,Math.min(1.55,el+(e.clientY-p[1])*.008))}
  mv+=Math.abs(e.clientX-p[0])+Math.abs(e.clientY-p[1]);P[e.pointerId]=[e.clientX,e.clientY]});
-cv.addEventListener('pointerup',function(e){delete P[e.pointerId];if(mv<6)pick(e)});
+cv.addEventListener('pointerup',function(e){delete P[e.pointerId];if(drag){drag=null;restack();sel(cur);guardar();return}if(mv<6)pick(e)});
 cv.addEventListener('pointercancel',function(e){delete P[e.pointerId]});
 cv.addEventListener('wheel',function(e){e.preventDefault();dist=Math.max(5,Math.min(50,dist*(1+e.deltaY*.001)))},{passive:false});
 var am=new THREE.MeshBasicMaterial({color:0xff1f1f,depthTest:false}),arrow=new THREE.Group();
 var ac=new THREE.Mesh(new THREE.ConeGeometry(.55,1,20),am);ac.rotation.x=Math.PI;ac.position.y=.5;var as=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,1.4,12),am);as.position.y=1.7;arrow.add(ac,as);arrow.renderOrder=10;ac.renderOrder=10;as.renderOrder=10;arrow.visible=false;S.add(arrow);
 var ring=new THREE.Mesh(new THREE.RingGeometry(.65,.95,32),new THREE.MeshBasicMaterial({color:0xffe000,side:THREE.DoubleSide,depthTest:false}));ring.rotation.x=-Math.PI/2;ring.renderOrder=9;ring.visible=false;S.add(ring);
 var rc=new THREE.Raycaster();
-function sel(r){reels.forEach(function(x){x.lab.visible=false;x.body.material.emissive.setHex(0);x.body.material.transparent=false;x.body.material.opacity=1});arrow.visible=ring.visible=false;if(!r){info.innerHTML=base;return}reels.forEach(function(x){x.body.material.transparent=true;x.body.material.opacity=.25});
- r.lab.visible=true;r.body.material.transparent=false;r.body.material.opacity=1;r.body.material.emissive.setHex(0xffd000);arrow.userData.y=r.y+h*(r.k||1)+.5;arrow.position.set(r.x,arrow.userData.y,r.z);ring.position.set(r.x,r.y+.05,r.z);arrow.visible=ring.visible=true;
- info.innerHTML='<b>'+r.id+'</b> · '+r.sec+' · '+r.m+' m<br>Lado '+(r.x>0?'derecho':'izquierdo')+', a '+(D/2-r.z).toFixed(1)+' m del portón'+(r.l?' · apilada sobre otra':'')+'.'}
+var cur=null;
+function sel(r){cur=r;reels.forEach(function(x){x.lab.visible=false;x.body.material.emissive.setHex(0);x.body.material.transparent=false;x.body.material.opacity=1});arrow.visible=ring.visible=false;fillSel();if(!r){info.innerHTML=base;return}reels.forEach(function(x){x.body.material.transparent=true;x.body.material.opacity=.25});
+ r.lab.visible=true;r.body.material.transparent=false;r.body.material.opacity=1;r.body.material.emissive.setHex(0xffd000);arrow.userData.y=r.y+tam(r).a+.5;arrow.position.set(r.x,arrow.userData.y,r.z);ring.position.set(r.x,r.y+.05,r.z);arrow.visible=ring.visible=true;
+ info.innerHTML='<b>'+r.id+'</b> · '+r.sec+' · '+r.m+' m · Tamaño '+r.tam+'<br>Lado '+(r.x>0?'derecho':'izquierdo')+', a '+(D/2-r.z).toFixed(1)+' m del portón'+(r.y>.01?' · apilada sobre otra':'')+'.'}
 function pick(e){rc.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),cam);var x=rc.intersectObjects(meshes)[0];sel(x?x.object.userData:null)}
 document.getElementById('q').addEventListener('input',function(e){var v=e.target.value.toUpperCase().replace(/\s+/g,'');if(!v){sel(null);return}
  if(/^PRE\d/.test(v))v='PREAL'+v.slice(3);var nm=function(r){return r.id.toUpperCase().replace(/\s+/g,'')};
  var f=reels.find(function(r){return nm(r)===v})||reels.find(function(r){return nm(r).indexOf(v)>-1});
  if(f){sel(f);tg.set(f.x,0,f.z);dist=12}else{sel(null);info.innerHTML='Sin resultados.'}});
-var top=false;document.getElementById('v').onclick=function(){top=!top;el=top?1.55:.8;dist=top?36:32;tg.set(0,0,0);this.textContent=top?'3D':'Planta'};
+var vt=false;document.getElementById('v').onclick=function(){vt=!vt;el=vt?1.55:.8;dist=vt?36:32;tg.set(0,0,0);this.textContent=vt?'3D':'Planta'};
+function num(v,d){v=parseFloat(String(v).replace(',','.'));return v>0?v:d}
+// Guardado automático en el navegador
+function guardar(){try{localStorage.setItem('dep2',JSON.stringify({W:W,D:D,TAM:TAM,C:COL,R:reels.map(function(r){return [r.id,r.x,r.z,r.y,r.tam,r.t]}),X:reels.filter(function(r){return r.extra}).map(function(r){return {id:r.id,sec:r.sec,m:r.m}})}))}catch(e){}}
+function cargar(){try{var s=JSON.parse(localStorage.getItem('dep2'));if(!s)return;W=s.W;D=s.D;TAM.length=0;s.TAM.forEach(function(t){TAM.push(t)});if(s.C)for(var k in s.C)COL[k]=s.C[k];(s.X||[]).forEach(function(x){reels.push({id:x.id,t:'TA',x:0,z:0,l:0,y:0,tam:1,sec:x.sec,m:x.m,extra:true})});var m={};reels.forEach(function(r){m[r.id]=r});s.R.forEach(function(a){var r=m[a[0]];if(r){r.x=a[1];r.z=a[2];r.y=a[3];r.tam=a[4];if(a[5])r.t=a[5]}})}catch(e){}}
+// Botones
+var mb=document.getElementById('mv');mb.onclick=function(){mvOn=!mvOn;mb.classList.toggle('on',mvOn);mb.textContent=mvOn?'Mover ✓':'Mover'};
+document.getElementById('cf').onclick=function(){var p=document.getElementById('pn');p.style.display=p.style.display==='block'?'none':'block'};
+// Depósito
+var rw=document.getElementById('rw'),rd=document.getElementById('rd');rw.value=W;rd.value=D;
+document.getElementById('ra').onclick=function(){W=num(rw.value,W);D=num(rd.value,D);buildRoom();buildGrid();refresh();guardar()};
+// Tabla de tamaños
+var tl=document.getElementById('tl'),gs=document.getElementById('gs');
+function drawTam(){tl.innerHTML='';TAM.forEach(function(t,i){var d=document.createElement('div');d.innerHTML='<b>'+(i+1)+'</b> Diám. <input value="'+t.d+'" inputmode="decimal"> Ancho <input value="'+t.a+'" inputmode="decimal">';
+ var ins=d.querySelectorAll('input');ins[0].onchange=function(){t.d=num(ins[0].value,t.d);refresh();guardar()};ins[1].onchange=function(){t.a=num(ins[1].value,t.a);refresh();guardar()};tl.appendChild(d)});
+ gs.innerHTML=TAM.map(function(t,i){return '<option value="'+(i+1)+'">Tamaño '+(i+1)+'</option>'}).join('')}
+document.getElementById('ta').onclick=function(){TAM.push({d:1,a:.7});drawTam();fillSel();guardar()};
+// Tamaño de la bobina seleccionada
+var ss=document.getElementById('ss');
+function fillSel(){if(!cur){ss.textContent='Tocá una bobina para asignarle tamaño.';return}
+ var o='',ty='';TAM.forEach(function(t,i){o+='<option value="'+(i+1)+'"'+(cur.tam===i+1?' selected':'')+'>Tamaño '+(i+1)+' ('+t.d+' × '+t.a+' m)</option>'});
+ for(var k in TN)ty+='<option value="'+k+'"'+(cur.t===k?' selected':'')+'>'+TN[k]+'</option>';
+ ss.innerHTML='<b>'+cur.id+'</b> <select id="st">'+o+'</select> Tipo <select id="sy">'+ty+'</select>'+(cur.extra?' <button id="sd">Eliminar</button>':'');
+ document.getElementById('st').onchange=function(){cur.tam=+this.value;refresh();guardar()};
+ document.getElementById('sy').onchange=function(){cur.t=this.value;cur.body.material.color.set(COL[cur.t]);upLeg();guardar()};
+ var sd=document.getElementById('sd');if(sd)sd.onclick=function(){var r=cur;S.remove(r.g);S.remove(r.lab);meshes.splice(meshes.indexOf(r.body),1);reels.splice(reels.indexOf(r),1);sel(null);refresh();upLeg();guardar()}}
+// Tamaño a un grupo entero
+document.getElementById('gb').onclick=function(){var t=document.getElementById('gt').value;reels.forEach(function(r){if(r.t===t)r.tam=+gs.value});refresh();guardar()};
+// Restablecer
+document.getElementById('rs').onclick=function(){try{localStorage.removeItem('dep2')}catch(e){}location.reload()};
+drawTam();
+// Colores por tipo
+var cl=document.getElementById('cl');
+function drawCol(){cl.innerHTML='';Object.keys(TN).forEach(function(k){var d=document.createElement('div');d.innerHTML=TN[k]+' <input type="color" value="#'+hx(COL[k])+'">';
+ d.querySelector('input').oninput=function(){COL[k]=parseInt(this.value.slice(1),16);reels.forEach(function(r){if(r.t===k)r.body.material.color.set(COL[k])});upLeg();guardar()};cl.appendChild(d)})}
+drawCol();
+// Grilla
+var grid=new THREE.Group();S.add(grid);grid.visible=false;
+function buildGrid(){
+ while(grid.children.length)grid.remove(grid.children[0]);
+ var s=num(document.getElementById('gm').value,1),p=[],i;
+ for(i=0;i*s<=W+1e-6;i++){var x=-W/2+i*s;p.push(x,.02,-D/2,x,.02,D/2)}
+ for(i=0;i*s<=D+1e-6;i++){var z=D/2-i*s;p.push(-W/2,.02,z,W/2,.02,z)}
+ var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));
+ grid.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x8a8a8a,transparent:true,opacity:.7})));
+ for(i=5;i<=D;i+=5)grid.add(label(i+' m',-W/2-1,.1,D/2-i,1.2))}
+buildGrid();
+document.getElementById('gm').onchange=buildGrid;
+document.getElementById('gr').onclick=function(){grid.visible=!grid.visible;this.textContent=grid.visible?'Ocultar grilla':'Mostrar grilla'};
+// Agregar bobina
+document.getElementById('ntp').innerHTML=Object.keys(TN).map(function(k){return '<option value="'+k+'">'+TN[k]+'</option>'}).join('');
+document.getElementById('nad').onclick=function(){var n=document.getElementById('nnm').value.trim();if(!n)return;
+ if(reels.some(function(r){return r.id.toUpperCase()===n.toUpperCase()})){alert('Ya existe una bobina con ese nombre');return}
+ var r={id:n,t:document.getElementById('ntp').value,x:0,z:D/2-2,l:0,y:0,tam:1,sec:document.getElementById('nsc').value||'s/d',m:document.getElementById('nmt').value||'s/d',extra:true};
+ reels.push(r);mk(r);refresh();sel(r);upLeg();guardar()};
 (function loop(){requestAnimationFrame(loop);var t=Date.now()/250;if(arrow.visible){arrow.position.y=arrow.userData.y+Math.abs(Math.sin(t))*.6;ring.scale.setScalar(1+.2*Math.sin(t))}upd();R.render(S,cam)})();
 </script>
   <!-- AUTO MAYUSCULAS - RPM CONSTRUCCIONES -->
