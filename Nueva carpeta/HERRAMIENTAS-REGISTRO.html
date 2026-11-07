@@ -2762,7 +2762,7 @@ async function generarPdfTablasHerramientas(titulo,bloques){
       for(const l of envolver(bloque.texto,ancho,regular,8)){asegurar(12);pagina.drawText(l,{x:M,y,size:8,font:regular,color:gris});y-=10;}y-=5;
     }else if(bloque.tipo==='tabla'){
       const cab=bloque.cabecera.map(limpio),n=cab.length||bloque.filas[0]?.length||1;
-      const pesos=Array.from({length:n},(_,i)=>{const t=(cab[i]||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();if(/CANTIDAD/.test(t))return .65;if(/CODIGO/.test(t))return 1.05;if(/MARCA/.test(t))return 1.1;if(/HERRAMIENTA|MOTIVO/.test(t))return 2.35;if(/OBRA|DESTINO/.test(t))return 1.15;if(/PERSONA|RESPONSABLE/.test(t))return 1.5;if(/DIAS/.test(t))return .8;if(/DESDE|FECHA/.test(t))return 1.1;if(/ESTADO/.test(t))return .95;return 1.15;});
+      const pesos=Array.from({length:n},(_,i)=>{const t=(cab[i]||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();if(/CANTIDAD/.test(t))return .65;if(/CODIGO/.test(t))return 1.05;if(/MARCA/.test(t))return 1.1;if(/HERRAMIENTA|MOTIVO/.test(t))return 2.35;if(/OBRA|DESTINO/.test(t))return 1.15;if(/REMITO/.test(t))return 1.1;if(/PERSONA|RESPONSABLE/.test(t))return 1.5;if(/DIAS/.test(t))return .8;if(/DESDE|FECHA/.test(t))return 1.1;if(/ESTADO/.test(t))return .95;return 1.15;});
       const suma=pesos.reduce((a,b)=>a+b,0),anchos=pesos.map(p=>ancho*p/suma);
       function cabecera(continuacion=false){
         if(continuacion&&grupo){for(const l of envolver(grupo+' (continuación)',ancho,negrita,10)){pagina.drawText(l,{x:M,y,size:10,font:negrita,color:azul});y-=13;}y-=4;}
@@ -2831,6 +2831,12 @@ function detalleCompletoInformeTool(h) {
     return incluidos.join(' · ');
 }
 
+        function remitoPdfTool(x) {
+            if (x.remito) return x.remito;
+            if (x.remitoHistorico) return x.remitoHistorico + ' (sin confirmar)';
+            return 'S/N';
+        }
+
         function imprimirTodoPersonalHerramientas() {
             const items = salidasActualesTool();
             if (!items.length) {
@@ -2856,6 +2862,7 @@ function detalleCompletoInformeTool(h) {
                             <td>${escTool(x.h.marca || '—')}</td>
                             <td>1</td>
                             <td>${escTool(x.obra || '—')}</td>
+                            <td>${escTool(remitoPdfTool(x))}</td>
                             <td>${escTool(fechaAltaInformeTool(x.desde))}</td>
                             <td>${escTool(edadInformeTool(x.desde))}</td>
                         </tr>`).join('');
@@ -2863,7 +2870,7 @@ function detalleCompletoInformeTool(h) {
                     return `<section class="persona-informe">
                         <h2>${escTool(nombre)} <span class="total-persona">· ${filas.length} herramienta${filas.length === 1 ? '' : 's'}</span></h2>
                         <table>
-                            <thead><tr><th>Código</th><th>Herramienta</th><th>Marca</th><th>Cantidad</th><th>Obra / destino</th><th>Fecha entrega</th><th>Días</th></tr></thead>
+                            <thead><tr><th>Código</th><th>Herramienta</th><th>Marca</th><th>Cantidad</th><th>Obra / destino</th><th>N° Remito</th><th>Fecha entrega</th><th>Días</th></tr></thead>
                             <tbody>${filasHtml}</tbody>
                         </table>
                     </section>`;
@@ -2887,6 +2894,7 @@ function detalleCompletoInformeTool(h) {
                     <td>${escTool(x.h.marca || '—')}</td>
                     <td>1</td>
                     <td>${escTool(x.obra || '—')}</td>
+                            <td>${escTool(remitoPdfTool(x))}</td>
                     <td>${escTool(fechaAltaInformeTool(x.desde))}</td>
                     <td>${escTool(edadInformeTool(x.desde))}</td>
                 </tr>`).join('');
@@ -2894,7 +2902,7 @@ function detalleCompletoInformeTool(h) {
             const contenido = `
                 <p class="resumen-informe"><strong>Total de herramientas: ${rows.length}</strong></p>
                 <table>
-                    <thead><tr><th>Código</th><th>Herramienta</th><th>Marca</th><th>Cantidad</th><th>Obra</th><th>Fecha entrega</th><th>Días</th></tr></thead>
+                    <thead><tr><th>Código</th><th>Herramienta</th><th>Marca</th><th>Cantidad</th><th>Obra</th><th>N° Remito</th><th>Fecha entrega</th><th>Días</th></tr></thead>
                     <tbody>${filas}</tbody>
                 </table>`;
 
@@ -3094,6 +3102,7 @@ function detalleCompletoInformeTool(h) {
             <td>1</td>
             <td>${escTool(x.persona || 'SIN RESPONSABLE')}</td>
             <td>${escTool(x.obra || '—')}</td>
+            <td>${escTool(remitoPdfTool(x))}</td>
             <td>${escTool(fechaAltaInformeTool(x.desde))}</td>
             <td>${escTool(edadInformeTool(x.desde))}</td>
             <td>Con personal</td>
@@ -3104,10 +3113,10 @@ function detalleCompletoInformeTool(h) {
         <table>
             <thead><tr>
                 <th>Código</th><th>Herramienta</th><th>Marca</th><th>Cantidad</th>
-                <th>Persona</th><th>Obra</th><th>Fecha entrega</th>
+                <th>Persona</th><th>Obra</th><th>N° Remito</th><th>Fecha entrega</th>
                 <th>Días</th><th>Estado</th>
             </tr></thead>
-            <tbody>${filasHtml || '<tr><td colspan="9">No hay herramientas que coincidan con los filtros.</td></tr>'}</tbody>
+            <tbody>${filasHtml || '<tr><td colspan="10">No hay herramientas que coincidan con los filtros.</td></tr>'}</tbody>
         </table>`;
 
     imprimirHtmlHerramientas('Informe de herramientas por persona y obra', contenido);
@@ -6151,13 +6160,13 @@ function detalleCompletoInformeTool(h) {
                     const cantidad = relacionados.length ? relacionados.reduce((s, x) => s + (Number(x.cantidad) || 0), 0) : (Number(m.cantidad) || 0);
                     return { id, m, ficha, cantidad };
                 });
-                const filas = registros.map(({ id, m, ficha, cantidad }) => `<tr><td>${escapeHtml(ficha.fecha || m.fecha || '')}<br><b>${escapeHtml(id)}</b></td>${mostrarDatosAceites ? `<td>${escapeHtml(ficha.solicitante || '—')}</td><td>${escapeHtml(ficha.firmante || '—')}${String(ficha.dni || '').trim() ? `<br>DNI ${escapeHtml(ficha.dni)}` : ''}</td>` : ''}<td>${escapeHtml(ficha.responsable || m.responsable || '—')}</td><td class="historial-celda-cantidad">${escapeHtml(String(cantidad))} ${escapeHtml(g.unidad)}</td><td>${escapeHtml(ficha.obra || m.obra || '—')}</td>${mostrarDatosAceites ? `<td>${escapeHtml(ficha.km_hs || m.km_hs || '—')}</td><td>${escapeHtml(ficha.equipo || '—')}</td>` : ''}<td class="historial-celda-firma">${ficha.firma_img ? `<img class="historial-firma" src="${ficha.firma_img}" alt="Firma de ${escapeHtml(ficha.firmante || 'quien retira')}">` : '—'}</td></tr>`).join('');
+                const filas = registros.map(({ id, m, ficha, cantidad }) => `<tr><td>${escapeHtml(ficha.fecha || m.fecha || '')}<br><b>${escapeHtml(id)}</b></td>${mostrarDatosAceites ? `<td>${escapeHtml(ficha.solicitante || '—')}</td><td>${escapeHtml(ficha.firmante || '—')}${String(ficha.dni || '').trim() ? `<br>DNI ${escapeHtml(ficha.dni)}` : ''}</td>` : ''}<td>${escapeHtml(ficha.responsable || m.responsable || '—')}</td><td class="historial-celda-cantidad">${escapeHtml(String(cantidad))} ${escapeHtml(g.unidad)}</td><td>${escapeHtml(ficha.obra || m.obra || '—')}</td><td>${escapeHtml(ficha.remito || ficha.numero_remito || ficha.nro_remito || ficha.remito_numero || ficha.num_remito || ficha['N° REMITO'] || ficha['Nº REMITO'] || m.remito || m.numero_remito || m.nro_remito || m.remito_numero || m.num_remito || m['N° REMITO'] || m['Nº REMITO'] || 'S/N')}</td>${mostrarDatosAceites ? `<td>${escapeHtml(ficha.km_hs || m.km_hs || '—')}</td><td>${escapeHtml(ficha.equipo || '—')}</td>` : ''}<td class="historial-celda-firma">${ficha.firma_img ? `<img class="historial-firma" src="${ficha.firma_img}" alt="Firma de ${escapeHtml(ficha.firmante || 'quien retira')}">` : '—'}</td></tr>`).join('');
                 const columnasHistorial = mostrarDatosAceites
-                    ? '<col style="width:9%"><col style="width:12%"><col style="width:10%"><col style="width:11%"><col style="width:10%"><col style="width:15%"><col style="width:10%"><col style="width:10%"><col style="width:13%">'
-                    : '<col style="width:16%"><col style="width:21%"><col style="width:14%"><col style="width:27%"><col style="width:22%">';
+                    ? '<col style="width:8%"><col style="width:11%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:13%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:11%">'
+                    : '<col style="width:12%"><col style="width:18%"><col style="width:12%"><col style="width:20%"><col style="width:18%"><col style="width:20%">';
                 const encabezadosHistorial = mostrarDatosAceites
-                    ? '<th>Fecha / envío</th><th>Solicitante</th><th>Retira</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>Kilometraje /<br>horómetro</th><th>Equipo</th><th>Firma</th>'
-                    : '<th>Fecha / envío</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>Firma</th>';
+                    ? '<th>Fecha / envío</th><th>Solicitante</th><th>Retira</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>N.º de remito</th><th>Kilometraje /<br>horómetro</th><th>Equipo</th><th>Firma</th>'
+                    : '<th>Fecha / envío</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>N.º de remito</th><th>Firma</th>';
                 area.innerHTML = `<div class="historial-membrete"><img class="historial-logo" src="${RPM_LOGO_DATA}" alt="RPM Construcciones"></div><div class="historial-cabecera"><div class="historial-kicker">Control de depósito</div><div class="historial-titulo">Historial de salidas</div><div class="historial-descripcion">Cada fila corresponde a una salida del producto.</div></div><div class="historial-resumen"><div><small>Producto / descripción</small><strong>${escapeHtml(g.descripcion)}${g.marca ? ' · ' + escapeHtml(g.marca) : ''}</strong></div><div><small>Total retirado</small><strong>${escapeHtml(String(Math.round(g.cantidad * 1000) / 1000))} ${escapeHtml(g.unidad)}</strong></div><div><small>Stock actual</small><strong>${escapeHtml(stockActual)}</strong></div><div><small>Cantidad de salidas</small><strong>${fichas.length}</strong></div></div><table class="historial-registros-tabla"><colgroup>${columnasHistorial}</colgroup><thead><tr>${encabezadosHistorial}</tr></thead><tbody>${filas}</tbody></table>`;
             } catch (e) {
                 area.innerHTML = `<div class="ficha-title">No se pudo preparar el historial</div><div class="ficha-firma">${escapeHtml(e.message || 'Error al cargar las fichas.')}</div>`;
@@ -6211,6 +6220,7 @@ function detalleCompletoInformeTool(h) {
                     <div class="ficha-h">Datos de la salida</div>
                     <table class="ficha-tbl">
                         ${fila('N.º de envío', ficha.envio)}
+                        ${fila('N.º de remito', ficha.remito || ficha.numero_remito || ficha.nro_remito || ficha.remito_numero || ficha.num_remito || ficha['N° REMITO'] || ficha['Nº REMITO'] || m.remito || m.numero_remito || m.nro_remito || m.remito_numero || m.num_remito || m['N° REMITO'] || m['Nº REMITO'] || 'S/N')}
                         ${fila('Encargado / Responsable', ficha.responsable)}
                         ${fila('Obra / destino', ficha.obra)}
                         ${fila('Solicitante', ficha.solicitante)}
