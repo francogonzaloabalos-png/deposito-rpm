@@ -1939,6 +1939,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                     <option value="OK">OK</option>
                     <option value="REPONER">Reponer</option>
                 </select>
+                <button type="button" class="btn primary" id="btnFotoRemito">📷 Descontar desde foto</button>
             </div>
                 <div class="sticky-top-bar">
                     <div class="top-scrollbar-wrap" id="topScrollStock">
@@ -1979,7 +1980,14 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
 
         <!-- HERRAMIENTAS PANEL -->
         <div id="panel-herramientas" style="display:none;">
-            <div class="tools-page-head"><div><div class="brand-eyebrow">Trazabilidad individual</div><div class="brand-title">Gestión de herramientas</div><p>Buscá una herramienta, mirá quién la tiene y registrá cada cambio desde un solo lugar.</p></div></div>
+                <div class="tools-page-head">
+                    <div>
+                        <div class="brand-eyebrow">Trazabilidad individual</div>
+                        <div class="brand-title">Gestión de herramientas</div>
+                        <p>Buscá una herramienta, mirá quién la tiene y registrá cada cambio desde un solo lugar.</p>
+                    </div>
+                <button type="button" class="btn primary" onclick="abrirAltaHerramienta()"><i class="fa-solid fa-plus"></i> Nueva Herramienta</button>
+            </div>
             <div class="stats" id="toolsKpis"></div>
             <nav class="tools-subtabs" aria-label="Vistas de herramientas"><button type="button" class="tools-subtab active" data-tools-view="stock"><i class="fa-solid fa-screwdriver-wrench"></i> Todas las herramientas</button><button type="button" class="tools-subtab" data-tools-view="cargo"><i class="fa-solid fa-user-check"></i> Por persona</button><button type="button" class="tools-subtab" data-tools-view="movimientos"><i class="fa-solid fa-clock-rotate-left"></i> Historial</button></nav>
             <section class="table-wrap tools-section tools-view" data-tools-panel="movimientos" id="toolsTraceSection"><div class="tools-section-title"><div><strong>Buscar herramienta y ver su trazabilidad</strong><div class="tools-report-note">Buscá por código, nombre, persona u obra para ver dónde está y todos sus movimientos.</div></div></div><div class="tools-report-controls"><input id="toolTraceSearch" list="toolTraceCodes" type="search" placeholder="Código, herramienta, persona u obra"><datalist id="toolTraceCodes"></datalist></div><div id="toolsTraceResults" class="tools-trace-results"><p class="tools-report-note">Escribí al menos 2 caracteres para buscar.</p></div></section>
@@ -1997,7 +2005,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             <section class="table-wrap tools-section tools-view" data-tools-panel="cargo" id="toolsReportSection">
                 <div class="tools-section-title"><div><strong>Informe de herramientas por persona y obra</strong><div class="tools-report-note">Días desde la entrega a esa persona: se usa la fecha del movimiento en la base de datos. Si la base contiene una fecha de un año anterior al relevamiento, se usa el relevamiento como referencia hasta confirmar la entrega real. El antecedente histórico se conserva a la vista.</div></div><button type="button" class="btn primary" id="toolsReportPrint"><i class="fa-solid fa-print"></i> Descargar PDF</button></div>
                 <div class="tools-report-controls"><label>Desde <input type="date" id="toolsReportFrom"></label><label>Hasta <input type="date" id="toolsReportTo"></label><label>Persona <input type="search" id="toolsReportPerson" placeholder="Todas las personas"></label><label>Obra <input type="search" id="toolsReportWork" placeholder="Todas las obras"></label><button type="button" class="btn small" id="toolsReportClear">Limpiar filtros</button></div>
-                <div class="table-scroll"><table class="tools-table"><thead><tr><th>A cargo desde</th><th>Días / referencia</th><th>Persona</th><th>Obra</th><th>Herramienta</th><th>N° Remito</th><th>Estado</th></tr></thead><tbody id="toolsReportBody"></tbody></table></div>
+                <div class="table-scroll"><table class="tools-table"><thead><tr><th>Fecha entrega</th><th>Días</th><th>Persona</th><th>Obra</th><th>Herramienta</th><th>N° Remito</th><th>Estado</th></tr></thead><tbody id="toolsReportBody"></tbody></table></div>
             </section>
 <details class="table-wrap tools-section tools-view" data-tools-panel="stock" id="responsablesImportSection"><summary class="tools-section-title">Actualizar responsables desde Excel <span class="tools-report-note">Abrir cuando tengas una nueva planilla</span></summary>
  
@@ -2013,6 +2021,11 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             <details class="table-wrap tools-summary-card tools-section tools-view" data-tools-panel="stock" id="toolsSummaryDetails">
                 <summary class="tools-section-title"><strong>Resumen por tipo de herramienta</strong><span class="tools-report-note">Abrir para ver cantidades y estados por tipo.</span></summary>
                 <div class="table-scroll" style="max-height:340px;overflow-y:auto;"><table class="tools-table"><thead><tr><th>Tipo</th><th class="num">Stock total</th><th class="num">En depósito</th><th class="num">Con personal</th><th class="num">Mantenimiento</th><th class="num">Baja</th></tr></thead><tbody id="toolsSummaryBody"></tbody></table></div>
+            </details>
+            <details class="table-wrap tools-summary-card tools-section tools-view" data-tools-panel="stock" id="toolsMaintenanceDetails">
+                <summary class="tools-section-title"><strong>Informe de equipos en mantenimiento</strong><span class="tools-report-note" id="toolsMaintenanceCount">Abrir para ver antigüedad e intervenciones.</span><button type="button" class="btn small" id="toolsMaintenancePrint"><i class="fa-solid fa-print"></i> Imprimir informe</button></summary>
+                <p class="tools-report-note" style="padding:0 16px">La antigüedad se calcula desde el último ingreso registrado a mantenimiento. Si no existe ese movimiento, la fecha figura como no registrada.</p>
+                <div class="table-scroll" style="max-height:420px;overflow:auto"><table class="tools-table"><thead><tr><th>Código</th><th>Herramienta / detalle</th><th>Marca</th><th>Estado técnico</th><th>Ingreso a mantenimiento</th><th>Tiempo allí</th><th>Intervenciones</th></tr></thead><tbody id="toolsMaintenanceBody"></tbody></table></div>
             </details>
         </div>
 
@@ -2069,6 +2082,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                                     <th data-sort="cantidad">Cant. <span class="arrow"></span></th>
                                     <th data-sort="responsable">Responsable <span class="arrow"></span></th>
                                     <th data-sort="obra">Obra / destino <span class="arrow"></span></th>
+                                    <th data-sort="remito">N.º Remito <span class="arrow"></span></th>
                                     <th data-sort="factura">N.º Factura <span class="arrow"></span></th>
                                     <th style="cursor:default;text-align:center;">Ficha</th> <!-- ⬅️ NUEVO -->
                                 </tr>
@@ -2101,6 +2115,28 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             </table></div><div class="table-footer"><span id="reporteCount">0 productos</span><span>El total suma todas las salidas registradas.</span></div></div>
         </div>
 
+    </div>
+    <style>
+      #fotoRemitoOverlay{position:fixed;inset:0;z-index:10010;background:#050914dd;display:none;align-items:center;justify-content:center;padding:12px}
+      #fotoRemitoOverlay.show{display:flex}#fotoRemitoDialog{width:min(1050px,100%);max-height:94vh;overflow:auto;background:var(--bg-card);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 20px 70px #0009}
+      #fotoRemitoDialog h2{margin:0 0 6px}#fotoRemitoDialog .fr-help{color:var(--txt-dim);line-height:1.5;margin:0 0 14px}
+      #fotoRemitoDialog .fr-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+      #fotoRemitoDialog label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--txt-dim)}#fotoRemitoDialog input,#fotoRemitoDialog select,#fotoRemitoDialog textarea{width:100%;min-width:0;background:var(--bg-elev);color:var(--txt);border:1px solid var(--line);border-radius:7px;padding:9px;font:inherit}
+      #fotoRemitoPreview{display:block;max-width:100%;max-height:240px;object-fit:contain;margin:10px auto;border-radius:8px;background:#fff}
+      #frLines{display:flex;flex-direction:column;gap:8px;margin:10px 0}.fr-line{display:grid;grid-template-columns:minmax(180px,2fr) minmax(140px,1fr) 95px 40px;gap:8px;align-items:end;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg-elev)}
+      #frStatus{min-height:22px;color:var(--txt-dim);font-size:12px;margin:8px 0}.fr-buttons{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+      @media(max-width:700px){#fotoRemitoDialog{padding:14px}#fotoRemitoDialog .fr-fields{grid-template-columns:1fr} .fr-line{grid-template-columns:1fr 90px}.fr-line .fr-desc{grid-column:1/-1}.fr-line button{min-height:38px}}
+    </style>
+    <div id="fotoRemitoOverlay" role="dialog" aria-modal="true" aria-labelledby="frTitle">
+      <section id="fotoRemitoDialog"><h2 id="frTitle">📷 Descontar desde foto del remito</h2>
+        <p class="fr-help">Sacá una foto o elegí una imagen. Gemini leerá el remito y el panel sugerirá productos del stock; revisá todo antes de confirmar. La imagen se envía a Gemini para analizarla, pero no se guarda en el panel. No se descuenta nada hasta que confirmes.</p>
+        <div class="fr-fields"><label>Foto del remito<input id="frFile" type="file" accept="image/*" capture="environment"></label><label>Número de remito<input id="frRemito" autocomplete="off" placeholder="Ej.: R-000123"></label><label>Fecha del remito (día/mes/año)<input id="frFecha" type="text" inputmode="numeric" placeholder="DD/MM/AAAA" autocomplete="off"></label><label>Responsable<input id="frResponsable" autocomplete="name" placeholder="Quién retira"></label><label>Obra / destino<input id="frObra" placeholder="Obra o destino"></label><label>Clave API Gemini<input id="frGeminiKey" type="password" autocomplete="off" placeholder="Se intenta reutilizar la del planificador"></label></div>
+        <img id="fotoRemitoPreview" alt="Vista previa del remito" hidden>
+        <div class="fr-buttons" style="justify-content:flex-start"><button type="button" class="btn" id="frRead">Analizar foto con Gemini</button><button type="button" class="btn" id="frAdd">＋ Agregar producto manualmente</button></div>
+        <div id="frStatus" role="status" aria-live="polite">La fecha del remito se muestra DD/MM/AAAA. El movimiento se registrará con fecha y hora local de Argentina, en formato 24 horas.</div>
+        <div id="frLines"></div>
+        <div class="fr-buttons"><button type="button" class="btn" id="frCancel">Cancelar</button><button type="button" class="btn primary" id="frConfirm" disabled>Revisar y descontar</button></div>
+      </section>
     </div>
 
     <!-- Quick adjust modal -->
@@ -2397,6 +2433,11 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                     <input type="text" id="adjustBatchFactura" placeholder="Ej: FC-0001-00012345"
                         style="text-transform:uppercase;">
                 </div>
+                <div class="field">
+                    <label>N.º de remito (opcional)</label>
+                    <input type="text" id="adjustBatchRemito" placeholder="Ej: R-000123"
+                        style="text-transform:uppercase;">
+                </div>
 
                 <div class="modal-err" id="adjustBatchErr"></div>
             </div>
@@ -2426,6 +2467,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             </div>
             <h3 style="font-size: 18px; margin-bottom: 8px; color: var(--txt);">¡Movimiento Guardado!</h3>
             <p id="successMessage"
+            style="white-space:pre-line;"
                 style="font-size: 13.5px; color: var(--txt-dim); margin-bottom: 22px; line-height: 1.5;"></p>
             <button class="btn primary" id="successClose"
                 style="width: 100%; justify-content: center; padding: 10px; font-size: 13px; font-weight: 700;">Aceptar</button>
@@ -2579,8 +2621,8 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         }
         function guardarHerramientasLocales() { localStorage.setItem('rpm_herramientas_v1', JSON.stringify({ herramientas:state.herramientas, movimientos:state.herramientasMov })); }
         function guardarMovimientosHerramientasLocales() { try { const saved=JSON.parse(localStorage.getItem('rpm_herramientas_v1')||'{}'); saved.movimientos=state.herramientasMov; localStorage.setItem('rpm_herramientas_v1',JSON.stringify(saved)); } catch(e) { console.warn('No se pudo guardar localmente el historial de herramientas.',e); } }
-        function normalizarMovimientoHerramienta(m) { return { fecha:m.fecha||m.fecha_hora||m.fecha_hora_salida||m.fecha_salida||m.fecha_retiro||m.fecha_entrega||m.timestamp||m.fecha_movimiento||'', codigo:m.codigo||m.codigo_unidad||m.herramienta||m.codigos||'', accion:m.accion||m.tipo_movimiento||m.tipo||'', responsable:m.responsable||m.persona||m.poder||'', obra:m.obra||m.destino||'', motivo:m.motivo||m.observaciones||m.detalle||'', remito:m.remito||m.numero_remito||m.nro_remito||'', tipo:m.familia||m.tipo_herramienta||'', descripcion:[m.tipo_herramienta,m.medida].filter(Boolean).join(' · ')||m.descripcion||m.detalle_herramienta||'' }; }
-        function unificarMovimientosHerramientas(...listas) { const out=[], seen=new Set(); listas.flat().filter(Boolean).forEach(m=>{const x=normalizarMovimientoHerramienta(m); const key=[x.codigo,x.accion,x.fecha,x.responsable,x.obra,x.remito].join('|'); if(!seen.has(key)){seen.add(key);out.push(x);}}); return out.sort((a,b)=>(parseFechaTool(b.fecha)?.getTime()||0)-(parseFechaTool(a.fecha)?.getTime()||0)); }
+        function normalizarMovimientoHerramienta(m) { return { fecha:m.fecha||m.fecha_hora||m.fecha_hora_salida||m.fecha_salida||m.fecha_retiro||m.fecha_entrega||m.timestamp||m.fecha_movimiento||'', codigo:m.codigo||m.codigo_unidad||m.herramienta||m.codigos||'', accion:m.accion||m.tipo_movimiento||m.tipo||'', responsable:m.responsable||m.persona||m.poder||'', obra:m.obra||m.destino||'', motivo:m.motivo||m.observaciones||m.detalle||'', remito:m.remito||m.numero_remito||m.nro_remito||m.remito_numero||m.num_remito||m.numeroRemito||m.nroRemito||m.remito_salida||m['N° REMITO']||m['Nº REMITO']||m['N REMITO']||m['N° DE REMITO']||m['Nº DE REMITO']||m['NUMERO DE REMITO']||m['NÚMERO DE REMITO']||m['REMITO SALIDA']||m['REMITO ACTUAL']||'', tipo:m.familia||m.tipo_herramienta||'', estado:m.estado||m.condicion||'', descripcion:[m.tipo_herramienta,m.medida].filter(Boolean).join(' · ')||m.descripcion||m.detalle_herramienta||'' }; }
+        function unificarMovimientosHerramientas(...listas) { const out=[], seen=new Set(); listas.flat().filter(Boolean).forEach(m=>{const x=normalizarMovimientoHerramienta(m); const key=[x.codigo,x.accion,x.fecha,x.responsable,x.obra,x.remito,x.motivo].join('|'); if(!seen.has(key)){seen.add(key);out.push(x);}}); return out.sort((a,b)=>(parseFechaTool(b.fecha)?.getTime()||0)-(parseFechaTool(a.fecha)?.getTime()||0)); }
         function escTool(v) { return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
         function fechaTool() { return new Date().toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
         function estadoTool(e) { return ({EN_DEPOSITO:'En depósito',CON_PERSONAL:'Con personal',EN_MANTENIMIENTO:'En mantenimiento',BAJA:'Baja'})[e] || e; }
@@ -2594,11 +2636,16 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
         function toolsPorTipo() { const r={}; state.herramientas.forEach(h=>{const t=h.tipo||'SIN TIPO'; const x=r[t]||(r[t]={tipo:t,total:0,EN_DEPOSITO:0,CON_PERSONAL:0,EN_MANTENIMIENTO:0,BAJA:0}); x[h.estado]=(x[h.estado]||0)+1; if(h.estado!=='BAJA')x.total++;}); return Object.values(r).sort((a,b)=>a.tipo.localeCompare(b.tipo)); }
         function herramientasComoStock() { return toolsPorTipo().map(x => ({ id:'HERR-'+x.tipo, es_herramienta:true, tipo_herramienta:x.tipo, familia:'HERRAMIENTAS', descripcion:nombreVisibleHerramienta(x.tipo), marca:'HERRAMIENTA CONTROLADA', ubicacion_deposito:'', stock_minimo:0, stock_actual:x.total, unidad:'unidades', estado:x.total ? 'OK' : 'REPONER', ult_obs:`Depósito: ${x.EN_DEPOSITO} · Personal: ${x.CON_PERSONAL} · Mantenimiento: ${x.EN_MANTENIMIENTO} · Baja: ${x.BAJA}`, resumen_herramienta:x })); }
         function renderToolsSummary() { const body=document.getElementById('toolsSummaryBody'); if(!body)return; const rows=toolsPorTipo(); body.innerHTML=rows.length?rows.map(x=>`<tr><td><button class="tools-type-link" data-tool-type="${escTool(x.tipo)}"><i class="fa-solid fa-screwdriver-wrench"></i> ${escTool(nombreVisibleHerramienta(x.tipo))}</button></td><td class="num"><strong>${x.total}</strong></td><td class="num">${x.EN_DEPOSITO}</td><td class="num">${x.CON_PERSONAL}</td><td class="num">${x.EN_MANTENIMIENTO}</td><td class="num">${x.BAJA}</td></tr>`).join(''):'<tr><td colspan="6" class="tools-empty">No hay herramientas registradas.</td></tr>'; body.querySelectorAll('[data-tool-type]').forEach(b=>b.onclick=()=>{state.herramientasUi.tipo=b.dataset.toolType;state.herramientasUi.page=0; document.getElementById('toolTipoFilter').value=b.dataset.toolType; renderHerramientas(); document.getElementById('toolsStockSection').scrollIntoView({behavior:'smooth',block:'start'});}); }
+        function mantenimientoActivoTool(h) { const esIngreso=m=>/^A_MANTENIMIENTO$/i.test(String(m.accion||m.tipo_movimiento||'').trim()); const esSalida=m=>/^DE_MANTENIMIENTO$/i.test(String(m.accion||m.tipo_movimiento||'').trim()); const codigo=String(h.codigo||'').trim(); const eventos=state.herramientasMov.filter(m=>String(m.codigo||m.codigo_unidad||'').trim()===codigo&&(esIngreso(m)||esSalida(m))).sort((a,b)=>(parseFechaTool(a.fecha||a.fecha_hora)?.getTime()||0)-(parseFechaTool(b.fecha||b.fecha_hora)?.getTime()||0)); let ingreso=null; eventos.forEach(m=>{if(esIngreso(m))ingreso=m;else if(esSalida(m))ingreso=null;}); return {eventos,ingreso}; }
+        function renderMantenimientoHerramientas() { const body=document.getElementById('toolsMaintenanceBody'); if(!body)return; const equipos=state.herramientas.filter(h=>String(h.estado||'').toUpperCase()==='EN_MANTENIMIENTO').map(h=>({h,...mantenimientoActivoTool(h)})).sort((a,b)=>(parseFechaTool(a.ingreso?.fecha||a.ingreso?.fecha_hora)?.getTime()??Infinity)-(parseFechaTool(b.ingreso?.fecha||b.ingreso?.fecha_hora)?.getTime()??Infinity)); const count=document.getElementById('toolsMaintenanceCount'); if(count)count.textContent=`${equipos.length} equipo${equipos.length===1?'':'s'} actualmente en mantenimiento`; body.innerHTML=equipos.length?equipos.map(({h,eventos,ingreso})=>{const fecha=ingreso?.fecha||ingreso?.fecha_hora||'';const desde=parseFechaTool(fecha);const historial=eventos.length?`<details><summary>${eventos.length} registro${eventos.length===1?'':'s'}</summary><ul style="margin:8px 0;padding-left:20px">${eventos.map(m=>{const accion=/^A_MANTENIMIENTO$/i.test(String(m.accion||m.tipo_movimiento||''))?'Ingreso':'Salida';const fechaMov=parseFechaTool(m.fecha||m.fecha_hora);return `<li><strong>${escTool(fechaMov?fechaInformeTool(fechaMov):m.fecha||m.fecha_hora||'Fecha desconocida')}</strong> · ${accion} · ${escTool(m.responsable||'Sin responsable')} · ${escTool(m.motivo||'Sin detalle registrado')}</li>`;}).join('')}</ul></details>`:'<span class="tools-report-note">Sin intervenciones registradas</span>';const detalle=[h.detalle,h.medida,h.modelo].filter(Boolean).join(' · ')||h.descripcion||nombreVisibleHerramienta(h.tipo);return `<tr><td>${escTool(h.codigo||'—')}</td><td>${escTool(detalle)}</td><td>${escTool(h.marca||'—')}</td><td>${escTool(h.estado_tecnico||'—')}</td><td>${escTool(desde?fechaInformeTool(desde):'Sin fecha registrada')}</td><td>${escTool(desde?edadInformeTool(desde):'Sin fecha registrada')}</td><td>${historial}</td></tr>`;}).join(''):'<tr><td colspan="7" class="tools-empty">No hay equipos actualmente en mantenimiento.</td></tr>'; }
+        function imprimirInformeMantenimientoHerramientas() { const equipos=state.herramientas.filter(h=>String(h.estado||'').toUpperCase()==='EN_MANTENIMIENTO').map(h=>({h,...mantenimientoActivoTool(h)})).sort((a,b)=>(parseFechaTool(a.ingreso?.fecha||a.ingreso?.fecha_hora)?.getTime()??Infinity)-(parseFechaTool(b.ingreso?.fecha||b.ingreso?.fecha_hora)?.getTime()??Infinity)); const fechaActual=fechaInformeTool(new Date());const filas=equipos.map(({h,eventos,ingreso})=>{const fechaIngreso=parseFechaTool(ingreso?.fecha||ingreso?.fecha_hora);const detalle=[h.detalle,h.medida,h.modelo].filter(Boolean).join(' · ')||h.descripcion||nombreVisibleHerramienta(h.tipo);const historial=eventos.length?`<strong>${eventos.length} intervención(es)</strong><ol>${eventos.map(m=>{const fechaMov=parseFechaTool(m.fecha||m.fecha_hora);const accion=/^A_MANTENIMIENTO$/i.test(String(m.accion||m.tipo_movimiento||''))?'Ingreso a mantenimiento':'Salida de mantenimiento';return `<li><b>${escTool(fechaMov?fechaInformeTool(fechaMov):m.fecha||m.fecha_hora||'Fecha desconocida')}</b> · ${accion}<br>Responsable: ${escTool(m.responsable||'Sin responsable')}<br>Detalle: ${escTool(m.motivo||'Sin detalle registrado')}</li>`;}).join('')}</ol>`:'Sin intervenciones registradas';return `<tr><td>${escTool(h.codigo||'—')}</td><td>${escTool(detalle)}</td><td>${escTool(h.marca||'—')}</td><td>${escTool(h.estado_tecnico||'—')}</td><td>${escTool(fechaIngreso?fechaInformeTool(fechaIngreso):'Sin fecha registrada')}</td><td>${escTool(fechaIngreso?edadInformeTool(fechaIngreso):'Sin fecha registrada')}</td><td>${historial}</td></tr>`;}).join('');const contenido=`<p><strong>Equipos actualmente en mantenimiento:</strong> ${equipos.length}</p><p>Generado: ${escTool(fechaActual)}. La antigüedad se calcula desde el último ingreso registrado que no tenga una salida posterior.</p><style>table{width:100%;border-collapse:collapse;font-size:8px}th,td{border:1px solid #9aa8b8;padding:5px;vertical-align:top}th{background:#e8eef7}ol{margin:4px 0;padding-left:18px}li{margin-bottom:5px}.maint-report-note{font-size:9px}</style><table><thead><tr><th>Código</th><th>Herramienta / detalle</th><th>Marca</th><th>Estado técnico</th><th>Ingreso</th><th>Tiempo en mantenimiento</th><th>Trazabilidad e intervenciones</th></tr></thead><tbody>${filas||'<tr><td colspan="7">No hay equipos actualmente en mantenimiento.</td></tr>'}</tbody></table>`;imprimirHtmlHerramientas('Informe de mantenimiento de equipos',contenido); }
 
         // Identidad por palabras completas: ignora orden, caja, tildes y espacios.
         function palabrasPersonaTool(valor) {
-            return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            const palabras = String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                 .toLocaleUpperCase('es-AR').match(/[A-Z0-9]+/g) || [];
+            // En la planilla aparece URSAGASTI como variante escrita de URZAGASTI.
+            return palabras.map(p => p === 'URSAGASTI' ? 'URZAGASTI' : p);
         }
         function clavePersonaTool(valor) {
             return palabrasPersonaTool(valor).sort().join(' ');
@@ -2641,7 +2688,35 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             return '<div class="tool-actions"><button class="btn small primary" data-tool-open="'+code+'"><i class="fa-solid fa-sliders"></i> Ver opciones</button></div>';
         }
         function sincronizarScrollSuperiorHerramientas() { const top=document.getElementById('toolsTopScroll'), inner=document.getElementById('toolsTopScrollInner'), scroll=document.getElementById('toolsStockScroll'), table=document.getElementById('toolsStockTable'); if(!top||!inner||!scroll||!table)return; inner.style.width=`${table.scrollWidth}px`; if(!top.dataset.sync){let syncing=false; const sync=(origen,destino)=>{if(syncing)return;syncing=true;destino.scrollLeft=origen.scrollLeft;syncing=false;}; top.addEventListener('scroll',()=>sync(top,scroll),{passive:true});scroll.addEventListener('scroll',()=>sync(scroll,top),{passive:true});top.dataset.sync='1';} }
-        function renderHerramientas() { const sel=document.getElementById('toolTipoFilter'); if(!sel)return; aplicarVistaHerramientas(); const codes=document.getElementById('toolsQuickCodes'); if(codes) codes.innerHTML=[...new Set(state.herramientas.flatMap(h=>[h.codigo,h.tipo]).filter(Boolean))].map(v=>'<option value="'+escTool(v)+'"></option>').join(''); const traceCodes=document.getElementById('toolTraceCodes'); if(traceCodes) traceCodes.innerHTML=state.herramientas.map(h=>'<option value="'+escTool(h.codigo)+'"></option>').join(''); const tipos=[...new Set(state.herramientas.map(h=>h.tipo))].filter(Boolean).sort(); sel.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option value="${escTool(t)}">${escTool(nombreVisibleHerramienta(t))}</option>`).join(''); sel.value=state.herramientasUi.tipo; const list=toolsFiltradas(), ui=state.herramientasUi, pages=Math.max(1,Math.ceil(list.length/ui.pageSize)); ui.page=Math.min(Math.max(0,ui.page),pages-1); const visibles=list.slice(ui.page*ui.pageSize,ui.page*ui.pageSize+ui.pageSize), body=document.getElementById('toolsBody'); body.innerHTML=visibles.length?visibles.map(h=>`<tr><td><div class="foto-codigo">${botonFotoHerramienta(h)}<span class="mono">${escTool(h.codigo)}</span></div></td><td>${escTool(nombreVisibleHerramienta(h.tipo))}</td><td>${escTool(nombreVisibleHerramienta(h.descripcion))}</td><td><span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></td><td>${escTool(h.responsable||'—')}</td><td>${escTool(h.obra||'—')}</td><td>${escTool(fechaAltaInformeTool(h.fecha_alta))}</td><td>${escTool(h.ubicacion||h.ultimo_movimiento||'—')}</td><td>${accionesHerramientaHtml(h)}</td></tr>`).join(''):'<tr><td colspan="9" class="tools-empty">No hay herramientas que coincidan con el filtro.</td></tr>'; activarFotosHerramientas(body); body.querySelectorAll('[data-tool-open]').forEach(b=>b.onclick=()=>abrirGestionHerramienta(b.dataset.toolOpen)); document.getElementById('toolsStockCount').textContent=`${list.length} herramienta${list.length===1?'':'s'} · mostrando ${visibles.length?ui.page*ui.pageSize+1:0}–${ui.page*ui.pageSize+visibles.length}`; document.getElementById('toolsStockPageLabel').textContent=`${ui.page+1} / ${pages}`; document.getElementById('toolsStockPrev').disabled=ui.page<=0; document.getElementById('toolsStockNext').disabled=ui.page>=pages-1; requestAnimationFrame(sincronizarScrollSuperiorHerramientas); renderKpisHerramientas(); renderBusquedaRapidaHerramientas(); const vista=state.herramientasUi.vista; if(vista==='stock') renderToolsSummary(); else if(vista==='cargo'){renderPersonasHerramientas();renderInformeHerramientas();} else {renderHistorialHerramientas();renderTraceabilidadHerramientas();} }
+        function renderHerramientas() { const sel=document.getElementById('toolTipoFilter'); if(!sel)return; aplicarVistaHerramientas(); const codes=document.getElementById('toolsQuickCodes'); if(codes) codes.innerHTML=[...new Set(state.herramientas.flatMap(h=>[h.codigo,h.tipo]).filter(Boolean))].map(v=>'<option value="'+escTool(v)+'"></option>').join(''); const traceCodes=document.getElementById('toolTraceCodes'); if(traceCodes) traceCodes.innerHTML=state.herramientas.map(h=>'<option value="'+escTool(h.codigo)+'"></option>').join(''); const tipos=[...new Set(state.herramientas.map(h=>h.tipo))].filter(Boolean).sort(); sel.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option value="${escTool(t)}">${escTool(nombreVisibleHerramienta(t))}</option>`).join(''); sel.value=state.herramientasUi.tipo; const list=toolsFiltradas(), ui=state.herramientasUi, pages=Math.max(1,Math.ceil(list.length/ui.pageSize)); ui.page=Math.min(Math.max(0,ui.page),pages-1); const visibles=list.slice(ui.page*ui.pageSize,ui.page*ui.pageSize+ui.pageSize), body=document.getElementById('toolsBody'); body.innerHTML = visibles.length ? visibles.map(h => {
+    // 1. Armamos la descripción rica usando los nuevos campos separados
+    const partes = [];
+    if (h.detalle && h.detalle !== h.tipo) partes.push(h.detalle); // Ej. TENAZA ARMADOR
+    if (h.marca) partes.push(h.marca);                             // Ej. BAHCO
+    if (h.modelo) partes.push(h.modelo);                           // Ej. GWS 850
+    if (h.medida) partes.push(h.medida);                           // Ej. 300 MM
+    if (h.serie) partes.push(`S/N: ${h.serie}`);                   // Ej. S/N: 12345
+    
+    // Si la herramienta viene con el formato viejo (donde todo estaba en 'descripcion'), lo usamos de respaldo
+    let descVisible = partes.length > 0 ? partes.join(' · ') : h.descripcion;
+
+    return `<tr>
+        <td>
+            <div class="foto-codigo">
+                ${botonFotoHerramienta(h)}
+                <span class="mono">${escTool(h.codigo)}</span>
+            </div>
+        </td>
+        <td style="font-weight:700;color:var(--accent);">${escTool(h.tipo)}</td>
+        <td class="desc-cell">${escTool(descVisible)}</td>
+        <td><span class="tool-status ${escTool(h.estado)}">${escTool(estadoTool(h.estado))}</span></td>
+        <td>${escTool(h.responsable || '—')}</td>
+        <td>${escTool(h.obra || '—')}</td>
+        <td>${escTool(fechaAltaInformeTool(h.fecha_alta))}</td>
+        <td>${escTool(h.ubicacion || h.ultimo_movimiento || '—')}</td>
+        <td>${accionesHerramientaHtml(h)}</td>
+    </tr>`;
+}).join('') : '<tr><td colspan="9" class="tools-empty">No hay herramientas que coincidan con el filtro.</td></tr>'; activarFotosHerramientas(body); body.querySelectorAll('[data-tool-open]').forEach(b=>b.onclick=()=>abrirGestionHerramienta(b.dataset.toolOpen)); document.getElementById('toolsStockCount').textContent=`${list.length} herramienta${list.length===1?'':'s'} · mostrando ${visibles.length?ui.page*ui.pageSize+1:0}–${ui.page*ui.pageSize+visibles.length}`; document.getElementById('toolsStockPageLabel').textContent=`${ui.page+1} / ${pages}`; document.getElementById('toolsStockPrev').disabled=ui.page<=0; document.getElementById('toolsStockNext').disabled=ui.page>=pages-1; requestAnimationFrame(sincronizarScrollSuperiorHerramientas); renderKpisHerramientas(); renderBusquedaRapidaHerramientas(); const vista=state.herramientasUi.vista; if(vista==='stock'){renderToolsSummary();renderMantenimientoHerramientas();} else if(vista==='cargo'){renderPersonasHerramientas();renderInformeHerramientas();} else {renderHistorialHerramientas();renderTraceabilidadHerramientas();} }
         function renderPersonasHerramientas() {
             const groups={};
             salidasActualesTool().forEach(x=>{const k=nombrePersonaTool(x.persona);(groups[k]||(groups[k]={items:[],obras:new Set()})).items.push(x);groups[k].obras.add(x.obra||'—');});
@@ -2651,7 +2726,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                 const age=g.items.map(x=>diasTranscurridosTool(x.desde)).filter(x=>x!==null), maxAge=age.length?Math.max(...age):null, open=state.herramientasUi.personaAbierta===persona;
                 const main=`<tr class="tools-person-main" data-persona-tool="${escTool(persona)}" tabindex="0" aria-expanded="${open}"><td><strong>${escTool(persona)}</strong></td><td class="num">${g.items.length}</td><td>${escTool([...g.obras].join(', '))}</td><td class="num">${maxAge===null?'Sin fecha':maxAge}</td></tr>`;
                 const filas=g.items.map(i=>`<tr><td>${herramientaMovimientoHtml({tipo:i.h.tipo,descripcion:i.h.descripcion},i.h)}</td><td class="mono">${escTool(i.h.codigo)}</td><td>${escTool(i.obra||'—')}</td><td>${fechaTenenciaHtmlTool(i)}</td><td>${escTool(edadInformeTool(i.desde))}</td><td>${escTool(i.remito||'—')}</td></tr>`).join('');
-                const details=open?`<tr class="tools-person-detail"><td colspan="4"><div class="tools-person-printbar"><button type="button" class="btn small primary" data-print-person="${escTool(persona)}"><i class="fa-solid fa-print"></i> PDF de ${escTool(persona)}</button></div><div class="table-scroll"><table class="tools-table tools-person-detail-table"><thead><tr><th>Herramienta</th><th>Código</th><th>Obra</th><th>A cargo desde</th><th>Días / referencia</th><th>N° Remito</th></tr></thead><tbody>${filas}</tbody></table></div></td></tr>`:'';
+                const details=open?`<tr class="tools-person-detail"><td colspan="4"><div class="tools-person-printbar"><button type="button" class="btn small primary" data-print-person="${escTool(persona)}"><i class="fa-solid fa-print"></i> PDF de ${escTool(persona)}</button></div><div class="table-scroll"><table class="tools-table tools-person-detail-table"><thead><tr><th>Herramienta</th><th>Código</th><th>Obra</th><th>Fecha entrega</th><th>Días</th><th>N° Remito</th></tr></thead><tbody>${filas}</tbody></table></div></td></tr>`:'';
                 return main+details;
             }).join(''):'<tr><td colspan="4" class="tools-empty">Nadie tiene herramientas a cargo.</td></tr>';
             body.querySelectorAll('[data-persona-tool]').forEach(row=>{const toggle=()=>{const person=row.dataset.personaTool;state.herramientasUi.personaAbierta=state.herramientasUi.personaAbierta===person?'':person;renderPersonasHerramientas();};row.addEventListener('click',toggle);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});});
@@ -2689,7 +2764,7 @@ async function generarPdfTablasHerramientas(titulo,bloques){
   const permitidos=new Set(regular.getCharacterSet());
   const limpio=s=>[...String(s??'').replace(/\u00a0/g,' ').replace(/\t/g,' ').replace(/∅/g,'Ø').replace(/\r/g,'')].map(c=>c==='\n'||permitidos.has(c.codePointAt(0))?c:'?').join('');
   const W=841.89,H=595.28,M=25,ancho=W-M*2,azul=rgb(.09,.16,.27),gris=rgb(.36,.41,.48),linea=rgb(.80,.84,.89),claro=rgb(.95,.97,.99);
-  let pagina=null,y=0,grupo='';const tam=7.7,interlinea=9.25;
+  let pagina=null,y=0,grupo='';const tam=7.3,interlinea=7.7;
   function envolver(texto,max,font=regular,size=tam){
     const lineas=[];limpio(texto).split('\n').forEach(parrafo=>{
       if(!parrafo.trim()){lineas.push('');return;}let actual='';
@@ -2716,23 +2791,23 @@ async function generarPdfTablasHerramientas(titulo,bloques){
       for(const l of envolver(bloque.texto,ancho,regular,8)){asegurar(12);pagina.drawText(l,{x:M,y,size:8,font:regular,color:gris});y-=10;}y-=5;
     }else if(bloque.tipo==='tabla'){
       const cab=bloque.cabecera.map(limpio),n=cab.length||bloque.filas[0]?.length||1;
-      const pesos=Array.from({length:n},(_,i)=>{const t=(cab[i]||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();return /HERRAMIENTA|MOTIVO/.test(t)?3.7:/OBRA|DESTINO/.test(t)?.8:/PERSONA|RESPONSABLE/.test(t)?2.1:/DESDE|FECHA/.test(t)?1.8:/CODIGO|REMITO|DIAS/.test(t)?1.2:1.6;});
+      const pesos=Array.from({length:n},(_,i)=>{const t=(cab[i]||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();if(/CANTIDAD/.test(t))return .65;if(/CODIGO/.test(t))return 1.05;if(/MARCA/.test(t))return 1.1;if(/HERRAMIENTA|MOTIVO/.test(t))return 2.35;if(/OBRA|DESTINO/.test(t))return 1.15;if(/REMITO/.test(t))return 1.1;if(/PERSONA|RESPONSABLE/.test(t))return 1.5;if(/DIAS/.test(t))return .8;if(/DESDE|FECHA/.test(t))return 1.1;if(/ESTADO/.test(t))return .95;return 1.15;});
       const suma=pesos.reduce((a,b)=>a+b,0),anchos=pesos.map(p=>ancho*p/suma);
       function cabecera(continuacion=false){
         if(continuacion&&grupo){for(const l of envolver(grupo+' (continuación)',ancho,negrita,10)){pagina.drawText(l,{x:M,y,size:10,font:negrita,color:azul});y-=13;}y-=4;}
-        const ls=cab.map((t,i)=>envolver(t,anchos[i]-8,negrita,7.5)),alto=Math.max(1,...ls.map(l=>l.length))*9+9;
+        const ls=cab.map((t,i)=>envolver(t,anchos[i]-6,negrita,7.1)),alto=Math.max(1,...ls.map(l=>l.length))*8.2+8;
         pagina.drawRectangle({x:M,y:y-alto,width:ancho,height:alto,color:azul});let x=M;
-        ls.forEach((l,i)=>{l.forEach((t,j)=>pagina.drawText(t,{x:x+4,y:y-10-j*9,size:7.5,font:negrita,color:rgb(1,1,1)}));x+=anchos[i];});y-=alto;
+        ls.forEach((l,i)=>{l.forEach((t,j)=>pagina.drawText(t,{x:x+3,y:y-9-j*8.2,size:7.1,font:negrita,color:rgb(1,1,1)}));x+=anchos[i];});y-=alto;
       }
       asegurar(65);cabecera();
       bloque.filas.forEach((fila,indice)=>{
-        const cols=Array.from({length:n},(_,i)=>envolver(fila[i]??'',anchos[i]-8));let restantes=Math.max(1,...cols.map(c=>c.length)),pos=0;
+        const cols=Array.from({length:n},(_,i)=>envolver(fila[i]??'',anchos[i]-6));let restantes=Math.max(1,...cols.map(c=>c.length)),pos=0;
         if(y-(restantes*interlinea+9)<M+17 && restantes*interlinea+9< H-140){nueva();cabecera(true);}
         while(restantes>0){
           let capacidad=Math.floor((y-(M+17)-9)/interlinea);if(capacidad<1){nueva();cabecera(true);capacidad=Math.floor((y-(M+17)-9)/interlinea);}
           const cantidad=Math.min(capacidad,restantes),alto=cantidad*interlinea+9;let x=M;
           if(indice%2===1)pagina.drawRectangle({x:M,y:y-alto,width:ancho,height:alto,color:claro});
-          for(let i=0;i<n;i++){pagina.drawRectangle({x,y:y-alto,width:anchos[i],height:alto,borderWidth:.35,borderColor:linea});cols[i].slice(pos,pos+cantidad).forEach((t,j)=>pagina.drawText(t,{x:x+4,y:y-10-j*interlinea,size:tam,font:regular,color:azul}));x+=anchos[i];}
+          for(let i=0;i<n;i++){pagina.drawRectangle({x,y:y-alto,width:anchos[i],height:alto,borderWidth:.35,borderColor:linea});cols[i].slice(pos,pos+cantidad).forEach((t,j)=>pagina.drawText(t,{x:x+3,y:y-9-j*interlinea,size:tam,font:regular,color:azul}));x+=anchos[i];}
           y-=alto;restantes-=cantidad;pos+=cantidad;if(restantes){nueva();cabecera(true);}
         }
       });y-=13;
@@ -2741,6 +2816,23 @@ async function generarPdfTablasHerramientas(titulo,bloques){
   const paginas=doc.getPages();paginas.forEach((p,i)=>{p.drawLine({start:{x:M,y:31},end:{x:W-M,y:31},thickness:.5,color:linea});p.drawText('Página '+(i+1)+' de '+paginas.length,{x:W-M-80,y:19,size:8,font:regular,color:gris});});
   doc.setTitle(limpio(titulo));doc.setAuthor('RPM Construcciones');return doc.save();
 }
+document.addEventListener('DOMContentLoaded', () => {
+  const botonDescargaPdf = document.getElementById('informeHerrDescargar');
+  if (!botonDescargaPdf) return;
+  botonDescargaPdf.addEventListener('click', e => {
+    e.preventDefault();
+    if (!ultimoPdfHerramientas) return;
+    const blob = new Blob([ultimoPdfHerramientas.bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = ultimoPdfHerramientas.nombre;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  });
+});
 async function imprimirHtmlHerramientas(titulo,cuerpo){
   if(pdfHerramientasOcupado)return;pdfHerramientasOcupado=true;
   const dialogo=document.getElementById('informeHerrDialog'),msg=document.getElementById('informeHerrEstado');
@@ -2764,25 +2856,117 @@ function imprimirPdfHerramientasActual(){
   marco.src=urlPdfHerramientas;
 }
 
+function detalleCompletoInformeTool(h) {
+    const tipo = String(h?.tipo || '').trim();
+    let detalle = String(h?.detalle || '').trim();
+    if (tipo && detalle) {
+        const palabrasTipo = tipo.split(/\s+/).length;
+        const tokensDetalle = detalle.split(/\s+/);
+        if (normalizarTextoMovimiento(detalle).startsWith(normalizarTextoMovimiento(tipo) + ' ')) {
+            detalle = tokensDetalle.slice(palabrasTipo).join(' ').replace(/^[\s·,:;|\-–—]+/, '');
+        }
+    }
+    const candidatos = [detalle, h?.medida, h?.modelo, h?.serie ? 'S/N ' + h.serie : ''];
+    const incluidos = [];
+    candidatos.forEach(valor => {
+        const texto = String(valor || '').trim();
+        const clave = normalizarTextoMovimiento(texto);
+        if (!texto || !clave || incluidos.some(x => normalizarTextoMovimiento(x).includes(clave))) return;
+        incluidos.push(texto);
+    });
+    return incluidos.join(' · ');
+}
+
+        function compararHerramientasPdfTool(a, b) {
+            const etiqueta = x => `${nombreVisibleHerramienta(x.h.tipo || 'Herramienta')} ${detalleCompletoInformeTool(x.h)}`.trim();
+            return etiqueta(a).localeCompare(etiqueta(b), 'es', { sensitivity: 'base' }) ||
+                String(a.h.codigo || '').localeCompare(String(b.h.codigo || ''), 'es', { numeric: true });
+        }
+                function remitoPdfTool(x) {
+            if (x.remito) return x.remito;
+            if (x.remitoHistorico) return x.remitoHistorico + ' (sin confirmar)';
+            if (x.h?.remito_actual) return x.h.remito_actual;
+            const codigo = String(x.h?.codigo || '');
+            const persona = x.h?.responsable || x.persona || '';
+            const movimientos = state.herramientasMov
+                .filter(m => String(m.codigo || m.codigo_unidad || '') === codigo && mismaPersonaTool(persona, m.responsable || m.persona || '') && normalizarAccionHerramienta(m.accion || m.tipo_movimiento).includes('SALIDA'))
+                .sort((a, b) => (parseFechaTool(b.fecha || b.fecha_hora)?.getTime() || 0) - (parseFechaTool(a.fecha || a.fecha_hora)?.getTime() || 0));
+            const salida = movimientos.find(m => m.remito || datosFechaTenenciaTool(x.h, m).remito);
+            return salida ? (salida.remito || datosFechaTenenciaTool(x.h, salida).remito) : 'S/N';
+        }
+
         function imprimirTodoPersonalHerramientas() {
-            const items=salidasActualesTool();
-            if(!items.length){showToast('No hay herramientas a cargo para imprimir. Si están cargando, esperá y volvé a intentar.',true);return;}
-            const grupos=new Map();
-            items.forEach(x=>{const nombre=nombrePersonaTool(x.persona);if(!grupos.has(nombre))grupos.set(nombre,[]);grupos.get(nombre).push(x);});
-            const secciones=[...grupos.entries()].sort((a,b)=>a[0].localeCompare(b[0],'es')).map(([nombre,filas])=>{
-                filas.sort((a,b)=>String(a.h.codigo).localeCompare(String(b.h.codigo),'es',{numeric:true}));
-                return `<section class="persona-informe"><h2>${escTool(nombre)} <span class="total-persona">· ${filas.length} herramienta${filas.length===1?'':'s'}</span></h2><table><thead><tr><th>Código</th><th>Herramienta</th><th>Obra / destino</th><th>A cargo desde</th><th>Días / referencia</th><th>Remito</th></tr></thead><tbody>${filas.map(x=>`<tr><td>${escTool(x.h.codigo)}</td><td>${herramientaMovimientoHtml({tipo:x.h.tipo,descripcion:x.h.descripcion},x.h)}</td><td>${escTool(x.obra||'—')}</td><td>${fechaTenenciaHtmlTool(x)}</td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.remito||'—')}</td></tr>`).join('')}</tbody></table></section>`;
-            }).join('');
-            imprimirHtmlHerramientas('Herramientas a cargo de todo el personal',`<p class="resumen-informe"><strong>${grupos.size} personas / sectores · ${items.length} herramientas a cargo</strong><br>Incluye todas las unidades actualmente con personal, agrupadas por responsable.</p>${secciones}`);
+            const items = salidasActualesTool();
+            if (!items.length) {
+                showToast('No hay herramientas a cargo para imprimir. Si están cargando, esperá y volvé a intentar.', true);
+                return;
+            }
+
+            const grupos = new Map();
+            items.forEach(x => {
+                const nombre = nombrePersonaTool(x.persona);
+                if (!grupos.has(nombre)) grupos.set(nombre, []);
+                grupos.get(nombre).push(x);
+            });
+
+            const secciones = [...grupos.entries()]
+                .sort((a, b) => a[0].localeCompare(b[0], 'es'))
+                .map(([nombre, filas]) => {
+                    filas.sort(compararHerramientasPdfTool);
+                    const filasHtml = filas.map(x => `
+                        <tr>
+                            <td>${escTool(x.h.codigo || '—')}</td>
+                            <td><strong>${escTool(nombreVisibleHerramienta(x.h.tipo || 'Herramienta'))}</strong>${detalleCompletoInformeTool(x.h) ? `<small>${escTool(detalleCompletoInformeTool(x.h))}</small>` : ''}</td>
+                            <td>${escTool(x.h.marca || '—')}</td>
+                            <td>1</td>
+                            <td>${escTool(x.obra || '—')}</td>
+                            <td>${escTool(remitoPdfTool(x))}</td>
+                            <td>${escTool(fechaAltaInformeTool(x.desde))}</td>
+                            <td>${escTool(edadInformeTool(x.desde))}</td>
+                        </tr>`).join('');
+
+                    return `<section class="persona-informe">
+                        <h2>${escTool(nombre)} <span class="total-persona">· ${filas.length} herramienta${filas.length === 1 ? '' : 's'}</span></h2>
+                        <table>
+                            <thead><tr><th>Código</th><th>Herramienta</th><th>Marca</th><th>Cantidad</th><th>Obra / destino</th><th>N° Remito</th><th>Fecha entrega</th><th>Días</th></tr></thead>
+                            <tbody>${filasHtml}</tbody>
+                        </table>
+                    </section>`;
+                }).join('');
+
+            imprimirHtmlHerramientas(
+                'Herramientas a cargo de todo el personal',
+                `<p class="resumen-informe"><strong>${grupos.size} personas / sectores · ${items.length} herramientas a cargo</strong><br>Incluye todas las unidades actualmente con personal, agrupadas por responsable.</p>${secciones}`
+            );
         }
         function imprimirHerramientasPersona(persona) {
-            const nombre = String(persona || '').trim() || 'SIN RESPONSABLE';
-            const rows = salidasActualesTool().filter(x => mismaPersonaTool(x.persona || 'SIN RESPONSABLE', nombre));
+            const nombreEntrada = String(persona || '').trim() || 'SIN RESPONSABLE';
+            const rows = salidasActualesTool().filter(x => mismaPersonaTool(x.persona || 'SIN RESPONSABLE', nombreEntrada)).sort(compararHerramientasPdfTool);
+            const nombre = nombrePersonaTool(rows[0]?.persona || nombreEntrada);
             if (!rows.length) return alert('Esta persona no tiene herramientas registradas a su cargo.');
-            const filas = rows.map(x => `<tr><td>${herramientaMovimientoHtml({tipo:x.h.tipo,descripcion:x.h.descripcion},x.h)}</td><td>${escTool(x.h.codigo)}</td><td>${escTool(x.obra || '—')}</td><td>${fechaTenenciaHtmlTool(x)}</td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.remito || '—')}</td></tr>`).join('');
-            imprimirHtmlHerramientas(`Herramientas a cargo de ${nombre}`, `<table><thead><tr><th>Herramienta</th><th>Código</th><th>Obra</th><th>A cargo desde</th><th>Días / referencia</th><th>N.º de remito</th></tr></thead><tbody>${filas}</tbody></table>`);
+
+            const filas = rows.map(x => `
+                <tr>
+                    <td>${escTool(x.h.codigo || '—')}</td>
+                    <td><strong>${escTool(nombreVisibleHerramienta(x.h.tipo || 'Herramienta'))}</strong>${detalleCompletoInformeTool(x.h) ? `<small>${escTool(detalleCompletoInformeTool(x.h))}</small>` : ''}</td>
+                    <td>${escTool(x.h.marca || '—')}</td>
+                    <td>1</td>
+                    <td>${escTool(x.obra || '—')}</td>
+                            <td>${escTool(remitoPdfTool(x))}</td>
+                    <td>${escTool(fechaAltaInformeTool(x.desde))}</td>
+                    <td>${escTool(edadInformeTool(x.desde))}</td>
+                </tr>`).join('');
+
+            const contenido = `
+                <p class="resumen-informe"><strong>Total de herramientas: ${rows.length}</strong></p>
+                <table>
+                    <thead><tr><th>Código</th><th>Herramienta</th><th>Marca</th><th>Cantidad</th><th>Obra</th><th>N° Remito</th><th>Fecha entrega</th><th>Días</th></tr></thead>
+                    <tbody>${filas}</tbody>
+                </table>`;
+
+            imprimirHtmlHerramientas(`Herramientas a cargo de ${escTool(nombre)}`, contenido);
         }
-        function renderHistorialHerramientas() { const body=document.getElementById('toolsHistoryBody'); if(!body)return; const q=(document.getElementById('toolsHistorySearch')?.value||'').trim().toLocaleUpperCase('es-AR'); const rows=state.herramientasMov.filter(m=>!q||[m.codigo,m.tipo,m.descripcion,m.accion,m.tipo_movimiento,m.responsable,m.persona,m.obra,m.remito,m.motivo,m.observaciones].join(' ').toLocaleUpperCase('es-AR').includes(q)||buscarPersonaTool(m.responsable||m.persona||'',q)); const visible=rows.slice(0,10); body.innerHTML=visible.length?visible.map(m=>{const h=state.herramientas.find(x=>String(x.codigo)===String(m.codigo)); const nombre=nombreVisibleHerramienta(m.descripcion||h?.descripcion||m.tipo||h?.tipo||m.codigo||'Herramienta'); return `<tr><td>${escTool(m.fecha||m.fecha_hora||'—')}</td><td>${escTool(m.codigo||'—')}<br>${escTool(nombre)}</td><td>${escTool(m.accion||m.tipo_movimiento||'—')}</td><td>${escTool(m.responsable||m.persona||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${motivoMovimientoHtml(m)}</td></tr>`;}).join(''):'<tr><td colspan="7" class="tools-empty">No hay movimientos que coincidan con la búsqueda.</td></tr>'; const btn=document.getElementById('toolsHistoryToggle'); if(btn)btn.textContent='Ver todo'; }function diasTranscurridosTool(d) { if(!d || isNaN(d.getTime()))return null; const hoy=new Date(Date.now()); const actual=Date.UTC(hoy.getFullYear(),hoy.getMonth(),hoy.getDate()); const inicio=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()); return Math.max(0,Math.round((actual-inicio)/86400000)); }
+        function renderHistorialHerramientas() { const body=document.getElementById('toolsHistoryBody'); if(!body)return; const q=(document.getElementById('toolsHistorySearch')?.value||'').trim().toLocaleUpperCase('es-AR'); const rows=state.herramientasMov.filter(m=>!q||[m.codigo,m.tipo,m.descripcion,m.accion,m.tipo_movimiento,m.responsable,m.persona,m.obra,m.remito,m.motivo].join(' ').toLocaleUpperCase('es-AR').includes(q)||buscarPersonaTool(m.responsable||m.persona||'',q)); const visible=rows.slice(0,10); body.innerHTML=visible.length?visible.map(m=>{const h=state.herramientas.find(x=>String(x.codigo)===String(m.codigo)); const nombre=nombreVisibleHerramienta(m.descripcion||h?.descripcion||m.tipo||h?.tipo||m.codigo||'Herramienta'); return `<tr><td>${escTool(m.fecha||m.fecha_hora||'—')}</td><td>${escTool(m.codigo||'—')}<br>${escTool(nombre)}</td><td>${escTool(m.accion||m.tipo_movimiento||'—')}</td><td>${escTool(m.responsable||m.persona||'—')}</td><td>${escTool(m.obra||'—')}</td><td>${escTool(m.remito||'—')}</td><td>${motivoMovimientoHtml(m)}</td></tr>`;}).join(''):'<tr><td colspan="7" class="tools-empty">No hay movimientos que coincidan con la búsqueda.</td></tr>'; const btn=document.getElementById('toolsHistoryToggle'); if(btn)btn.textContent='Ver todo'; }function diasTranscurridosTool(d) { if(!d || isNaN(d.getTime()))return null; const hoy=new Date(Date.now()); const actual=Date.UTC(hoy.getFullYear(),hoy.getMonth(),hoy.getDate()); const inicio=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()); return Math.max(0,Math.round((actual-inicio)/86400000)); }
         function normalizarAccionHerramienta(v) { return String(v || '').toLocaleUpperCase('es-AR').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' '); }
         function movimientosHerramientasFiltrados() {
             const u=state.movHerrUi, q=String(u.search||'').trim().toLocaleUpperCase('es-AR'), persona=String(u.persona||'').trim().toLocaleUpperCase('es-AR');
@@ -2793,21 +2977,38 @@ function imprimirPdfHerramientasActual(){
         function normalizarTextoMovimiento(v) {
             return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
         }
-        function textosHerramientaMovimiento(m,h) {
-            const titulo=nombreVisibleHerramienta(m.tipo||h?.tipo||m.descripcion||m.codigo||'Herramienta');
-            let detalle=String(m.descripcion||h?.descripcion||'').trim();
-            const principal=normalizarTextoMovimiento(titulo),secundario=normalizarTextoMovimiento(detalle);
-            if(principal===secundario)detalle='';
-            else if(principal && secundario.startsWith(principal+' ')) {
-                // Retira solo el prefijo idéntico; conserva marca, modelo, medida y otros datos.
-                const palabras=titulo.match(/[\p{L}\p{N}]+/gu)||[];
-                const partes=[...detalle.matchAll(/[\p{L}\p{N}]+/gu)];
-                if(partes.length>=palabras.length) {
-                    const ultima=partes[palabras.length-1];
-                    detalle=detalle.slice(ultima.index+ultima[0].length).replace(/^[\s·,:;|\-–—]+/,'');
+        function textosHerramientaMovimiento(m, h) {
+            // Título principal (ej. TENAZA o AMOLADORA)
+            const titulo = nombreVisibleHerramienta(h?.tipo || m.tipo || m.descripcion || m.codigo || 'Herramienta');
+    
+            // Si tenemos la herramienta 'h' con el nuevo formato detallado, lo usamos:
+            let detalle = '';
+            if (h && (h.detalle || h.marca || h.medida || h.modelo || h.serie)) {
+                const partes = [];
+                if (h.detalle && h.detalle !== h.tipo) partes.push(h.detalle);
+                if (h.marca) partes.push(h.marca);
+                if (h.modelo) partes.push(h.modelo);
+                if (h.medida) partes.push(h.medida);
+                if (h.serie) partes.push(`S/N: ${h.serie}`);
+                detalle = partes.join(' · ');
+            } else {
+                // Fallback al sistema viejo (texto sucio en descripcion)
+                detalle = String(h?.descripcion || m.descripcion || '').trim();
+                const principal = normalizarTextoMovimiento(titulo);
+                const secundario = normalizarTextoMovimiento(detalle);
+                
+                if (principal === secundario) detalle = '';
+                else if (principal && secundario.startsWith(principal + ' ')) {
+                    const palabras = titulo.match(/[\p{L}\p{N}]+/gu) || [];
+                    const partes_regex = [...detalle.matchAll(/[\p{L}\p{N}]+/gu)];
+                    if (partes_regex.length >= palabras.length) {
+                        const ultima = partes_regex[palabras.length - 1];
+                        detalle = detalle.slice(ultima.index + ultima[0].length).replace(/^[\s·,:;|\-–—]+/, '');
+                    }
                 }
             }
-            return {titulo,detalle};
+    
+            return { titulo, detalle };
         }
         function herramientaMovimientoHtml(m,h) {
             const t=textosHerramientaMovimiento(m,h);
@@ -2934,19 +3135,60 @@ function imprimirPdfHerramientasActual(){
                 return{h,persona:nombrePersonaTool(h.responsable),obra,remito,fecha,desde,fechaHistorica,remitoHistorico,fuenteFecha:desde||fechaHistorica?fuenteFecha:'Sin fecha de entrega ni relevamiento'};
             });
         }
-         function renderInformeHerramientas() { const body=document.getElementById('toolsReportBody'); if(!body)return; const desde=document.getElementById('toolsReportFrom')?.value||'', hasta=document.getElementById('toolsReportTo')?.value||'', persona=(document.getElementById('toolsReportPerson')?.value||'').trim().toLocaleUpperCase('es-AR'), obra=(document.getElementById('toolsReportWork')?.value||'').trim().toLocaleUpperCase('es-AR'); const from=desde?new Date(`${desde}T00:00:00`):null, to=hasta?new Date(`${hasta}T23:59:59`):null; const rows=salidasActualesTool().filter(x=>(!persona||buscarPersonaTool(x.persona||'SIN RESPONSABLE', persona))&&(!obra||x.obra.toLocaleUpperCase('es-AR').includes(obra))&&(!from||(x.desde&&x.desde>=from))&&(!to||(x.desde&&x.desde<=to))); body.innerHTML=rows.length?rows.map(x=>`<tr><td>${fechaTenenciaHtmlTool(x)}</td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.persona||'SIN RESPONSABLE')}</td><td>${escTool(x.obra||'—')}</td><td>${escTool(`${x.h.codigo} · ${nombreVisibleHerramienta(x.h.tipo)}${x.h.descripcion ? ` · ${nombreVisibleHerramienta(x.h.descripcion)}` : ``}`)}</td><td>${escTool(x.remito||'—')}</td><td>Con personal</td></tr>`).join(''):'<tr><td colspan="7" class="tools-empty">No hay herramientas actualmente a cargo que coincidan con los filtros.</td></tr>'; }
+         function renderInformeHerramientas() { const body=document.getElementById('toolsReportBody'); if(!body)return; const desde=document.getElementById('toolsReportFrom')?.value||'', hasta=document.getElementById('toolsReportTo')?.value||'', persona=(document.getElementById('toolsReportPerson')?.value||'').trim().toLocaleUpperCase('es-AR'), obra=(document.getElementById('toolsReportWork')?.value||'').trim().toLocaleUpperCase('es-AR'); const from=desde?new Date(`${desde}T00:00:00`):null, to=hasta?new Date(`${hasta}T23:59:59`):null; const rows=salidasActualesTool().filter(x=>(!persona||buscarPersonaTool(x.persona||'SIN RESPONSABLE', persona))&&(!obra||x.obra.toLocaleUpperCase('es-AR').includes(obra))&&(!from||(x.desde&&x.desde>=from))&&(!to||(x.desde&&x.desde<=to))); body.innerHTML=rows.length?rows.map(x=>`<tr><td>${escTool(fechaAltaInformeTool(x.desde))}</td><td>${escTool(edadInformeTool(x.desde))}</td><td>${escTool(x.persona||'SIN RESPONSABLE')}</td><td>${escTool(x.obra||'—')}</td><td>${escTool(`${x.h.codigo} · ${nombreVisibleHerramienta(x.h.tipo)}${x.h.descripcion ? ` · ${nombreVisibleHerramienta(x.h.descripcion)}` : ``}`)}</td><td>${escTool(x.remito||'—')}</td><td>Con personal</td></tr>`).join(''):'<tr><td colspan="7" class="tools-empty">No hay herramientas actualmente a cargo que coincidan con los filtros.</td></tr>'; }
         function imprimirInformeHerramientas() {
-            renderInformeHerramientas();
-            const filas = [...document.querySelectorAll('#toolsReportBody tr')].filter(r => !r.querySelector('.tools-empty')).map(r => r.outerHTML).join('');
-            if (!filas) return alert('No hay herramientas a cargo para imprimir con los filtros seleccionados.');
-            imprimirHtmlHerramientas('Informe de herramientas por persona y obra', `<table><thead><tr><th>A cargo desde</th><th>Días / referencia</th><th>Persona</th><th>Obra</th><th>Herramienta</th><th>N.º de remito</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table>`);
-        }
+    // Aplica los filtros visibles del informe antes de preparar el PDF.
+    const desde = document.getElementById('toolsReportFrom')?.value || '';
+    const hasta = document.getElementById('toolsReportTo')?.value || '';
+    const persona = (document.getElementById('toolsReportPerson')?.value || '').trim().toLocaleUpperCase('es-AR');
+    const obra = (document.getElementById('toolsReportWork')?.value || '').trim().toLocaleUpperCase('es-AR');
+    const fechaDesde = desde ? new Date(`${desde}T00:00:00`) : null;
+    const fechaHasta = hasta ? new Date(`${hasta}T23:59:59`) : null;
+
+    const filas = salidasActualesTool().filter(x =>
+        (!persona || buscarPersonaTool(x.persona || 'SIN RESPONSABLE', persona)) &&
+        (!obra || String(x.obra || '').toLocaleUpperCase('es-AR').includes(obra)) &&
+        (!fechaDesde || (x.desde && x.desde >= fechaDesde)) &&
+        (!fechaHasta || (x.desde && x.desde <= fechaHasta))
+    );
+    filas.sort((a, b) => a.persona.localeCompare(b.persona, 'es', { sensitivity: 'base' }) || compararHerramientasPdfTool(a, b));
+
+    const filasHtml = filas.map(x => `
+        <tr>
+            <td>${escTool(x.h.codigo || '—')}</td>
+            <td>${escTool(nombreVisibleHerramienta(x.h.tipo || 'Herramienta'))}</td>
+            <td>${escTool(x.h.marca || '—')}</td>
+            <td>1</td>
+            <td>${escTool(x.persona || 'SIN RESPONSABLE')}</td>
+            <td>${escTool(x.obra || '—')}</td>
+            <td>${escTool(remitoPdfTool(x))}</td>
+            <td>${escTool(fechaAltaInformeTool(x.desde))}</td>
+            <td>${escTool(edadInformeTool(x.desde))}</td>
+            <td>Con personal</td>
+        </tr>`).join('');
+
+    const contenido = `
+        <p class="resumen-informe"><strong>Total de herramientas: ${filas.length}</strong></p>
+        <table>
+            <thead><tr>
+                <th>Código</th><th>Herramienta</th><th>Marca</th><th>Cantidad</th>
+                <th>Persona</th><th>Obra</th><th>N° Remito</th><th>Fecha entrega</th>
+                <th>Días</th><th>Estado</th>
+            </tr></thead>
+            <tbody>${filasHtml || '<tr><td colspan="10">No hay herramientas que coincidan con los filtros.</td></tr>'}</tbody>
+        </table>`;
+
+    imprimirHtmlHerramientas('Informe de herramientas por persona y obra', contenido);
+}
          function renderKpisHerramientas() { const a=state.herramientas.filter(h=>h.estado!=='BAJA'); const k=[['Activas',a.length,'#4ade80'],['En depósito',a.filter(h=>h.estado==='EN_DEPOSITO').length,'#60a5fa'],['Con personal',a.filter(h=>h.estado==='CON_PERSONAL').length,'#f59e0b'],['Mantenimiento',a.filter(h=>h.estado==='EN_MANTENIMIENTO').length,'#f87171']]; document.getElementById('toolsKpis').innerHTML=k.map(x=>`<div class="stat"><div class="stat-label">${x[0]}</div><div class="stat-num" style="color:${x[2]}">${x[1]}</div></div>`).join(''); }
         function mapearEstadoTool(u) {
             if (u.baja) return 'BAJA';
             if (u.poder) return 'CON_PERSONAL';
             const enDeposito = String(u.lugar || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').indexOf('DEPOSITO') === 0;
-            return (u.disp && enDeposito) ? 'EN_DEPOSITO' : 'EN_MANTENIMIENTO';
+            if (enDeposito && u.disp) return 'EN_DEPOSITO';
+            if (String(u.lugar || '').toUpperCase().includes('MANTENIMIENTO')) return 'EN_MANTENIMIENTO';
+            if (u.disp) return 'EN_DEPOSITO';
+            return 'EN_MANTENIMIENTO';
         }
 
         async function cargarHerramientas(forzar=false) {
@@ -2967,18 +3209,21 @@ function imprimirPdfHerramientasActual(){
                 if (!data.ok) throw new Error(data.error || 'Error cargando herramientas');
                 let movimientosRemotos=[];
                 if (Array.isArray(data.movimientos || data.historial || data.movs)) movimientosRemotos=(data.movimientos || data.historial || data.movs);
+                if (Array.isArray(data.intervencionesMantenimiento)) movimientosRemotos=movimientosRemotos.concat(data.intervencionesMantenimiento);
                 let movimientosLocales=[];
                 try { const guardado=JSON.parse(localStorage.getItem('rpm_herramientas_v1')||'null'); movimientosLocales=Array.isArray(guardado?.movimientos)?guardado.movimientos:[]; } catch(_) {}
                 state.herramientasMov=unificarMovimientosHerramientas(movimientosRemotos,movimientosLocales,state.herramientasMov); guardarMovimientosHerramientasLocales();
                 state.herramientas = (data.unidades || []).map(u => ({
                     codigo: u.codigo,
                     tipo: u.tipo || 'SIN TIPO',
+                    detalle: u.detalle || '', marca: u.marca || '', modelo: u.modelo || '',
+                    medida: u.medida || '', serie: u.serie || '',
                     descripcion: [u.detalle, u.marca].filter(Boolean).join(' · '),
                     estado: mapearEstadoTool(u),
                     responsable: u.poder || '',
                     fecha_relevamiento: u.fecha_relevamiento || u.fecha_carga_relevamiento || '',
                     fecha_entrega: u.fecha_salida || '',
-                    remito_actual: u.remito_actual || '',
+                    remito_actual: u.remito_actual || u.remito || u.numero_remito || u.nro_remito || u.remito_numero || u.num_remito || u.numeroRemito || u.nroRemito || u['N° REMITO'] || u['Nº REMITO'] || u['N REMITO'] || u['N° DE REMITO'] || u['Nº DE REMITO'] || u['NUMERO DE REMITO'] || u['NÚMERO DE REMITO'] || u['REMITO SALIDA'] || u['REMITO ACTUAL'] || '',
                     origen_fecha_entrega: u.origen_fecha_entrega || '',
                     foto_id: u.foto_id || '',
                     estado_tecnico: u.estado || '',
@@ -3186,7 +3431,7 @@ function imprimirPdfHerramientasActual(){
         function claveMovimiento(m) {
             return JSON.stringify([
                 m.fecha, m.tipo, m.zona, m.descripcion, m.cantidad,
-                m.responsable, m.obra, m.factura, m.familia, m.marca,
+                m.responsable, m.obra, m.factura, m.remito, m.familia, m.marca,
                 m.obs_item, m.id_pedido, m.envio, m.unidad, m.obs_general
             ]);
         }
@@ -3216,7 +3461,7 @@ function imprimirPdfHerramientasActual(){
                 const lista = state.movBase.filter(m =>
                     matchesSearch(m, q, [
                         'tipo', 'zona', 'descripcion', 'responsable', 'obra',
-                        'factura', 'familia', 'marca', 'obs_item', 'id_pedido',
+                        'factura', 'remito', 'familia', 'marca', 'obs_item', 'id_pedido',
                         'envio', 'unidad', 'obs_general'
                     ]) && (!tipo || normalizeText(m.tipo).startsWith(normalizeText(tipo)))
                 );
@@ -3871,7 +4116,7 @@ function imprimirPdfHerramientasActual(){
                         marca: info.marca !== '—' ? info.marca : '',
                         ubicacion: info.ubicacion !== '—' ? info.ubicacion : ''
                     };
-                    return matchesSearch(itemConInfo, ui.search, ['descripcion', 'responsable', 'obra', 'familia', 'marca', 'ubicacion', 'factura', 'obs_item']);
+                    return matchesSearch(itemConInfo, ui.search, ['descripcion', 'responsable', 'obra', 'familia', 'marca', 'ubicacion', 'factura', 'remito', 'obs_item']);
                 });
                 list = enfocarFamiliaExacta(list, ui.search, m => getMovProductInfo(m, true).familiaActual);
             }
@@ -5670,6 +5915,7 @@ function imprimirPdfHerramientasActual(){
             document.getElementById('adjustBatchObra').value = '';
             document.getElementById('adjustBatchObsGeneral').value = '';
             document.getElementById('adjustBatchFactura').value = '';
+            document.getElementById('adjustBatchRemito').value = '';
             document.getElementById('adjustBatchErr').style.display = 'none';
 
             // Rellenar lista de ítems con inputs individuales pre-cargados
@@ -5710,6 +5956,7 @@ function imprimirPdfHerramientasActual(){
             const obra = document.getElementById('adjustBatchObra').value.trim().toUpperCase();
             const obsGeneral = document.getElementById('adjustBatchObsGeneral').value.trim().toUpperCase();
             const factura = document.getElementById('adjustBatchFactura').value.trim().toUpperCase();
+            const nroRemito = document.getElementById('adjustBatchRemito').value.trim().toUpperCase();
             const errBox = document.getElementById('adjustBatchErr');
             errBox.style.display = 'none';
 
@@ -5748,6 +5995,7 @@ function imprimirPdfHerramientasActual(){
                     obra,
                     obs_general: obsGeneral,
                     factura,
+                    nro_remito: nroRemito,
                     items
                 };
 
@@ -5856,7 +6104,7 @@ function imprimirPdfHerramientasActual(){
             const body = document.getElementById('movBody');
 
             if (list.length === 0) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="11">No hay movimientos que coincidan con el filtro.</td></tr>`;   // ⬅️ 10 → 11
+                body.innerHTML = `<tr class="empty-row"><td colspan="12">No hay movimientos que coincidan con el filtro.</td></tr>`;
             } else {
                 body.innerHTML = list.map((m, i) => {   // ⬅️ (m, i)
                     const tipoClass = m.tipo === 'ENTRADA' ? 'entrada' : (m.tipo === 'SALIDA' ? 'salida' : 'devolucion');
@@ -5873,6 +6121,7 @@ function imprimirPdfHerramientasActual(){
         <td style="font-weight:700;">${m.cantidad ?? ''}</td>
         <td class="marca-cell">${escapeHtml(m.responsable || '—')}</td>
         <td class="marca-cell">${escapeHtml(m.obra || '—')}</td>
+        <td class="id-tag">${escapeHtml(m.remito || ((m.obs_general || '').match(/(?:^|\|\s*)REMITO:\s*([^|]+)/i)?.[1] || '').trim() || '—')}</td>
         <td class="id-tag">${escapeHtml(m.factura || '—')}</td>
         <td style="text-align:center;">${m.tipo === 'SALIDA' ? `<button class="btn small ficha-btn" data-i="${i}">✍️ Ver</button>` : '<span class="loc-empty">—</span>'}</td>
     </tr>`;
@@ -5974,13 +6223,13 @@ function imprimirPdfHerramientasActual(){
                     const cantidad = relacionados.length ? relacionados.reduce((s, x) => s + (Number(x.cantidad) || 0), 0) : (Number(m.cantidad) || 0);
                     return { id, m, ficha, cantidad };
                 });
-                const filas = registros.map(({ id, m, ficha, cantidad }) => `<tr><td>${escapeHtml(ficha.fecha || m.fecha || '')}<br><b>${escapeHtml(id)}</b></td>${mostrarDatosAceites ? `<td>${escapeHtml(ficha.solicitante || '—')}</td><td>${escapeHtml(ficha.firmante || '—')}${String(ficha.dni || '').trim() ? `<br>DNI ${escapeHtml(ficha.dni)}` : ''}</td>` : ''}<td>${escapeHtml(ficha.responsable || m.responsable || '—')}</td><td class="historial-celda-cantidad">${escapeHtml(String(cantidad))} ${escapeHtml(g.unidad)}</td><td>${escapeHtml(ficha.obra || m.obra || '—')}</td>${mostrarDatosAceites ? `<td>${escapeHtml(ficha.km_hs || m.km_hs || '—')}</td><td>${escapeHtml(ficha.equipo || '—')}</td>` : ''}<td class="historial-celda-firma">${ficha.firma_img ? `<img class="historial-firma" src="${ficha.firma_img}" alt="Firma de ${escapeHtml(ficha.firmante || 'quien retira')}">` : '—'}</td></tr>`).join('');
+                const filas = registros.map(({ id, m, ficha, cantidad }) => `<tr><td>${escapeHtml(ficha.fecha || m.fecha || '')}<br><b>${escapeHtml(id)}</b></td>${mostrarDatosAceites ? `<td>${escapeHtml(ficha.solicitante || '—')}</td><td>${escapeHtml(ficha.firmante || '—')}${String(ficha.dni || '').trim() ? `<br>DNI ${escapeHtml(ficha.dni)}` : ''}</td>` : ''}<td>${escapeHtml(ficha.responsable || m.responsable || '—')}</td><td class="historial-celda-cantidad">${escapeHtml(String(cantidad))} ${escapeHtml(g.unidad)}</td><td>${escapeHtml(ficha.obra || m.obra || '—')}</td><td>${escapeHtml(ficha.remito || ficha.numero_remito || ficha.nro_remito || ficha.remito_numero || ficha.num_remito || ficha['N° REMITO'] || ficha['Nº REMITO'] || m.remito || m.numero_remito || m.nro_remito || m.remito_numero || m.num_remito || m['N° REMITO'] || m['Nº REMITO'] || 'S/N')}</td>${mostrarDatosAceites ? `<td>${escapeHtml(ficha.km_hs || m.km_hs || '—')}</td><td>${escapeHtml(ficha.equipo || '—')}</td>` : ''}<td class="historial-celda-firma">${ficha.firma_img ? `<img class="historial-firma" src="${ficha.firma_img}" alt="Firma de ${escapeHtml(ficha.firmante || 'quien retira')}">` : '—'}</td></tr>`).join('');
                 const columnasHistorial = mostrarDatosAceites
-                    ? '<col style="width:9%"><col style="width:12%"><col style="width:10%"><col style="width:11%"><col style="width:10%"><col style="width:15%"><col style="width:10%"><col style="width:10%"><col style="width:13%">'
-                    : '<col style="width:16%"><col style="width:21%"><col style="width:14%"><col style="width:27%"><col style="width:22%">';
+                    ? '<col style="width:8%"><col style="width:11%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:13%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:11%">'
+                    : '<col style="width:12%"><col style="width:18%"><col style="width:12%"><col style="width:20%"><col style="width:18%"><col style="width:20%">';
                 const encabezadosHistorial = mostrarDatosAceites
-                    ? '<th>Fecha / envío</th><th>Solicitante</th><th>Retira</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>Kilometraje /<br>horómetro</th><th>Equipo</th><th>Firma</th>'
-                    : '<th>Fecha / envío</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>Firma</th>';
+                    ? '<th>Fecha / envío</th><th>Solicitante</th><th>Retira</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>N.º de remito</th><th>Kilometraje /<br>horómetro</th><th>Equipo</th><th>Firma</th>'
+                    : '<th>Fecha / envío</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>N.º de remito</th><th>Firma</th>';
                 area.innerHTML = `<div class="historial-membrete"><img class="historial-logo" src="${RPM_LOGO_DATA}" alt="RPM Construcciones"></div><div class="historial-cabecera"><div class="historial-kicker">Control de depósito</div><div class="historial-titulo">Historial de salidas</div><div class="historial-descripcion">Cada fila corresponde a una salida del producto.</div></div><div class="historial-resumen"><div><small>Producto / descripción</small><strong>${escapeHtml(g.descripcion)}${g.marca ? ' · ' + escapeHtml(g.marca) : ''}</strong></div><div><small>Total retirado</small><strong>${escapeHtml(String(Math.round(g.cantidad * 1000) / 1000))} ${escapeHtml(g.unidad)}</strong></div><div><small>Stock actual</small><strong>${escapeHtml(stockActual)}</strong></div><div><small>Cantidad de salidas</small><strong>${fichas.length}</strong></div></div><table class="historial-registros-tabla"><colgroup>${columnasHistorial}</colgroup><thead><tr>${encabezadosHistorial}</tr></thead><tbody>${filas}</tbody></table>`;
             } catch (e) {
                 area.innerHTML = `<div class="ficha-title">No se pudo preparar el historial</div><div class="ficha-firma">${escapeHtml(e.message || 'Error al cargar las fichas.')}</div>`;
@@ -6034,6 +6283,7 @@ function imprimirPdfHerramientasActual(){
                     <div class="ficha-h">Datos de la salida</div>
                     <table class="ficha-tbl">
                         ${fila('N.º de envío', ficha.envio)}
+                        ${fila('N.º de remito', ficha.remito || ficha.numero_remito || ficha.nro_remito || ficha.remito_numero || ficha.num_remito || ficha['N° REMITO'] || ficha['Nº REMITO'] || m.remito || m.numero_remito || m.nro_remito || m.remito_numero || m.num_remito || m['N° REMITO'] || m['Nº REMITO'] || 'S/N')}
                         ${fila('Encargado / Responsable', ficha.responsable)}
                         ${fila('Obra / destino', ficha.obra)}
                         ${fila('Solicitante', ficha.solicitante)}
@@ -6616,6 +6866,7 @@ function imprimirPdfHerramientasActual(){
         document.getElementById('toolManageOverlay').addEventListener('click', e => { if(e.target.id==='toolManageOverlay') cerrarGestionHerramienta(); });
         document.getElementById('toolsHistoryToggle').addEventListener('click', () => document.querySelector('.tab-btn[data-tab="movherr"]')?.click());
         document.getElementById('toolsReportPrint').addEventListener('click', imprimirInformeHerramientas);
+        document.getElementById('toolsMaintenancePrint').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); imprimirInformeMantenimientoHerramientas(); });
         ['toolsReportFrom','toolsReportTo','toolsReportPerson','toolsReportWork'].forEach(id => document.getElementById(id).addEventListener('input', renderInformeHerramientas));
         document.getElementById('toolsReportClear').addEventListener('click', () => { ['toolsReportFrom','toolsReportTo','toolsReportPerson','toolsReportWork'].forEach(id => document.getElementById(id).value=''); renderInformeHerramientas(); });
         ['toolsMovSearch','toolsMovPerson'].forEach(id => document.getElementById(id).addEventListener('input', e => { state.movHerrUi[id === 'toolsMovSearch' ? 'search' : 'persona'] = e.target.value; state.movHerrUi.page = 0; renderMovHerramientas(); }));
@@ -7402,7 +7653,233 @@ document.getElementById('confirmarFechaForm').onsubmit=async e=>{
  finally{guardandoFechaEntrega=false;document.querySelectorAll('#confirmarFechaForm input,#confirmarFechaForm textarea,#confirmarFechaForm button').forEach(x=>x.disabled=false);}
 };
 </script>
+<style>
+/* SOLO la ventana existente del boton Nueva Herramienta. No afecta el resto. */
+#altaHerrDialog{margin:auto;width:min(900px,calc(100vw - 24px));max-height:93vh;overflow:auto;padding:0;background:var(--bg-elev);color:var(--txt);border:1px solid var(--line);border-radius:16px;font:inherit;box-shadow:0 28px 70px #0008}
+#altaHerrDialog::backdrop{background:#000b}
+#altaHerrDialog .ah-header{padding:19px 24px;border-bottom:1px solid var(--line);display:flex;align-items:start;justify-content:space-between;gap:10px}
+#altaHerrDialog h2{font-size:19px;margin:0 0 5px}
+#altaHerrDialog .ah-sub{font-size:12px;color:var(--txt-dim);line-height:1.5}
+#altaHerrDialog .ah-body{padding:20px 24px}
+#altaHerrDialog .ah-footer{padding:14px 24px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+#altaHerrDialog [hidden]{display:none!important}
+#altaHerrDialog .ah-row{display:grid;gap:12px;margin-bottom:13px;grid-template-columns:repeat(2,minmax(0,1fr))}
+#altaHerrDialog .ah-row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+#altaHerrDialog .ah-row.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+#altaHerrDialog label{display:block;font-size:11px;font-weight:700;color:var(--txt-dim);margin:0 0 5px;text-transform:uppercase;letter-spacing:.4px}
+#altaHerrDialog input,#altaHerrDialog select,#altaHerrDialog textarea{display:block;width:100%;min-width:0;padding:9px 10px;margin-top:5px;background:var(--bg-card);color:var(--txt);border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px}
+#altaHerrDialog textarea{resize:vertical;min-height:74px}
+#altaHerrDialog input:focus,#altaHerrDialog select:focus,#altaHerrDialog textarea:focus{outline:1px solid var(--accent)}
+#altaHerrDialog .ah-inline{display:flex;align-items:center;gap:6px}
+#altaHerrDialog .ah-inline select{flex:1;min-width:0}
+#altaHerrDialog .ah-inline button{flex:none;padding:8px 10px;font-size:11px;white-space:nowrap}
+#altaHerrDialog .ah-section{padding:11px 0 8px;color:var(--txt);font-weight:800;border-top:1px solid var(--line);margin-top:3px}
+#altaHerrDialog .ah-required{color:var(--bad-fg)}
+#altaHerrDialog #ahMensaje{font-size:12px;color:var(--bad-fg);white-space:pre-wrap;margin-top:8px}
+#altaHerrDialog .ah-help{margin:5px 0 11px;font-size:11px;color:var(--txt-dim);line-height:1.5}
+@media(max-width:650px){#altaHerrDialog .ah-row.three,#altaHerrDialog .ah-row.four{grid-template-columns:repeat(2,minmax(0,1fr))}#altaHerrDialog .ah-header,#altaHerrDialog .ah-body,#altaHerrDialog .ah-footer{padding-left:15px;padding-right:15px}}
+@media(max-width:430px){#altaHerrDialog .ah-row,#altaHerrDialog .ah-row.three,#altaHerrDialog .ah-row.four{grid-template-columns:1fr}}
+</style>
+<dialog id="altaHerrDialog" aria-labelledby="ahTitulo">
+  <div class="ah-header"><div><h2 id="ahTitulo">Registrar herramienta / equipo</h2><div class="ah-sub">Alta exclusiva en Registro Equipo y Herramientas. Fecha y hora 24 h automaticas.</div></div><button type="button" class="btn small" id="ahCerrarX">✕</button></div>
+  <form id="altaHerrForm">
+    <div class="ah-body">
+      <div class="ah-row">
+        <div><label for="ahSigla">Sigla y significado <span class="ah-required">*</span></label><div class="ah-inline"><select id="ahSigla" required><option value="">Seleccionar...</option></select><button type="button" class="btn" id="ahAgregarSigla" title="Guardar sigla para todos">+ Sigla</button></div></div>
+        <div><label for="ahNumero">Numeración siguiente</label><input id="ahNumero" readonly placeholder="Automática" aria-label="Numeración siguiente"></div>
+      </div>
+      <div class="ah-row">
+        <div><label for="ahProducto">Producto <span class="ah-required">*</span></label><input id="ahProducto" required maxlength="240" placeholder="Nombre de la herramienta"></div>
+        <div><label for="ahCaracteristicas">Características</label><textarea id="ahCaracteristicas" rows="2" placeholder="Descripción técnica / medida"></textarea></div>
+      </div>
+      <div class="ah-row three">
+        <div><label for="ahMarca">Marca</label><input id="ahMarca" placeholder="Marca"></div>
+        <div><label for="ahModelo">Modelo</label><input id="ahModelo" placeholder="Modelo"></div>
+        <div><label for="ahSerie">Número de serie</label><input id="ahSerie" placeholder="Número de serie"></div>
+      </div>
+      <div class="ah-row">
+        <div><label for="ahCondicion">Condición inicial <span class="ah-required">*</span></label><select id="ahCondicion" required><option value="NUEVO">Nuevo</option><option value="USADO">Usado</option></select></div>
+        <div><label for="ahAnterior">Código anterior</label><input id="ahAnterior" placeholder="Si tiene"></div>
+      </div>
+      <div class="ah-row">
+        <div><label for="ahCritico">¿Es crítico? <span class="ah-required">*</span></label><select id="ahCritico" required><option value="NO">No</option><option value="SI">Sí</option></select></div>
+        <div><label for="ahEstado">Estado <span class="ah-required">*</span></label><select id="ahEstado" required><option>APTO</option><option>NO APTO</option><option>BAJA</option><option>VENCIDO</option></select></div>
+      </div>
+      <div class="ah-row"><div><label for="ahCantidad">Cantidad de unidades <span class="ah-required">*</span></label><input id="ahCantidad" type="number" min="1" max="100" step="1" value="1" required></div></div>
+      <div class="ah-section">Destino inicial</div>
+      <div class="ah-row">
+        <div><label for="ahDestino">Tipo de destino <span class="ah-required">*</span></label><select id="ahDestino" required><option value="">Seleccionar...</option><option value="DEPÓSITO">Depósito</option><option value="A CARGO">A cargo</option></select></div>
+        <div id="ahLugarBox" hidden><label for="ahLugar">Lugar <span class="ah-required">*</span></label><select id="ahLugar"><option value="">Seleccionar...</option><option value="ARISMENDI">Arismendi</option><option value="PALPALÁ">Palpalá</option></select></div>
+        <div id="ahPersonaBox" hidden><label for="ahPersona">Persona a cargo <span class="ah-required">*</span></label><div class="ah-inline"><select id="ahPersona"><option value="">Seleccionar...</option></select><button type="button" class="btn" id="ahAgregarPersona" title="Guardar nombre para todos">+ Persona</button></div></div>
+      </div>
+      <div id="ahUbicacionBox" class="ah-row four" hidden>
+        <div><label for="ahDeposito">Depósito <span class="ah-required">*</span></label><select id="ahDeposito"><option value="">Elegir...</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5A</option><option>5B</option><option>5C</option><option>6</option></select></div>
+        <div><label for="ahEstante">Estante (número)</label><input type="number" min="0" step="1" inputmode="numeric" id="ahEstante" placeholder="1, 2, 3..."></div>
+        <div><label for="ahColumna">Columna (número)</label><input type="number" min="0" step="1" inputmode="numeric" id="ahColumna" placeholder="1, 2, 3..."></div>
+        <div><label for="ahFila">Fila (letras)</label><input id="ahFila" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ]+" placeholder="A, B, C..."></div>
+      </div>
+      <label for="ahObs">Observaciones</label><textarea id="ahObs" rows="3" placeholder="Observaciones del registro"></textarea>
+      <div class="ah-help">Las siglas y personas se comparten en Google Sheets. Esta alta NO modifica el stock, movimientos, fotos ni historial anteriores.</div>
+      <p id="ahMensaje" role="alert" aria-live="polite"></p>
+    </div>
+    <div class="ah-footer"><button type="button" class="btn" id="ahCerrar">Cancelar</button><button type="submit" class="btn primary" id="ahGuardar">Registrar herramienta</button></div>
+  </form>
+</dialog>
+<script>
+// Se modifica SOLO el formulario que ya abre el boton Nueva Herramienta.
+// Las demas funciones del HTML original permanecen tal cual.
+const ahEl = id => document.getElementById(id);
+const ahValue = id => (ahEl(id)?.value || '').trim();
+let ahCatalogo = {}, ahPersonas = [], ahProximos = {};
 
+async function ahLeerOpciones() {
+  const url = new URL(CONFIG.WEB_APP_URL);
+  url.searchParams.set('action', 'reglab-opciones');
+  url.searchParams.set('token', await getIdToken());
+  url.searchParams.set('_', Date.now());
+  const response = await fetch(url, {cache:'no-store'});
+  const data = await response.json();
+  if (!data.ok) throw Error(data.error || 'No se pudieron cargar siglas y personas.');
+  ahCatalogo = data.catalogo || {};
+  ahPersonas = data.personas || [];
+  ahProximos = data.proximos || {};
+}
+function ahMostrarOpciones(siglaElegida='', personaElegida='') {
+  const sel = ahEl('ahSigla');
+  sel.innerHTML = '<option value="">Seleccionar sigla...</option>' +
+    Object.keys(ahCatalogo).sort().map(s => '<option value="'+escapeAttr(s)+'">'+escapeHtml(s+' — '+(ahCatalogo[s].nombre||s))+'</option>').join('');
+  if (siglaElegida) sel.value = siglaElegida;
+  ahEl('ahPersona').innerHTML = '<option value="">Seleccionar persona...</option>' +
+    ahPersonas.map(n => '<option value="'+escapeAttr(n)+'">'+escapeHtml(n)+'</option>').join('');
+  if (personaElegida) ahEl('ahPersona').value = personaElegida;
+  ahActualizarSigla(false);
+}
+function ahActualizarSigla(autoProducto=true) {
+  const sigla = ahValue('ahSigla');
+  ahEl('ahNumero').value = sigla ? (ahProximos[sigla] || '001') : '';
+  if (autoProducto) ahEl('ahProducto').value = sigla && sigla !== 'HER' ? (ahCatalogo[sigla]?.nombre || sigla) : '';
+}
+function ahDestinoCambiar() {
+  const destino = ahValue('ahDestino');
+  const deposito = destino === 'DEPÓSITO', cargo = destino === 'A CARGO';
+  ahEl('ahLugarBox').hidden = !deposito;
+  ahEl('ahPersonaBox').hidden = !cargo;
+  ahEl('ahLugar').required = deposito;
+  ahEl('ahPersona').required = cargo;
+  const arismendi = deposito && ahValue('ahLugar') === 'ARISMENDI';
+  ahEl('ahUbicacionBox').hidden = !arismendi;
+  ahEl('ahDeposito').required = arismendi;
+  if (!arismendi) ['ahDeposito','ahEstante','ahColumna','ahFila'].forEach(id=>ahEl(id).value='');
+  if (!cargo) ahEl('ahPersona').value='';
+}
+async function abrirAltaHerramienta() {
+  // Se conserva la misma condicion de login del boton ORIGINAL.
+  if (isDemo || !auth.currentUser) {showToast('Ingresá al sistema para registrar herramientas.',true);return;}
+  const dialogo=ahEl('altaHerrDialog');
+  ahEl('altaHerrForm').reset();
+  ahEl('ahMensaje').textContent='Cargando siglas y personal desde Google Sheets...';
+  ahEl('ahGuardar').disabled=true;
+  ahDestinoCambiar();
+  if (!dialogo.open) dialogo.showModal();
+  try {
+    await ahLeerOpciones();
+    if (!dialogo.open) return;
+    ahMostrarOpciones();
+    ahEl('ahMensaje').textContent='';
+    ahEl('ahGuardar').disabled=false;
+  } catch(err) {
+    if (dialogo.open) ahEl('ahMensaje').textContent='Error al consultar catálogos: '+err.message;
+  }
+}
+async function ahAgregarSigla() {
+  if (!auth.currentUser) return;
+  const sigla=(prompt('Nueva sigla (2 a 8 letras o números):')||'').trim().toUpperCase();
+  if (!sigla) return;
+  const nombre=(prompt('¿Qué significa '+sigla+'?')||'').trim();
+  if (!nombre) return;
+  const modo=(prompt('Tipo: EQUIPO o HERRAMIENTA','EQUIPO')||'').trim().toUpperCase();
+  if (!modo) return;
+  try {
+    const r=await apiPostSeguro({accion:'reglab-sigla',sigla,nombre,modo});
+    if (!r?.ok) throw Error(r?.error||'No se pudo guardar la sigla.');
+    const persona=ahValue('ahPersona');
+    await ahLeerOpciones();
+    ahMostrarOpciones(sigla,persona);
+    ahActualizarSigla(true);
+    showToast('Sigla '+sigla+' guardada para todos.');
+  } catch(err) {ahEl('ahMensaje').textContent=err.message;}
+}
+async function ahAgregarPersona() {
+  if (!auth.currentUser) return;
+  const nombre=(prompt('Apellido y nombre de la persona nueva:')||'').trim().toUpperCase();
+  if (!nombre) return;
+  try {
+    const r=await apiPostSeguro({accion:'reglab-persona',nombre});
+    if (!r?.ok) throw Error(r?.error||'No se pudo guardar la persona.');
+    const sigla=ahValue('ahSigla');
+    await ahLeerOpciones();
+    ahMostrarOpciones(sigla,nombre);
+    showToast('Persona guardada para todos.');
+  } catch(err) {ahEl('ahMensaje').textContent=err.message;}
+}
+function ahDatosAlta() {
+  return {
+    accion:'reglab-alta',cantidad:Number(ahValue('ahCantidad')||1),sigla:ahValue('ahSigla'),producto:ahValue('ahProducto'),
+    caracteristicas:ahValue('ahCaracteristicas'),marca:ahValue('ahMarca'),
+    modelo:ahValue('ahModelo'),serie:ahValue('ahSerie'),
+    condicion:ahValue('ahCondicion'),codigo_anterior:ahValue('ahAnterior'),
+    critico:ahValue('ahCritico'),estado:ahValue('ahEstado'),
+    destino:ahValue('ahDestino'),lugar:ahValue('ahLugar'),persona:ahValue('ahPersona'),
+    deposito:ahValue('ahDeposito'),estante:ahValue('ahEstante'),
+    columna:ahValue('ahColumna'),fila:ahValue('ahFila'),observaciones:ahValue('ahObs')
+  };
+}
+async function ahGuardarAlta(e) {
+  e.preventDefault();
+  const btn=ahEl('ahGuardar'),msg=ahEl('ahMensaje');
+  btn.disabled=true;msg.textContent='Guardando en Registro Equipo y Herramientas...';
+  try {
+    const r=await apiPostSeguro(ahDatosAlta());
+    if (!r?.ok) throw Error(r?.error||'No se pudo guardar la herramienta.');
+    ahEl('altaHerrDialog').close();
+    showSuccessModal('Herramienta registrada.\nCódigos: '+(r.codigos||[r.codigo]).join(', ')+'\nHoja: Registro Equipo y Herramientas');
+    // IMPORTANTE: NO llamar cargarHerramientas(), ni modificar las pantallas viejas.
+    // La gestion de herramientas original conserva sus fuentes y comportamientos.
+  } catch(err) {msg.textContent=err.message;} finally {btn.disabled=false;}
+}
+ahEl('ahSigla').addEventListener('change',()=>ahActualizarSigla(true));
+ahEl('ahDestino').addEventListener('change',ahDestinoCambiar);
+ahEl('ahLugar').addEventListener('change',ahDestinoCambiar);
+ahEl('altaHerrForm').addEventListener('submit',ahGuardarAlta);
+ahEl('ahAgregarSigla').addEventListener('click',ahAgregarSigla);
+ahEl('ahAgregarPersona').addEventListener('click',ahAgregarPersona);
+for (const id of ['ahCerrar','ahCerrarX']) ahEl(id).addEventListener('click',()=>ahEl('altaHerrDialog').close());
+</script>
+<script>
+/* Descuento asistido desde foto de remito con Gemini; la imagen no se archiva en el Apps Script. */
+(()=>{
+ const $=id=>document.getElementById(id), overlay=$('fotoRemitoOverlay'), file=$('frFile'), preview=$('fotoRemitoPreview'), lines=$('frLines'), status=$('frStatus'), confirmBtn=$('frConfirm');
+ let ocrFile=null, photoUrl='', savingDiscount=false;
+ const GEMINI_MODEL='gemini-3.5-flash-lite', GEMINI_KEY_STORE='rpm_stock_gemini_key_v1';
+ function geminiKey(){try{const own=localStorage.getItem(GEMINI_KEY_STORE);if(own)return own;const p=JSON.parse(localStorage.getItem('planificador_data_v1')||'{}');if(p.config?.geminiKey)return p.config.geminiKey;const ps=JSON.parse(sessionStorage.getItem('planificador_data_v1')||'{}');return ps.config?.geminiKey||'';}catch(_){return '';}}
+ const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleUpperCase('es-AR').replace(/[^A-Z0-9]+/g,' ').trim();
+ function products(){return (state.stock||[]).slice().sort((a,b)=>String(a.descripcion).localeCompare(String(b.descripcion),'es'));}
+ function rankMatches(text,limit=5){const q=norm(text),qt=new Set(q.split(' ').filter(x=>x.length>2));return products().map(p=>{const d=norm([p.descripcion,p.marca,p.familia,p.id].join(' ')),dt=new Set(d.split(' ').filter(x=>x.length>2));let score=d===q?1:(d.includes(q)||q.includes(d)?0.9:0);if(qt.size){let hit=0;qt.forEach(x=>{if(dt.has(x))hit++;});score=Math.max(score,hit/qt.size*.82);}return{p,score};}).sort((a,b)=>b.score-a.score).slice(0,limit).map(x=>x.p);}
+ function productOptions(selected='',description='',search='') {const suggested=rankMatches(description),searched=search.trim()?rankMatches(search,40):[],candidates=[...new Map([...suggested,...searched].map(p=>[String(p.id),p])).values()];if(selected&&!candidates.some(p=>String(p.id)===String(selected))){const cur=products().find(p=>String(p.id)===String(selected));if(cur)candidates.unshift(cur);}const option=p=>`<option value="${escapeAttr(p.id)}" ${String(p.id)===String(selected)?'selected':''}>${escapeHtml(p.descripcion)} · ${escapeHtml(p.marca||'—')} · ID ${escapeHtml(p.id)} · stock ${escapeHtml(p.stock_actual)} ${escapeHtml(p.unidad||'')}</option>`;return '<option value="">Elegí producto del stock…</option>'+(candidates.length?`<optgroup label="Sugerencias / resultados">${candidates.map(option).join('')}</optgroup>`:'');}
+ function addLine(description='',qty=1,productId='') {const suggested=rankMatches(description),p=productId?products().find(x=>String(x.id)===String(productId)):(suggested[0]||null);const row=document.createElement('div');row.className='fr-line';row.innerHTML=`<label class="fr-desc">Texto leído / descripción<input class="fr-text" value="${escapeAttr(description)}" placeholder="Descripción del remito"></label><label>Buscar en stock<input class="fr-product-search" placeholder="Escribí nombre, marca o ID"><select class="fr-product">${productOptions(p?.id||'',description)}</select></label><label>Cantidad<input class="fr-qty" type="number" min="0.01" step="any" value="${Number(qty)>0?Number(qty):1}"></label><button class="btn" type="button" title="Quitar renglón" aria-label="Quitar renglón">✕</button>`;row.querySelector('button').onclick=()=>{row.remove();updateConfirm();};row.querySelector('.fr-product').onchange=updateConfirm;row.querySelector('.fr-qty').oninput=updateConfirm;row.querySelector('.fr-product-search').oninput=()=>{const sel=row.querySelector('.fr-product'),prev=sel.value;sel.innerHTML=productOptions(prev,row.querySelector('.fr-text').value,row.querySelector('.fr-product-search').value);if(prev)sel.value=prev;};row.querySelector('.fr-text').oninput=()=>{const sel=row.querySelector('.fr-product'),prev=sel.value;sel.innerHTML=productOptions(prev,row.querySelector('.fr-text').value,row.querySelector('.fr-product-search').value);if(prev)sel.value=prev;updateConfirm();};lines.append(row);updateConfirm();}
+ function updateConfirm(){confirmBtn.disabled=savingDiscount;}
+ function compressImage(f){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{const scale=Math.min(1,1400/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.72));};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('No se pudo abrir la imagen. Probá con JPG o PNG.'));};img.src=url;});}
+ function fechaRemitoDMY(value){const s=String(value||'').trim();let m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return `${m[3]}/${m[2]}/${m[1]}`;m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);if(!m)return '';const d=Number(m[1]),mo=Number(m[2]),y=Number(m[3]),check=new Date(Date.UTC(y,mo-1,d));if(check.getUTCFullYear()!==y||check.getUTCMonth()!==mo-1||check.getUTCDate()!==d)return '';return `${String(d).padStart(2,'0')}/${String(mo).padStart(2,'0')}/${y}`;}
+ function matchGeminiItems(items){items.forEach(i=>{const q=String(i.material||'').trim(),qty=Number(String(i.cantidad||'').replace(',','.'));if(q)addLine(q,qty>0?qty:1);});}
+ $('btnFotoRemito').onclick=()=>{if(isDemo||!auth.currentUser){showToast('Ingresá al sistema conectado para descontar stock.',true);return;}if(!products().length){showToast('Esperá a que cargue el stock y volvé a intentar.',true);return;}overlay.classList.add('show');};
+ $('frCancel').onclick=()=>{overlay.classList.remove('show');};overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.remove('show');});
+ $('frAdd').onclick=()=>addLine();
+ $('frGeminiKey').value=geminiKey();$('frGeminiKey').onchange=e=>{try{localStorage.setItem(GEMINI_KEY_STORE,e.target.value.trim());}catch(_){}};
+ $('frRemito').oninput=updateConfirm;$('frResponsable').oninput=updateConfirm;
+ file.onchange=()=>{ocrFile=file.files?.[0]||null;lines.replaceChildren();confirmBtn.disabled=true;status.textContent=ocrFile?'Foto lista. Tocá “Analizar foto con Gemini”.':'Elegí o sacá una foto del remito.';if(photoUrl)URL.revokeObjectURL(photoUrl);if(ocrFile){photoUrl=URL.createObjectURL(ocrFile);preview.src=photoUrl;preview.hidden=false;}else preview.hidden=true;};
+ $('frRead').onclick=async()=>{if(!ocrFile){status.textContent='Primero sacá o elegí una foto.';return;}const apiKey=$('frGeminiKey').value.trim()||geminiKey();if(!apiKey){status.textContent='Ingresá la clave API de Gemini que usás en el planificador.';$('frGeminiKey').focus();return;}try{localStorage.setItem(GEMINI_KEY_STORE,apiKey);}catch(_){}const btn=$('frRead');btn.disabled=true;lines.replaceChildren();confirmBtn.disabled=true;try{status.textContent='Preparando foto para Gemini…';const dataUrl=await compressImage(ocrFile),base64=dataUrl.split(',')[1]||'';status.textContent='Gemini está leyendo el remito…';const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),45000);let response;try{response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json','x-goog-api-key':apiKey},body:JSON.stringify({contents:[{parts:[{text:'Leé esta foto de un remito en español. Extraé solo información visible, no inventes ni agregues productos. Conservá el nombre del material tal como figura, una línea por renglón, y la cantidad numérica sin unidad. Si un campo no se entiende, dejalo vacío. La fecha debe ser DD/MM/YYYY (día/mes/año). El responsable no debe inferirse.'},{inlineData:{mimeType:'image/jpeg',data:base64}}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'},maxOutputTokens:3000,responseMimeType:'application/json',responseSchema:{type:'OBJECT',properties:{numero:{type:'STRING'},fecha:{type:'STRING'},destino:{type:'STRING'},obra:{type:'STRING'},items:{type:'ARRAY',items:{type:'OBJECT',properties:{material:{type:'STRING'},cantidad:{type:'STRING'}},required:['material','cantidad']}}},required:['numero','fecha','destino','obra','items']}}})});}finally{clearTimeout(timer);}const result=await response.json();if(!response.ok)throw Error(result.error?.message||`Gemini respondió con error (${response.status}).`);const text=(result.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');if(!text)throw Error('Gemini no devolvió datos para revisar.');const data=JSON.parse(text);if(!$('frRemito').value.trim())$('frRemito').value=String(data.numero||'').trim();if(!$('frFecha').value)$('frFecha').value=fechaRemitoDMY(data.fecha);if(!$('frObra').value.trim())$('frObra').value=String(data.obra||data.destino||'').trim();matchGeminiItems(Array.isArray(data.items)?data.items:[]);if(!data.items?.length)throw Error('Gemini no encontró renglones. Agregá los productos manualmente.');status.textContent=`Gemini detectó ${data.items.length} renglón(es). Revisá las sugerencias, productos, cantidades y datos antes de confirmar.`;updateConfirm();}catch(e){status.textContent=e.name==='AbortError'?'Gemini tardó más de 45 segundos y se canceló. Podés volver a intentar.':(e.message||'No se pudo analizar la imagen.');}finally{btn.disabled=false;}};
+ confirmBtn.onclick=async()=>{if(savingDiscount)return;const rows=[...lines.querySelectorAll('.fr-line')];if(!$('frRemito').value.trim()){status.textContent='Falta el número de remito.';$('frRemito').focus();return;}if(!$('frResponsable').value.trim()){status.textContent='Falta indicar quién retira o recibe los materiales.';$('frResponsable').focus();return;}if(!rows.length){status.textContent='Agregá al menos un producto del remito.';return;}const sinProducto=rows.find(r=>!r.querySelector('.fr-product').value);if(sinProducto){status.textContent='Elegí el producto del stock para cada renglón. Usá “Buscar en stock” si no aparece entre las sugerencias.';sinProducto.querySelector('.fr-product-search').focus();return;}const sinCantidad=rows.find(r=>!(Number(r.querySelector('.fr-qty').value)>0));if(sinCantidad){status.textContent='Revisá la cantidad: cada renglón debe tener un número mayor que cero.';sinCantidad.querySelector('.fr-qty').focus();return;}const fechaEntrada=$('frFecha').value.trim(),fechaRemito=fechaEntrada?fechaRemitoDMY(fechaEntrada):'';if(fechaEntrada&&!fechaRemito){status.textContent='La fecha del remito debe ser válida y estar en formato DD/MM/AAAA.';$('frFecha').focus();return;}const grouped=new Map();for(const r of rows){const id=r.querySelector('.fr-product').value,qty=Number(r.querySelector('.fr-qty').value)||0;grouped.set(id,(grouped.get(id)||0)+qty);}const items=[...grouped].map(([id,cantidad])=>({id,cantidad}));const details=items.map(it=>{const p=products().find(x=>String(x.id)===it.id);return `• ${p?.descripcion||it.id}: ${it.cantidad} ${p?.unidad||'un'}`;}).join('\n');savingDiscount=true;updateConfirm();status.textContent='Enviando descuento al servidor… ';try{const obs=['REMITO: '+$('frRemito').value.trim(),fechaRemito?'FECHA REMITO: '+fechaRemito:'',$('frFile').files?.[0]?.name?'FOTO REMITO: '+$('frFile').files[0].name:'',`CARGA DESDE FOTO (${items.length} PRODUCTO(S))`].filter(Boolean).join(' | ');const resp=await apiPostSeguro({accion:'ajuste-rapido',zona:products().find(p=>String(p.id)===items[0].id)?.zona||'',tipo_movimiento:'SALIDA',fecha:'',nro_remito:$('frRemito').value.trim(),responsable:$('frResponsable').value.trim(),obra:$('frObra').value.trim(),obs_general:obs,items});if(!resp?.ok)throw Error(resp?.error||'El Apps Script rechazó la salida.');status.textContent=`Salida guardada correctamente. N.º de envío ${resp.envio||'—'}. Fecha y hora de Buenos Aires en formato 24 h.`;await cargarTodo(true);setTimeout(()=>{overlay.classList.remove('show');lines.replaceChildren();file.value='';$('frRemito').value='';$('frFecha').value='';$('frResponsable').value='';$('frObra').value='';preview.hidden=true;if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl='';savingDiscount=false;updateConfirm();},1500);}catch(e){status.textContent=e.message||'No se pudo registrar. Revisá Movimientos antes de volver a enviar.';savingDiscount=false;updateConfirm();}};
+})();
+</script>
 </body>
-
 </html>
