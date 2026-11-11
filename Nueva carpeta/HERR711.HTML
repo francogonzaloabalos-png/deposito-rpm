@@ -1747,6 +1747,43 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
 
 
 </script>
+
+<style id="rpm-legibilidad-tablas">
+#movTable, #stickyMovTable { --txt-dim: #c5d1e3; --txt-faint: #afbed3; }
+#stickyMovTable, #movTable { table-layout: fixed; width: 1535px !important; min-width: 1535px !important; }
+#stickyMovTable thead th {
+ background: #172a43; color: #f1f6ff; font-size: 12px; letter-spacing: .2px;
+ padding: 12px; white-space: normal; overflow-wrap: anywhere; line-height: 1.4;
+}
+#movTable tbody td { color: #eaf1fc; padding: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+#movTable tbody tr:nth-child(odd) td { background: #101c2e; }
+#movTable tbody tr:nth-child(even) td { background: #192a40; }
+#movTable tbody tr:hover td { background: #233d5b !important; }
+#movTable td.id-tag { color: #d9e5f5; font-size: 12px; font-style: normal; }
+#movTable td:nth-child(10), #movTable td:nth-child(11) {
+ color: #ffe19b; font-size: 13px; font-weight: 750; font-family: var(--mono);
+ background: #273044; overflow-wrap: anywhere;
+}
+#movTable td:nth-child(7) { text-align: right; font-variant-numeric: tabular-nums; }
+#stickyMovTable th:nth-child(7) { text-align: right; }
+#movTable .loc-tag, #movTable .fam-badge { color: #edf4ff; background: #273c55; }
+#topScrollMov { height: 14px; }
+#topScrollMov::-webkit-scrollbar, #scrollMov::-webkit-scrollbar { height: 12px; }
+#topScrollMov::-webkit-scrollbar-thumb, #scrollMov::-webkit-scrollbar-thumb { background: #8196b5; border-radius: 6px; }
+
+#movTable tbody td { padding: 10px; white-space: normal; overflow: hidden; }
+#stickyMovTable thead th { padding: 10px; overflow: hidden; }
+#movTable .fam-badge, #movTable .loc-tag {
+ display: inline-block; max-width: 100%; min-width: 0;
+ white-space: normal !important; overflow-wrap: anywhere; word-break: normal;
+ line-height: 1.4; vertical-align: middle;
+}
+#movTable .desc-cell, #movTable .marca-cell, #movTable .obs-tag {
+ min-width: 0; max-width: 100%; white-space: normal !important;
+ overflow-wrap: anywhere; word-break: normal;
+}
+</style>
+
 </head>
 
 <body>
@@ -1939,6 +1976,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                     <option value="OK">OK</option>
                     <option value="REPONER">Reponer</option>
                 </select>
+                <button type="button" class="btn primary" id="btnFotoRemito">📷 Descontar desde foto</button>
             </div>
                 <div class="sticky-top-bar">
                     <div class="top-scrollbar-wrap" id="topScrollStock">
@@ -2070,6 +2108,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                     </div>
                     <div class="sticky-thead-wrap" id="theadWrapMov">
                         <table class="sticky-header-table" id="stickyMovTable">
+<colgroup><col style="width:110px"><col style="width:95px"><col style="width:155px"><col style="width:250px"><col style="width:100px"><col style="width:120px"><col style="width:65px"><col style="width:120px"><col style="width:130px"><col style="width:145px"><col style="width:165px"><col style="width:80px"></colgroup>
                             <thead>
                                 <tr>
                                     <th data-sort="fecha">Fecha <span class="arrow"></span></th>
@@ -2081,6 +2120,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                                     <th data-sort="cantidad">Cant. <span class="arrow"></span></th>
                                     <th data-sort="responsable">Responsable <span class="arrow"></span></th>
                                     <th data-sort="obra">Obra / destino <span class="arrow"></span></th>
+                                    <th data-sort="remito">N.º Remito <span class="arrow"></span></th>
                                     <th data-sort="factura">N.º Factura <span class="arrow"></span></th>
                                     <th style="cursor:default;text-align:center;">Ficha</th> <!-- ⬅️ NUEVO -->
                                 </tr>
@@ -2090,6 +2130,7 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                 </div>
                 <div class="table-scroll" id="scrollMov">
                     <table id="movTable">
+<colgroup><col style="width:110px"><col style="width:95px"><col style="width:155px"><col style="width:250px"><col style="width:100px"><col style="width:120px"><col style="width:65px"><col style="width:120px"><col style="width:130px"><col style="width:145px"><col style="width:165px"><col style="width:80px"></colgroup>
                         <tbody id="movBody"></tbody>
                     </table>
                 </div>
@@ -2113,6 +2154,49 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
             </table></div><div class="table-footer"><span id="reporteCount">0 productos</span><span>El total suma todas las salidas registradas.</span></div></div>
         </div>
 
+    </div>
+    <style>
+      #fotoRemitoOverlay{position:fixed;inset:0;z-index:10010;background:#050914dd;display:none;align-items:center;justify-content:center;padding:12px}
+      #fotoRemitoOverlay.show{display:flex}#fotoRemitoDialog{width:min(1050px,100%);max-height:94vh;overflow:auto;background:var(--bg-card);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 20px 70px #0009}
+      #fotoRemitoDialog h2{margin:0 0 6px}#fotoRemitoDialog .fr-help{color:var(--txt-dim);line-height:1.5;margin:0 0 14px}
+      #fotoRemitoDialog .fr-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+      #fotoRemitoDialog label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--txt-dim)}#fotoRemitoDialog input,#fotoRemitoDialog select,#fotoRemitoDialog textarea{width:100%;min-width:0;background:var(--bg-elev);color:var(--txt);border:1px solid var(--line);border-radius:7px;padding:9px;font:inherit}
+      #fotoRemitoPreview{display:block;max-width:100%;max-height:240px;object-fit:contain;margin:10px auto;border-radius:8px;background:#fff}
+      #frLines{display:flex;flex-direction:column;gap:8px;margin:10px 0}.fr-line{display:grid;grid-template-columns:minmax(180px,2fr) minmax(140px,1fr) 95px 40px;gap:8px;align-items:end;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg-elev)}
+      #frStatus{min-height:22px;color:var(--txt-dim);font-size:12px;margin:8px 0}.fr-buttons{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+      @media(max-width:700px){#fotoRemitoDialog{padding:14px}#fotoRemitoDialog .fr-fields{grid-template-columns:1fr} .fr-line{grid-template-columns:1fr 90px}.fr-line .fr-desc{grid-column:1/-1}.fr-line button{min-height:38px}}
+    </style>
+    <div id="fotoRemitoOverlay" role="dialog" aria-modal="true" aria-labelledby="frTitle">
+      <section id="fotoRemitoDialog"><h2 id="frTitle">📷 Descontar desde foto del remito</h2>
+        <p class="fr-help">Sacá una foto o elegí una imagen. Gemini leerá el remito y el panel sugerirá productos del stock; revisá todo antes de confirmar. La imagen se envía a Gemini para analizarla, pero no se guarda en el panel. No se descuenta nada hasta que confirmes.</p>
+        <div class="fr-fields">
+          <label>
+            Foto del remito
+            <input id="frFile" type="file" accept="image/*" capture="environment">
+          </label>
+          <label>
+            Número de remito
+            <input id="frRemito" autocomplete="off" placeholder="Ej.: R-000123">
+          </label>
+          <label>
+            Fecha del remito (día/mes/año)
+            <input id="frFecha" type="text" inputmode="numeric" placeholder="DD/MM/AAAA" autocomplete="off">
+          </label>
+          <label>
+            Responsable
+            <input id="frResponsable" autocomplete="name" placeholder="Quién retira">
+          </label>
+          <label>
+            Obra / destino
+            <input id="frObra" placeholder="Obra o destino">
+          </label>
+        </div>
+        <img id="fotoRemitoPreview" alt="Vista previa del remito" hidden>
+        <div class="fr-buttons" style="justify-content:flex-start"><button type="button" class="btn" id="frRead">Analizar foto con Gemini</button><button type="button" class="btn" id="frAdd">＋ Agregar producto manualmente</button></div>
+        <div id="frStatus" role="status" aria-live="polite">La fecha del remito se muestra DD/MM/AAAA. El movimiento se registrará con fecha y hora local de Argentina, en formato 24 horas.</div>
+        <div id="frLines"></div>
+        <div class="fr-buttons"><button type="button" class="btn" id="frCancel">Cancelar</button><button type="button" class="btn primary" id="frConfirm" disabled>Revisar y descontar</button></div>
+      </section>
     </div>
 
     <!-- Quick adjust modal -->
@@ -2407,6 +2491,11 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                 <div class="field" id="adjustBatchFacturaWrap">
                     <label>N.º de factura (opcional)</label>
                     <input type="text" id="adjustBatchFactura" placeholder="Ej: FC-0001-00012345"
+                        style="text-transform:uppercase;">
+                </div>
+                <div class="field">
+                    <label>N.º de remito (opcional)</label>
+                    <input type="text" id="adjustBatchRemito" placeholder="Ej: R-000123"
                         style="text-transform:uppercase;">
                 </div>
 
@@ -3402,7 +3491,7 @@ function detalleCompletoInformeTool(h) {
         function claveMovimiento(m) {
             return JSON.stringify([
                 m.fecha, m.tipo, m.zona, m.descripcion, m.cantidad,
-                m.responsable, m.obra, m.factura, m.familia, m.marca,
+                m.responsable, m.obra, m.factura, m.remito, m.familia, m.marca,
                 m.obs_item, m.id_pedido, m.envio, m.unidad, m.obs_general
             ]);
         }
@@ -3432,7 +3521,7 @@ function detalleCompletoInformeTool(h) {
                 const lista = state.movBase.filter(m =>
                     matchesSearch(m, q, [
                         'tipo', 'zona', 'descripcion', 'responsable', 'obra',
-                        'factura', 'familia', 'marca', 'obs_item', 'id_pedido',
+                        'factura', 'remito', 'familia', 'marca', 'obs_item', 'id_pedido',
                         'envio', 'unidad', 'obs_general'
                     ]) && (!tipo || normalizeText(m.tipo).startsWith(normalizeText(tipo)))
                 );
@@ -4087,7 +4176,7 @@ function detalleCompletoInformeTool(h) {
                         marca: info.marca !== '—' ? info.marca : '',
                         ubicacion: info.ubicacion !== '—' ? info.ubicacion : ''
                     };
-                    return matchesSearch(itemConInfo, ui.search, ['descripcion', 'responsable', 'obra', 'familia', 'marca', 'ubicacion', 'factura', 'obs_item']);
+                    return matchesSearch(itemConInfo, ui.search, ['descripcion', 'responsable', 'obra', 'familia', 'marca', 'ubicacion', 'factura', 'remito', 'obs_item']);
                 });
                 list = enfocarFamiliaExacta(list, ui.search, m => getMovProductInfo(m, true).familiaActual);
             }
@@ -5886,6 +5975,7 @@ function detalleCompletoInformeTool(h) {
             document.getElementById('adjustBatchObra').value = '';
             document.getElementById('adjustBatchObsGeneral').value = '';
             document.getElementById('adjustBatchFactura').value = '';
+            document.getElementById('adjustBatchRemito').value = '';
             document.getElementById('adjustBatchErr').style.display = 'none';
 
             // Rellenar lista de ítems con inputs individuales pre-cargados
@@ -5926,6 +6016,7 @@ function detalleCompletoInformeTool(h) {
             const obra = document.getElementById('adjustBatchObra').value.trim().toUpperCase();
             const obsGeneral = document.getElementById('adjustBatchObsGeneral').value.trim().toUpperCase();
             const factura = document.getElementById('adjustBatchFactura').value.trim().toUpperCase();
+            const nroRemito = document.getElementById('adjustBatchRemito').value.trim().toUpperCase();
             const errBox = document.getElementById('adjustBatchErr');
             errBox.style.display = 'none';
 
@@ -5964,6 +6055,7 @@ function detalleCompletoInformeTool(h) {
                     obra,
                     obs_general: obsGeneral,
                     factura,
+                    nro_remito: nroRemito,
                     items
                 };
 
@@ -6072,7 +6164,7 @@ function detalleCompletoInformeTool(h) {
             const body = document.getElementById('movBody');
 
             if (list.length === 0) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="11">No hay movimientos que coincidan con el filtro.</td></tr>`;   // ⬅️ 10 → 11
+                body.innerHTML = `<tr class="empty-row"><td colspan="12">No hay movimientos que coincidan con el filtro.</td></tr>`;
             } else {
                 body.innerHTML = list.map((m, i) => {   // ⬅️ (m, i)
                     const tipoClass = m.tipo === 'ENTRADA' ? 'entrada' : (m.tipo === 'SALIDA' ? 'salida' : 'devolucion');
@@ -6089,6 +6181,7 @@ function detalleCompletoInformeTool(h) {
         <td style="font-weight:700;">${m.cantidad ?? ''}</td>
         <td class="marca-cell">${escapeHtml(m.responsable || '—')}</td>
         <td class="marca-cell">${escapeHtml(m.obra || '—')}</td>
+        <td class="id-tag">${escapeHtml(m.remito || ((m.obs_general || '').match(/(?:^|\|\s*)REMITO:\s*([^|]+)/i)?.[1] || '').trim() || '—')}</td>
         <td class="id-tag">${escapeHtml(m.factura || '—')}</td>
         <td style="text-align:center;">${m.tipo === 'SALIDA' ? `<button class="btn small ficha-btn" data-i="${i}">✍️ Ver</button>` : '<span class="loc-empty">—</span>'}</td>
     </tr>`;
@@ -6197,7 +6290,7 @@ function detalleCompletoInformeTool(h) {
                 const encabezadosHistorial = mostrarDatosAceites
                     ? '<th>Fecha / envío</th><th>Solicitante</th><th>Retira</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>N.º de remito</th><th>Kilometraje /<br>horómetro</th><th>Equipo</th><th>Firma</th>'
                     : '<th>Fecha / envío</th><th>Encargado<br>que entrega</th><th>Cantidad</th><th>Obra / destino</th><th>N.º de remito</th><th>Firma</th>';
-                area.innerHTML = `<div class="historial-membrete"><img class="historial-logo" src="${RPM_LOGO_DATA}" alt="RPM Construcciones"></div><div class="historial-cabecera"><div class="historial-kicker">Control de depósito</div><div class="historial-titulo">Historial de salidas</div><div class="historial-descripcion">Cada fila corresponde a una salida del producto.</div></div><div class="historial-resumen"><div><small>Producto / descripción</small><strong>${escapeHtml(g.descripcion)}${g.marca ? ' · ' + escapeHtml(g.marca) : ''}</strong></div><div><small>Total retirado</small><strong>${escapeHtml(String(Math.round(g.cantidad * 1000) / 1000))} ${escapeHtml(g.unidad)}</strong></div><div><small>Stock actual</small><strong>${escapeHtml(stockActual)}</strong></div><div><small>Cantidad de salidas</small><strong>${fichas.length}</strong></div></div><table class="historial-registros-tabla"><colgroup>${columnasHistorial}</colgroup><thead><tr>${encabezadosHistorial}</tr></thead><tbody>${filas}</tbody></table>`;
+                area.innerHTML = `<div class="historial-membrete"><img class="historial-logo" src="${RPM_LOGO_DATA}" alt="RPM Construcciones"></div><div class="historial-cabecera"><div class="historial-kicker">Control de depósito</div><div class="historial-titulo">Historial de salidas</div><div class="historial-descripcion">Cada fila corresponde a una salida del producto.</div></div><div class="historial-resumen"><div><small>Producto / descripción</small><strong>${escapeHtml(g.descripcion)}${g.marca ? ' · ' + escapeHtml(g.marca) : ''}</strong></div><div><small>Total retirado</small><strong>${escapeHtml(String(Math.round(g.cantidad * 1000) / 1000))} ${escapeHtml(g.unidad)}</strong></div><div><small>Stock actual</small><strong>${escapeHtml(stockActual)}</strong></div><div><small>Cantidad de salidas</small><strong>${fichas.length}</strong></div></div><table class="historial-registros-tabla"><colgroup><col style="width:110px"><col style="width:95px"><col style="width:155px"><col style="width:250px"><col style="width:100px"><col style="width:120px"><col style="width:65px"><col style="width:120px"><col style="width:130px"><col style="width:145px"><col style="width:165px"><col style="width:80px"></colgroup><thead><tr>${encabezadosHistorial}</tr></thead><tbody>${filas}</tbody></table>`;
             } catch (e) {
                 area.innerHTML = `<div class="ficha-title">No se pudo preparar el historial</div><div class="ficha-firma">${escapeHtml(e.message || 'Error al cargar las fichas.')}</div>`;
             }
@@ -7115,6 +7208,8 @@ function detalleCompletoInformeTool(h) {
                 }
             }
 
+            if (tableId === 'movTable') return;
+
             const row = table.querySelector('tbody tr:not(.empty-row)');
             if (!row) return;
             const cells = row.children;
@@ -7143,6 +7238,11 @@ function detalleCompletoInformeTool(h) {
                 syncHeaderWidths(tableId, stickyTableId, wrapId);
             };
 
+            const observedTable = document.getElementById(tableId);
+            if (observedTable) {
+                new MutationObserver(() => requestAnimationFrame(updateAll)).observe(observedTable, { childList: true, subtree: true });
+                new ResizeObserver(() => requestAnimationFrame(updateAll)).observe(observedTable);
+            }
             window.addEventListener('resize', updateAll);
             window.addEventListener('tableRendered', updateAll);
             setTimeout(updateAll, 50);
@@ -7821,6 +7921,156 @@ ahEl('altaHerrForm').addEventListener('submit',ahGuardarAlta);
 ahEl('ahAgregarSigla').addEventListener('click',ahAgregarSigla);
 ahEl('ahAgregarPersona').addEventListener('click',ahAgregarPersona);
 for (const id of ['ahCerrar','ahCerrarX']) ahEl(id).addEventListener('click',()=>ahEl('altaHerrDialog').close());
+</script>
+<script>
+/* Descuento asistido desde foto de remito con Gemini; la imagen no se archiva en el Apps Script. */
+(()=>{
+ const $=id=>document.getElementById(id), overlay=$('fotoRemitoOverlay'), file=$('frFile'), preview=$('fotoRemitoPreview'), lines=$('frLines'), status=$('frStatus'), confirmBtn=$('frConfirm');
+ let ocrFile=null, photoUrl='', savingDiscount=false;
+ const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleUpperCase('es-AR').replace(/[^A-Z0-9]+/g,' ').trim();
+ function products(){return (state.stock||[]).slice().sort((a,b)=>String(a.descripcion).localeCompare(String(b.descripcion),'es'));}
+ function rankMatches(text,limit=5){const q=norm(text),qt=new Set(q.split(' ').filter(x=>x.length>2));return products().map(p=>{const d=norm([p.descripcion,p.marca,p.familia,p.id].join(' ')),dt=new Set(d.split(' ').filter(x=>x.length>2));let score=d===q?1:(d.includes(q)||q.includes(d)?0.9:0);if(qt.size){let hit=0;qt.forEach(x=>{if(dt.has(x))hit++;});score=Math.max(score,hit/qt.size*.82);}return{p,score};}).sort((a,b)=>b.score-a.score).slice(0,limit).map(x=>x.p);}
+ function productOptions(selected='',description='',search='') {const suggested=rankMatches(description),searched=search.trim()?rankMatches(search,40):[],candidates=[...new Map([...suggested,...searched].map(p=>[String(p.id),p])).values()];if(selected&&!candidates.some(p=>String(p.id)===String(selected))){const cur=products().find(p=>String(p.id)===String(selected));if(cur)candidates.unshift(cur);}const option=p=>`<option value="${escapeAttr(p.id)}" ${String(p.id)===String(selected)?'selected':''}>${escapeHtml(p.descripcion)} · ${escapeHtml(p.marca||'—')} · ID ${escapeHtml(p.id)} · stock ${escapeHtml(p.stock_actual)} ${escapeHtml(p.unidad||'')}</option>`;return '<option value="">Elegí producto del stock…</option>'+(candidates.length?`<optgroup label="Sugerencias / resultados">${candidates.map(option).join('')}</optgroup>`:'');}
+ function addLine(description='', qty='', productId='') {
+  const suggested = rankMatches(description);
+  const product = productId
+    ? products().find(x => String(x.id) === String(productId))
+    : (suggested[0] || null);
+  const parsedQty = Number(String(qty ?? '').replace(',', '.'));
+  const quantityValue = Number.isFinite(parsedQty) && parsedQty > 0 ? parsedQty : '';
+  const row = document.createElement('div');
+
+  row.className = 'fr-line';
+  row.innerHTML = `
+    <label class="fr-desc">Texto leído / descripción
+      <input class="fr-text" value="${escapeAttr(description)}" placeholder="Descripción del remito">
+    </label>
+    <label>Buscar en stock
+      <input class="fr-product-search" placeholder="Escribí nombre, marca o ID">
+      <select class="fr-product">${productOptions(product?.id || '', description)}</select>
+    </label>
+    <label>Cantidad
+      <input class="fr-qty" type="number" min="0.01" step="any" value="${quantityValue}">
+    </label>
+    <button class="btn" type="button" title="Quitar renglón" aria-label="Quitar renglón">✕</button>`;
+
+  row.querySelector('button').onclick = () => {
+    row.remove();
+    updateConfirm();
+  };
+  row.querySelector('.fr-product').onchange = updateConfirm;
+  row.querySelector('.fr-qty').oninput = updateConfirm;
+  row.querySelector('.fr-product-search').oninput = () => {
+    const select = row.querySelector('.fr-product');
+    const previous = select.value;
+    select.innerHTML = productOptions(
+      previous,
+      row.querySelector('.fr-text').value,
+      row.querySelector('.fr-product-search').value
+    );
+    if (previous) select.value = previous;
+  };
+  row.querySelector('.fr-text').oninput = () => {
+    const select = row.querySelector('.fr-product');
+    const previous = select.value;
+    select.innerHTML = productOptions(
+      previous,
+      row.querySelector('.fr-text').value,
+      row.querySelector('.fr-product-search').value
+    );
+    if (previous) select.value = previous;
+    updateConfirm();
+  };
+
+  lines.append(row);
+  updateConfirm();
+ }
+ function updateConfirm(){confirmBtn.disabled=savingDiscount;}
+ function compressImage(f){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{const scale=Math.min(1,1400/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.72));};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('No se pudo abrir la imagen. Probá con JPG o PNG.'));};img.src=url;});}
+ function fechaRemitoDMY(value){const s=String(value||'').trim();let m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return `${m[3]}/${m[2]}/${m[1]}`;m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);if(!m)return '';const d=Number(m[1]),mo=Number(m[2]),y=Number(m[3]),check=new Date(Date.UTC(y,mo-1,d));if(check.getUTCFullYear()!==y||check.getUTCMonth()!==mo-1||check.getUTCDate()!==d)return '';return `${String(d).padStart(2,'0')}/${String(mo).padStart(2,'0')}/${y}`;}
+ function matchGeminiItems(items) {
+  items.forEach(item => {
+    const material = String(item.material || '').trim();
+    if (material) addLine(material, item.cantidad);
+  });
+ }
+ $('btnFotoRemito').onclick=()=>{if(isDemo||!auth.currentUser){showToast('Ingresá al sistema conectado para descontar stock.',true);return;}if(!products().length){showToast('Esperá a que cargue el stock y volvé a intentar.',true);return;}overlay.classList.add('show');};
+ $('frCancel').onclick=()=>{overlay.classList.remove('show');};overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.remove('show');});
+ $('frAdd').onclick=()=>addLine('', 1);
+ $('frRemito').oninput=updateConfirm;$('frResponsable').oninput=updateConfirm;
+ file.onchange=()=>{ocrFile=file.files?.[0]||null;lines.replaceChildren();confirmBtn.disabled=true;status.textContent=ocrFile?'Foto lista. Tocá “Analizar foto con Gemini”.':'Elegí o sacá una foto del remito.';if(photoUrl)URL.revokeObjectURL(photoUrl);if(ocrFile){photoUrl=URL.createObjectURL(ocrFile);preview.src=photoUrl;preview.hidden=false;}else preview.hidden=true;};
+ $('frRead').onclick = async () => {
+  if (!ocrFile) {
+    status.textContent = 'Primero sacá o elegí una foto.';
+    return;
+  }
+
+  const btn = $('frRead');
+  btn.disabled = true;
+  lines.replaceChildren();
+  confirmBtn.disabled = true;
+
+  try {
+    status.textContent = 'Preparando foto para el análisis…';
+
+    const dataUrl = await compressImage(ocrFile);
+    const base64 = dataUrl.split(',')[1] || '';
+
+    if (!base64) {
+      throw new Error('No se pudo preparar la imagen del remito.');
+    }
+
+    status.textContent = 'Analizando foto…';
+
+    // apiPost agrega el token de Firebase automáticamente.
+    // No se envía ninguna API key desde el navegador.
+    const data = await apiPost({
+      accion: 'remito-analizar-ia',
+      foto_base64: base64
+    });
+
+    if (!data?.ok) {
+      throw new Error(
+        data?.error || 'No se pudo analizar la foto del remito.'
+      );
+    }
+
+    if (!$('frRemito').value.trim()) {
+      $('frRemito').value = String(data.numero || '').trim();
+    }
+
+    if (!$('frFecha').value) {
+      $('frFecha').value = fechaRemitoDMY(data.fecha);
+    }
+
+    if (!$('frObra').value.trim()) {
+      $('frObra').value = String(data.obra || data.destino || '').trim();
+    }
+
+    matchGeminiItems(Array.isArray(data.items) ? data.items : []);
+
+    if (!data.items?.length) {
+      throw new Error(
+        'No se encontraron renglones. Agregá los productos manualmente.'
+      );
+    }
+
+    status.textContent =
+      'Se detectaron ' + data.items.length +
+      ' renglón(es). Revisá productos, cantidades y datos antes de confirmar.';
+
+    updateConfirm();
+
+  } catch (e) {
+    status.textContent =
+      e.message || 'No se pudo analizar la imagen.';
+
+  } finally {
+    btn.disabled = false;
+  }
+};
+ confirmBtn.onclick=async()=>{if(savingDiscount)return;const rows=[...lines.querySelectorAll('.fr-line')];if(!$('frRemito').value.trim()){status.textContent='Falta el número de remito.';$('frRemito').focus();return;}if(!$('frResponsable').value.trim()){status.textContent='Falta indicar quién retira o recibe los materiales.';$('frResponsable').focus();return;}if(!rows.length){status.textContent='Agregá al menos un producto del remito.';return;}const sinProducto=rows.find(r=>!r.querySelector('.fr-product').value);if(sinProducto){status.textContent='Elegí el producto del stock para cada renglón. Usá “Buscar en stock” si no aparece entre las sugerencias.';sinProducto.querySelector('.fr-product-search').focus();return;}const sinCantidad=rows.find(r=>!(Number(r.querySelector('.fr-qty').value)>0));if(sinCantidad){status.textContent='Revisá la cantidad: cada renglón debe tener un número mayor que cero.';sinCantidad.querySelector('.fr-qty').focus();return;}const fechaEntrada=$('frFecha').value.trim(),fechaRemito=fechaEntrada?fechaRemitoDMY(fechaEntrada):'';if(fechaEntrada&&!fechaRemito){status.textContent='La fecha del remito debe ser válida y estar en formato DD/MM/AAAA.';$('frFecha').focus();return;}const grouped=new Map();for(const r of rows){const id=r.querySelector('.fr-product').value,qty=Number(r.querySelector('.fr-qty').value)||0;grouped.set(id,(grouped.get(id)||0)+qty);}const items=[...grouped].map(([id,cantidad])=>({id,cantidad}));const details=items.map(it=>{const p=products().find(x=>String(x.id)===it.id);return `• ${p?.descripcion||it.id}: ${it.cantidad} ${p?.unidad||'un'}`;}).join('\n');savingDiscount=true;updateConfirm();status.textContent='Enviando descuento al servidor… ';try{const obs=['REMITO: '+$('frRemito').value.trim(),fechaRemito?'FECHA REMITO: '+fechaRemito:'',$('frFile').files?.[0]?.name?'FOTO REMITO: '+$('frFile').files[0].name:'',`CARGA DESDE FOTO (${items.length} PRODUCTO(S))`].filter(Boolean).join(' | ');const resp=await apiPostSeguro({accion:'ajuste-rapido',zona:products().find(p=>String(p.id)===items[0].id)?.zona||'',tipo_movimiento:'SALIDA',fecha:'',nro_remito:$('frRemito').value.trim(),responsable:$('frResponsable').value.trim(),obra:$('frObra').value.trim(),obs_general:obs,items});if(!resp?.ok)throw Error(resp?.error||'El Apps Script rechazó la salida.');status.textContent=`Salida guardada correctamente. N.º de envío ${resp.envio||'—'}. Fecha y hora de Buenos Aires en formato 24 h.`;await cargarTodo(true);setTimeout(()=>{overlay.classList.remove('show');lines.replaceChildren();file.value='';$('frRemito').value='';$('frFecha').value='';$('frResponsable').value='';$('frObra').value='';preview.hidden=true;if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl='';savingDiscount=false;updateConfirm();},1500);}catch(e){status.textContent=e.message||'No se pudo registrar. Revisá Movimientos antes de volver a enviar.';savingDiscount=false;updateConfirm();}};
+})();
 </script>
 </body>
 </html>
