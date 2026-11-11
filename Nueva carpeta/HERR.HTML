@@ -2130,7 +2130,28 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
     <div id="fotoRemitoOverlay" role="dialog" aria-modal="true" aria-labelledby="frTitle">
       <section id="fotoRemitoDialog"><h2 id="frTitle">📷 Descontar desde foto del remito</h2>
         <p class="fr-help">Sacá una foto o elegí una imagen. Gemini leerá el remito y el panel sugerirá productos del stock; revisá todo antes de confirmar. La imagen se envía a Gemini para analizarla, pero no se guarda en el panel. No se descuenta nada hasta que confirmes.</p>
-        <div class="fr-fields"><label>Foto del remito<input id="frFile" type="file" accept="image/*" capture="environment"></label><label>Número de remito<input id="frRemito" autocomplete="off" placeholder="Ej.: R-000123"></label><label>Fecha del remito (día/mes/año)<input id="frFecha" type="text" inputmode="numeric" placeholder="DD/MM/AAAA" autocomplete="off"></label><label>Responsable<input id="frResponsable" autocomplete="name" placeholder="Quién retira"></label><label>Obra / destino<input id="frObra" placeholder="Obra o destino"></label><label>Clave API Gemini<input id="frGeminiKey" type="password" autocomplete="off" placeholder="Se intenta reutilizar la del planificador"></label></div>
+        <div class="fr-fields">
+          <label>
+            Foto del remito
+            <input id="frFile" type="file" accept="image/*" capture="environment">
+          </label>
+          <label>
+            Número de remito
+            <input id="frRemito" autocomplete="off" placeholder="Ej.: R-000123">
+          </label>
+          <label>
+            Fecha del remito (día/mes/año)
+            <input id="frFecha" type="text" inputmode="numeric" placeholder="DD/MM/AAAA" autocomplete="off">
+          </label>
+          <label>
+            Responsable
+            <input id="frResponsable" autocomplete="name" placeholder="Quién retira">
+          </label>
+          <label>
+            Obra / destino
+            <input id="frObra" placeholder="Obra o destino">
+          </label>
+        </div>
         <img id="fotoRemitoPreview" alt="Vista previa del remito" hidden>
         <div class="fr-buttons" style="justify-content:flex-start"><button type="button" class="btn" id="frRead">Analizar foto con Gemini</button><button type="button" class="btn" id="frAdd">＋ Agregar producto manualmente</button></div>
         <div id="frStatus" role="status" aria-live="polite">La fecha del remito se muestra DD/MM/AAAA. El movimiento se registrará con fecha y hora local de Argentina, en formato 24 horas.</div>
@@ -7860,24 +7881,148 @@ for (const id of ['ahCerrar','ahCerrarX']) ahEl(id).addEventListener('click',()=
 (()=>{
  const $=id=>document.getElementById(id), overlay=$('fotoRemitoOverlay'), file=$('frFile'), preview=$('fotoRemitoPreview'), lines=$('frLines'), status=$('frStatus'), confirmBtn=$('frConfirm');
  let ocrFile=null, photoUrl='', savingDiscount=false;
- const GEMINI_MODEL='gemini-3.5-flash-lite', GEMINI_KEY_STORE='rpm_stock_gemini_key_v1';
- function geminiKey(){try{const own=localStorage.getItem(GEMINI_KEY_STORE);if(own)return own;const p=JSON.parse(localStorage.getItem('planificador_data_v1')||'{}');if(p.config?.geminiKey)return p.config.geminiKey;const ps=JSON.parse(sessionStorage.getItem('planificador_data_v1')||'{}');return ps.config?.geminiKey||'';}catch(_){return '';}}
  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleUpperCase('es-AR').replace(/[^A-Z0-9]+/g,' ').trim();
  function products(){return (state.stock||[]).slice().sort((a,b)=>String(a.descripcion).localeCompare(String(b.descripcion),'es'));}
  function rankMatches(text,limit=5){const q=norm(text),qt=new Set(q.split(' ').filter(x=>x.length>2));return products().map(p=>{const d=norm([p.descripcion,p.marca,p.familia,p.id].join(' ')),dt=new Set(d.split(' ').filter(x=>x.length>2));let score=d===q?1:(d.includes(q)||q.includes(d)?0.9:0);if(qt.size){let hit=0;qt.forEach(x=>{if(dt.has(x))hit++;});score=Math.max(score,hit/qt.size*.82);}return{p,score};}).sort((a,b)=>b.score-a.score).slice(0,limit).map(x=>x.p);}
  function productOptions(selected='',description='',search='') {const suggested=rankMatches(description),searched=search.trim()?rankMatches(search,40):[],candidates=[...new Map([...suggested,...searched].map(p=>[String(p.id),p])).values()];if(selected&&!candidates.some(p=>String(p.id)===String(selected))){const cur=products().find(p=>String(p.id)===String(selected));if(cur)candidates.unshift(cur);}const option=p=>`<option value="${escapeAttr(p.id)}" ${String(p.id)===String(selected)?'selected':''}>${escapeHtml(p.descripcion)} · ${escapeHtml(p.marca||'—')} · ID ${escapeHtml(p.id)} · stock ${escapeHtml(p.stock_actual)} ${escapeHtml(p.unidad||'')}</option>`;return '<option value="">Elegí producto del stock…</option>'+(candidates.length?`<optgroup label="Sugerencias / resultados">${candidates.map(option).join('')}</optgroup>`:'');}
- function addLine(description='',qty=1,productId='') {const suggested=rankMatches(description),p=productId?products().find(x=>String(x.id)===String(productId)):(suggested[0]||null);const row=document.createElement('div');row.className='fr-line';row.innerHTML=`<label class="fr-desc">Texto leído / descripción<input class="fr-text" value="${escapeAttr(description)}" placeholder="Descripción del remito"></label><label>Buscar en stock<input class="fr-product-search" placeholder="Escribí nombre, marca o ID"><select class="fr-product">${productOptions(p?.id||'',description)}</select></label><label>Cantidad<input class="fr-qty" type="number" min="0.01" step="any" value="${Number(qty)>0?Number(qty):1}"></label><button class="btn" type="button" title="Quitar renglón" aria-label="Quitar renglón">✕</button>`;row.querySelector('button').onclick=()=>{row.remove();updateConfirm();};row.querySelector('.fr-product').onchange=updateConfirm;row.querySelector('.fr-qty').oninput=updateConfirm;row.querySelector('.fr-product-search').oninput=()=>{const sel=row.querySelector('.fr-product'),prev=sel.value;sel.innerHTML=productOptions(prev,row.querySelector('.fr-text').value,row.querySelector('.fr-product-search').value);if(prev)sel.value=prev;};row.querySelector('.fr-text').oninput=()=>{const sel=row.querySelector('.fr-product'),prev=sel.value;sel.innerHTML=productOptions(prev,row.querySelector('.fr-text').value,row.querySelector('.fr-product-search').value);if(prev)sel.value=prev;updateConfirm();};lines.append(row);updateConfirm();}
+ function addLine(description='', qty='', productId='') {
+  const suggested = rankMatches(description);
+  const product = productId
+    ? products().find(x => String(x.id) === String(productId))
+    : (suggested[0] || null);
+  const parsedQty = Number(String(qty ?? '').replace(',', '.'));
+  const quantityValue = Number.isFinite(parsedQty) && parsedQty > 0 ? parsedQty : '';
+  const row = document.createElement('div');
+
+  row.className = 'fr-line';
+  row.innerHTML = `
+    <label class="fr-desc">Texto leído / descripción
+      <input class="fr-text" value="${escapeAttr(description)}" placeholder="Descripción del remito">
+    </label>
+    <label>Buscar en stock
+      <input class="fr-product-search" placeholder="Escribí nombre, marca o ID">
+      <select class="fr-product">${productOptions(product?.id || '', description)}</select>
+    </label>
+    <label>Cantidad
+      <input class="fr-qty" type="number" min="0.01" step="any" value="${quantityValue}">
+    </label>
+    <button class="btn" type="button" title="Quitar renglón" aria-label="Quitar renglón">✕</button>`;
+
+  row.querySelector('button').onclick = () => {
+    row.remove();
+    updateConfirm();
+  };
+  row.querySelector('.fr-product').onchange = updateConfirm;
+  row.querySelector('.fr-qty').oninput = updateConfirm;
+  row.querySelector('.fr-product-search').oninput = () => {
+    const select = row.querySelector('.fr-product');
+    const previous = select.value;
+    select.innerHTML = productOptions(
+      previous,
+      row.querySelector('.fr-text').value,
+      row.querySelector('.fr-product-search').value
+    );
+    if (previous) select.value = previous;
+  };
+  row.querySelector('.fr-text').oninput = () => {
+    const select = row.querySelector('.fr-product');
+    const previous = select.value;
+    select.innerHTML = productOptions(
+      previous,
+      row.querySelector('.fr-text').value,
+      row.querySelector('.fr-product-search').value
+    );
+    if (previous) select.value = previous;
+    updateConfirm();
+  };
+
+  lines.append(row);
+  updateConfirm();
+ }
  function updateConfirm(){confirmBtn.disabled=savingDiscount;}
  function compressImage(f){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{const scale=Math.min(1,1400/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.72));};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('No se pudo abrir la imagen. Probá con JPG o PNG.'));};img.src=url;});}
  function fechaRemitoDMY(value){const s=String(value||'').trim();let m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return `${m[3]}/${m[2]}/${m[1]}`;m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);if(!m)return '';const d=Number(m[1]),mo=Number(m[2]),y=Number(m[3]),check=new Date(Date.UTC(y,mo-1,d));if(check.getUTCFullYear()!==y||check.getUTCMonth()!==mo-1||check.getUTCDate()!==d)return '';return `${String(d).padStart(2,'0')}/${String(mo).padStart(2,'0')}/${y}`;}
- function matchGeminiItems(items){items.forEach(i=>{const q=String(i.material||'').trim(),qty=Number(String(i.cantidad||'').replace(',','.'));if(q)addLine(q,qty>0?qty:1);});}
+ function matchGeminiItems(items) {
+  items.forEach(item => {
+    const material = String(item.material || '').trim();
+    if (material) addLine(material, item.cantidad);
+  });
+ }
  $('btnFotoRemito').onclick=()=>{if(isDemo||!auth.currentUser){showToast('Ingresá al sistema conectado para descontar stock.',true);return;}if(!products().length){showToast('Esperá a que cargue el stock y volvé a intentar.',true);return;}overlay.classList.add('show');};
  $('frCancel').onclick=()=>{overlay.classList.remove('show');};overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.remove('show');});
- $('frAdd').onclick=()=>addLine();
- $('frGeminiKey').value=geminiKey();$('frGeminiKey').onchange=e=>{try{localStorage.setItem(GEMINI_KEY_STORE,e.target.value.trim());}catch(_){}};
+ $('frAdd').onclick=()=>addLine('', 1);
  $('frRemito').oninput=updateConfirm;$('frResponsable').oninput=updateConfirm;
  file.onchange=()=>{ocrFile=file.files?.[0]||null;lines.replaceChildren();confirmBtn.disabled=true;status.textContent=ocrFile?'Foto lista. Tocá “Analizar foto con Gemini”.':'Elegí o sacá una foto del remito.';if(photoUrl)URL.revokeObjectURL(photoUrl);if(ocrFile){photoUrl=URL.createObjectURL(ocrFile);preview.src=photoUrl;preview.hidden=false;}else preview.hidden=true;};
- $('frRead').onclick=async()=>{if(!ocrFile){status.textContent='Primero sacá o elegí una foto.';return;}const apiKey=$('frGeminiKey').value.trim()||geminiKey();if(!apiKey){status.textContent='Ingresá la clave API de Gemini que usás en el planificador.';$('frGeminiKey').focus();return;}try{localStorage.setItem(GEMINI_KEY_STORE,apiKey);}catch(_){}const btn=$('frRead');btn.disabled=true;lines.replaceChildren();confirmBtn.disabled=true;try{status.textContent='Preparando foto para Gemini…';const dataUrl=await compressImage(ocrFile),base64=dataUrl.split(',')[1]||'';status.textContent='Gemini está leyendo el remito…';const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),45000);let response;try{response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json','x-goog-api-key':apiKey},body:JSON.stringify({contents:[{parts:[{text:'Leé esta foto de un remito en español. Extraé solo información visible, no inventes ni agregues productos. Conservá el nombre del material tal como figura, una línea por renglón, y la cantidad numérica sin unidad. Si un campo no se entiende, dejalo vacío. La fecha debe ser DD/MM/YYYY (día/mes/año). El responsable no debe inferirse.'},{inlineData:{mimeType:'image/jpeg',data:base64}}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'},maxOutputTokens:3000,responseMimeType:'application/json',responseSchema:{type:'OBJECT',properties:{numero:{type:'STRING'},fecha:{type:'STRING'},destino:{type:'STRING'},obra:{type:'STRING'},items:{type:'ARRAY',items:{type:'OBJECT',properties:{material:{type:'STRING'},cantidad:{type:'STRING'}},required:['material','cantidad']}}},required:['numero','fecha','destino','obra','items']}}})});}finally{clearTimeout(timer);}const result=await response.json();if(!response.ok)throw Error(result.error?.message||`Gemini respondió con error (${response.status}).`);const text=(result.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');if(!text)throw Error('Gemini no devolvió datos para revisar.');const data=JSON.parse(text);if(!$('frRemito').value.trim())$('frRemito').value=String(data.numero||'').trim();if(!$('frFecha').value)$('frFecha').value=fechaRemitoDMY(data.fecha);if(!$('frObra').value.trim())$('frObra').value=String(data.obra||data.destino||'').trim();matchGeminiItems(Array.isArray(data.items)?data.items:[]);if(!data.items?.length)throw Error('Gemini no encontró renglones. Agregá los productos manualmente.');status.textContent=`Gemini detectó ${data.items.length} renglón(es). Revisá las sugerencias, productos, cantidades y datos antes de confirmar.`;updateConfirm();}catch(e){status.textContent=e.name==='AbortError'?'Gemini tardó más de 45 segundos y se canceló. Podés volver a intentar.':(e.message||'No se pudo analizar la imagen.');}finally{btn.disabled=false;}};
+ $('frRead').onclick = async () => {
+  if (!ocrFile) {
+    status.textContent = 'Primero sacá o elegí una foto.';
+    return;
+  }
+
+  const btn = $('frRead');
+  btn.disabled = true;
+  lines.replaceChildren();
+  confirmBtn.disabled = true;
+
+  try {
+    status.textContent = 'Preparando foto para el análisis…';
+
+    const dataUrl = await compressImage(ocrFile);
+    const base64 = dataUrl.split(',')[1] || '';
+
+    if (!base64) {
+      throw new Error('No se pudo preparar la imagen del remito.');
+    }
+
+    status.textContent = 'Analizando foto…';
+
+    // apiPost agrega el token de Firebase automáticamente.
+    // No se envía ninguna API key desde el navegador.
+    const data = await apiPost({
+      accion: 'remito-analizar-ia',
+      foto_base64: base64
+    });
+
+    if (!data?.ok) {
+      throw new Error(
+        data?.error || 'No se pudo analizar la foto del remito.'
+      );
+    }
+
+    if (!$('frRemito').value.trim()) {
+      $('frRemito').value = String(data.numero || '').trim();
+    }
+
+    if (!$('frFecha').value) {
+      $('frFecha').value = fechaRemitoDMY(data.fecha);
+    }
+
+    if (!$('frObra').value.trim()) {
+      $('frObra').value = String(data.obra || data.destino || '').trim();
+    }
+
+    matchGeminiItems(Array.isArray(data.items) ? data.items : []);
+
+    if (!data.items?.length) {
+      throw new Error(
+        'No se encontraron renglones. Agregá los productos manualmente.'
+      );
+    }
+
+    status.textContent =
+      'Se detectaron ' + data.items.length +
+      ' renglón(es). Revisá productos, cantidades y datos antes de confirmar.';
+
+    updateConfirm();
+
+  } catch (e) {
+    status.textContent =
+      e.message || 'No se pudo analizar la imagen.';
+
+  } finally {
+    btn.disabled = false;
+  }
+};
  confirmBtn.onclick=async()=>{if(savingDiscount)return;const rows=[...lines.querySelectorAll('.fr-line')];if(!$('frRemito').value.trim()){status.textContent='Falta el número de remito.';$('frRemito').focus();return;}if(!$('frResponsable').value.trim()){status.textContent='Falta indicar quién retira o recibe los materiales.';$('frResponsable').focus();return;}if(!rows.length){status.textContent='Agregá al menos un producto del remito.';return;}const sinProducto=rows.find(r=>!r.querySelector('.fr-product').value);if(sinProducto){status.textContent='Elegí el producto del stock para cada renglón. Usá “Buscar en stock” si no aparece entre las sugerencias.';sinProducto.querySelector('.fr-product-search').focus();return;}const sinCantidad=rows.find(r=>!(Number(r.querySelector('.fr-qty').value)>0));if(sinCantidad){status.textContent='Revisá la cantidad: cada renglón debe tener un número mayor que cero.';sinCantidad.querySelector('.fr-qty').focus();return;}const fechaEntrada=$('frFecha').value.trim(),fechaRemito=fechaEntrada?fechaRemitoDMY(fechaEntrada):'';if(fechaEntrada&&!fechaRemito){status.textContent='La fecha del remito debe ser válida y estar en formato DD/MM/AAAA.';$('frFecha').focus();return;}const grouped=new Map();for(const r of rows){const id=r.querySelector('.fr-product').value,qty=Number(r.querySelector('.fr-qty').value)||0;grouped.set(id,(grouped.get(id)||0)+qty);}const items=[...grouped].map(([id,cantidad])=>({id,cantidad}));const details=items.map(it=>{const p=products().find(x=>String(x.id)===it.id);return `• ${p?.descripcion||it.id}: ${it.cantidad} ${p?.unidad||'un'}`;}).join('\n');savingDiscount=true;updateConfirm();status.textContent='Enviando descuento al servidor… ';try{const obs=['REMITO: '+$('frRemito').value.trim(),fechaRemito?'FECHA REMITO: '+fechaRemito:'',$('frFile').files?.[0]?.name?'FOTO REMITO: '+$('frFile').files[0].name:'',`CARGA DESDE FOTO (${items.length} PRODUCTO(S))`].filter(Boolean).join(' | ');const resp=await apiPostSeguro({accion:'ajuste-rapido',zona:products().find(p=>String(p.id)===items[0].id)?.zona||'',tipo_movimiento:'SALIDA',fecha:'',nro_remito:$('frRemito').value.trim(),responsable:$('frResponsable').value.trim(),obra:$('frObra').value.trim(),obs_general:obs,items});if(!resp?.ok)throw Error(resp?.error||'El Apps Script rechazó la salida.');status.textContent=`Salida guardada correctamente. N.º de envío ${resp.envio||'—'}. Fecha y hora de Buenos Aires en formato 24 h.`;await cargarTodo(true);setTimeout(()=>{overlay.classList.remove('show');lines.replaceChildren();file.value='';$('frRemito').value='';$('frFecha').value='';$('frResponsable').value='';$('frObra').value='';preview.hidden=true;if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl='';savingDiscount=false;updateConfirm();},1500);}catch(e){status.textContent=e.message||'No se pudo registrar. Revisá Movimientos antes de volver a enviar.';savingDiscount=false;updateConfirm();}};
 })();
 </script>
