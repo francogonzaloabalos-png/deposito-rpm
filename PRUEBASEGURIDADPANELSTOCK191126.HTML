@@ -2610,7 +2610,11 @@ body.modo-herramientas #zoneRow,body.modo-herramientas #statsRow,body.modo-herra
                     return;
                 }
                 navigator.geolocation.getCurrentPosition(({ coords }) => resolve({
-                    lat: coords.latitude, lng: coords.longitude, precision: coords.accuracy
+                    lat: coords.latitude, lng: coords.longitude, precision: coords.accuracy,
+                    tipoDispositivo: (navigator.userAgentData?.mobile === true ||
+                        /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') ||
+                        (/Mac/i.test(navigator.platform || '') && navigator.maxTouchPoints > 1))
+                        ? 'celular' : 'computadora'
                 }), error => reject(new Error(error.code === 1
                     ? 'Activá el permiso de ubicación para este sitio y volvé a comprobar.'
                     : 'No pudimos obtener tu ubicación. Volvé a comprobar desde el área de trabajo.')),
